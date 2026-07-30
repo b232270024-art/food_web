@@ -48,6 +48,14 @@ export function Footer({ hotel, tr }) {
                   </a>
                 </li>
               ))}
+              <li>
+                <a href="/policies.html" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.target.style.color = 'white'}
+                  onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.7)'}
+                >
+                  Terms &amp; Privacy
+                </a>
+              </li>
             </ul>
           </div>
 

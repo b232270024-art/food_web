@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Terms of Service, Privacy Policy, Refund Policy and Delivery Policy for Velo Grid Linkage LLC." />
+<title>Website Policies — Velo Grid Linkage LLC</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --brand-green: #1A3C34;
+    --brand-green-mid: #2D5A4A;
+    --brand-green-light: #4CAF80;
+    --brand-green-btn: #3D7A5A;
+    --accent-orange: #F97316;
+
+    --bg-cream: #FDF8F3;
+    --bg-white: #FFFFFF;
+    --bg-muted: #F5F0E8;
+    --bg-green-dark: #1A3C34;
+
+    --text-dark: #1A1A1A;
+    --text-body: #4B5563;
+    --text-muted: #9CA3AF;
+
+    --border: #E5E7EB;
+    --border-card: #F0EBE0;
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+
+    --r-sm: 8px;
+    --r-md: 16px;
+    --r-lg: 24px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-cream);
+    color: var(--text-dark);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .brand { font-family: 'Outfit', sans-serif; }
+
+  a { color: var(--brand-green-btn); }
+
+  /* ── Top bar ───────────────────────────────────────────── */
+  .topbar {
+    background: var(--bg-green-dark);
+    color: rgba(255,255,255,0.92);
+    padding: 18px 0;
+  }
+  .topbar .inner {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #fff;
+    text-decoration: none;
+  }
+  .brand .mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem;
+  }
+  .topbar a.back {
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  .topbar a.back:hover { color: #fff; }
+
+  /* ── Hero ──────────────────────────────────────────────── */
+  .hero {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 28px;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--brand-green);
+    margin-bottom: 10px;
+  }
+  .hero p.sub {
+    color: var(--text-body);
+    font-size: 0.95rem;
+  }
+  .hero .meta {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pill {
+    display: inline-block;
+    background: var(--bg-muted);
+    border: 1px solid var(--border-card);
+    color: var(--brand-green);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+
+  /* ── TOC ───────────────────────────────────────────────── */
+  .toc {
+    max-width: 880px;
+    margin: 0 auto 40px;
+    padding: 0 24px;
+  }
+  .toc-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border-card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 24px 28px;
+  }
+  .toc-card h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .toc-card ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .toc-card a {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toc-card a:hover { color: var(--brand-green-btn); }
+  .toc-card a .num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg-muted);
+    color: var(--brand-green);
+    font-size: 0.72rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── Content ───────────────────────────────────────────── */
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  section.policy {
+    background: var(--bg-white);
+    border: 1px solid var(--border-card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 40px clamp(20px, 5vw, 48px);
+    margin-bottom: 28px;
+    scroll-margin-top: 24px;
+  }
+  section.policy > h2 {
+    font-size: 1.5rem;
+    color: var(--brand-green);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+    border-bottom: 2px solid var(--bg-muted);
+  }
+  section.policy .effective {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: var(--accent-orange);
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+  h3.sub {
+    font-size: 1.08rem;
+    color: var(--text-dark);
+    margin: 28px 0 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+  }
+  h4.sub2 {
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    margin: 18px 0 8px;
+    font-weight: 700;
+  }
+  p {
+    color: var(--text-body);
+    font-size: 0.94rem;
+    margin-bottom: 12px;
+  }
+  ul.policy-list {
+    margin: 0 0 16px 0;
+    padding-left: 0;
+    list-style: none;
+  }
+  ul.policy-list li {
+    position: relative;
+    padding-left: 22px;
+    color: var(--text-body);
+    font-size: 0.94rem;
+    margin-bottom: 8px;
+  }
+  ul.policy-list li::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--brand-green-light);
+  }
+  strong { color: var(--text-dark); }
+  .highlight-box {
+    background: var(--bg-muted);
+    border: 1px solid var(--border-card);
+    border-radius: var(--r-md);
+    padding: 16px 20px;
+    margin: 18px 0;
+    font-size: 0.9rem;
+    color: var(--text-body);
+  }
+  .contact-card {
+    background: var(--bg-muted);
+    border-radius: var(--r-md);
+    padding: 18px 22px;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--text-body);
+  }
+  .contact-card strong { display: block; margin-bottom: 4px; color: var(--brand-green); }
+
+  footer {
+    background: var(--bg-green-dark);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    padding: 28px 24px;
+    font-size: 0.82rem;
+  }
+  footer a { color: rgba(255,255,255,0.85); }
+
+  @media (max-width: 600px) {
+    .toc-card ol { grid-template-columns: 1fr; }
+    section.policy { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="inner">
+      <a class="brand" href="/">
+        <span class="mark">🍽</span>
+        <span>In-Room Dining</span>
+      </a>
+      <a class="back" href="/">← Back to site</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Website Policies</h1>
+    <p class="sub">Terms of Service • Privacy Policy • Refund Policy • Delivery Policy</p>
+    <div class="meta">
+      <span class="pill">"Velo Grid Linkage" LLC</span>
+      <span class="pill">"Вело Грид Линкеж" ХХК</span>
+      <span class="pill">Effective Date: July 30, 2026</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-card">
+      <h3>Table of Contents</h3>
+      <ol>
+        <li><a href="#privacy-policy"><span class="num">1</span>Privacy Policy</a></li>
+        <li><a href="#terms-of-service"><span class="num">2</span>Terms of Service</a></li>
+        <li><a href="#refund-policy"><span class="num">3</span>Refund &amp; Cancellation Policy</a></li>
+        <li><a href="#delivery-policy"><span class="num">4</span>Delivery Policy</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ════════════════ 1. PRIVACY POLICY ════════════════ -->
+    <section class="policy" id="privacy-policy">
+      <h2>1. Privacy Policy</h2>
+      <span class="effective">Effective Date: July 30, 2026</span>
+
+      <p>"Velo Grid Linkage" LLC ("we," "our," or "us") operates this website (the "Site"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our Site and use our food delivery logistics services.</p>
+
+      <h3 class="sub">1.1 Information We Collect</h3>
+
+      <h4 class="sub2">Information You Provide at Checkout</h4>
+      <p>When you place an order on our Site, we collect the following information necessary to process and deliver your order:</p>
+      <ul class="policy-list">
+        <li>Full name</li>
+        <li>Email address</li>
+        <li>Phone number</li>
+        <li>Hotel name and room number (for delivery purposes)</li>
+        <li>Billing address</li>
+        <li>Payment information (processed securely through our third-party payment processor — we do not store full credit card numbers)</li>
+      </ul>
+
+      <h4 class="sub2">Automatically Collected Information</h4>
+      <p>When you visit our Site, we may automatically collect:</p>
+      <ul class="policy-list">
+        <li>IP address</li>
+        <li>Browser type and version</li>
+        <li>Operating system</li>
+        <li>Pages visited and time spent</li>
+        <li>Referring URL</li>
+      </ul>
+
+      <h3 class="sub">1.2 How We Use Your Information</h3>
+      <p>We use the information we collect for the following purposes:</p>
+      <ul class="policy-list">
+        <li>To process and deliver your food orders</li>
+        <li>To communicate with you about your order status</li>
+        <li>To provide customer support</li>
+        <li>To process payments and prevent fraud</li>
+        <li>To improve our services and website experience</li>
+        <li>To comply with legal obligations</li>
+      </ul>
+
+      <h3 class="sub">1.3 Information Sharing</h3>
+      <p>We do not sell your personal information. We may share your information with:</p>
+      <ul class="policy-list">
+        <li><strong>Payment processors:</strong> To process credit card transactions securely</li>
+        <li><strong>Restaurant partners:</strong> Order details (not payment information) so they can prepare your meals</li>
+        <li><strong>Delivery personnel:</strong> Your name, hotel name, and room number for delivery</li>
+        <li><strong>Legal authorities:</strong> When required by law or to protect our rights</li>
+      </ul>
+
+      <h3 class="sub">1.4 Data Security</h3>
+      <p>We implement reasonable security measures including:</p>
+      <ul class="policy-list">
+        <li>SSL/TLS encryption for all data transmitted between your browser and our servers</li>
+        <li>PCI-compliant payment processing through our bank partner</li>
+        <li>Access controls limiting employee access to personal data</li>
+        <li>Regular security reviews</li>
+      </ul>
+
+      <h3 class="sub">1.5 Data Retention</h3>
+      <p>We retain your personal information only as long as necessary to fulfill the purposes described in this policy, or as required by Mongolian law. Order records may be retained for accounting and tax compliance purposes.</p>
+
+      <h3 class="sub">1.6 Your Rights</h3>
+      <p>You have the right to:</p>
+      <ul class="policy-list">
+        <li>Access the personal data we hold about you</li>
+        <li>Request correction of inaccurate data</li>
+        <li>Request deletion of your data (subject to legal retention requirements)</li>
+        <li>Withdraw consent for marketing communications at any time</li>
+      </ul>
+      <p>To exercise these rights, contact us at <strong>erdenebolor901@gmail.com</strong>.</p>
+
+      <h3 class="sub">1.7 Cookies</h3>
+      <p>Our Site may use cookies and similar tracking technologies to enhance your experience. You can control cookie preferences through your browser settings. Disabling cookies may affect certain functionality of the Site.</p>
+
+      <h3 class="sub">1.8 Third-Party Links</h3>
+      <p>Our Site may contain links to third-party websites. We are not responsible for the privacy practices of these sites.</p>
+
+      <h3 class="sub">1.9 Changes to This Policy</h3>
+      <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated effective date.</p>
+
+      <h3 class="sub">1.10 Contact Us</h3>
+      <div class="contact-card">
+        <strong>"Velo Grid Linkage" LLC</strong>
+        Email: erdenebolor901@gmail.com<br>
+        Address: Ulaanbaatar, Mongolia
+      </div>
+    </section>
+
+    <!-- ════════════════ 2. TERMS OF SERVICE ════════════════ -->
+    <section class="policy" id="terms-of-service">
+      <h2>2. Terms of Service</h2>
+      <span class="effective">Effective Date: July 30, 2026</span>
+
+      <h3 class="sub">2.1 Acceptance of Terms</h3>
+      <p>By accessing or using this website (the "Site") operated by "Velo Grid Linkage" LLC ("we," "our," or "us"), you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.</p>
+
+      <h3 class="sub">2.2 Description of Service</h3>
+      <p>We provide food delivery logistics services connecting customers with restaurant-prepared meals during conferences and events. Our platform allows customers to order halal and vegan meals for delivery to their hotel or designated location.</p>
+
+      <h3 class="sub">2.3 Eligibility</h3>
+      <p>You must be at least 18 years old to use our services. By placing an order, you represent that you are legally capable of entering into binding contracts.</p>
+
+      <h3 class="sub">2.4 No Account Required — Delivery ID</h3>
+      <p>You do not need to create an account to place an order. You simply provide your delivery details at checkout. After placing your order, you will receive a unique <strong>Delivery ID</strong> via email. Keep this Delivery ID — it is your reference for all order-related inquiries, including cancellations, refunds, and customer support.</p>
+
+      <h3 class="sub">2.5 Ordering and Payment</h3>
+      <h4 class="sub2">2.5.1 Placing Orders</h4>
+      <p>Orders must be placed through our website. You will need to provide your full name, email address, phone number, hotel name and room number, and payment details. After successful payment, a unique Delivery ID will be issued and sent to your email. Order cut-off times are displayed on the Site and vary by delivery window. We reserve the right to refuse or cancel orders at our discretion.</p>
+
+      <h4 class="sub2">2.5.2 Pricing</h4>
+      <p>All prices are displayed in Mongolian Tugrik (MNT/₮) and include applicable taxes unless stated otherwise. Prices are subject to change without prior notice.</p>
+
+      <h4 class="sub2">2.5.3 Payment</h4>
+      <p>Full payment is required at the time of ordering. We accept payments via credit/debit card through our secure payment gateway. By providing payment information, you represent that you are authorized to use the payment method.</p>
+
+      <h3 class="sub">2.6 Delivery</h3>
+      <p>Delivery is made to your specified hotel or location within Ulaanbaatar during the applicable event period. Upon placing your order, you will receive a unique Delivery ID via email — keep this for reference. Delivery times are estimates and not guaranteed. We are not responsible for delays caused by factors beyond our control, including but not limited to traffic, weather, or event security procedures.</p>
+
+      <h3 class="sub">2.7 Refunds and Cancellations</h3>
+      <p>Our refund and cancellation policy is set forth in a separate <a href="#refund-policy">Refund Policy</a> which is incorporated into these Terms by reference.</p>
+
+      <h3 class="sub">2.8 User Responsibilities</h3>
+      <p>You agree not to:</p>
+      <ul class="policy-list">
+        <li>Use the Site for any unlawful purpose</li>
+        <li>Provide false or misleading information</li>
+        <li>Attempt to interfere with the Site's operation</li>
+        <li>Reverse engineer any part of the Site or services</li>
+      </ul>
+
+      <h3 class="sub">2.9 Intellectual Property</h3>
+      <p>All content on the Site, including text, graphics, logos, and software, is the property of "Velo Grid Linkage" LLC or its licensors and is protected by applicable intellectual property laws.</p>
+
+      <h3 class="sub">2.10 Limitation of Liability</h3>
+      <p>To the maximum extent permitted by applicable law, "Velo Grid Linkage" LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Site or services. Our total liability shall not exceed the amount paid by you for the order giving rise to the claim.</p>
+
+      <h3 class="sub">2.11 Disclaimer of Warranties</h3>
+      <p>Our services are provided "as is" and "as available" without warranties of any kind, either express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.</p>
+
+      <h3 class="sub">2.12 Governing Law</h3>
+      <p>These Terms shall be governed by and construed in accordance with the laws of Mongolia. Any disputes arising from these Terms shall be resolved through negotiation first, and if unresolved, through the courts of Mongolia.</p>
+
+      <h3 class="sub">2.13 Changes to Terms</h3>
+      <p>We reserve the right to modify these Terms at any time. Changes will be posted on this page with an updated effective date. Continued use of the Site after changes constitutes acceptance of the new Terms.</p>
+
+      <h3 class="sub">2.14 Contact</h3>
+      <div class="contact-card">
+        <strong>"Velo Grid Linkage" LLC</strong>
+        Email: erdenebolor901@gmail.com
+      </div>
+    </section>
+
+    <!-- ════════════════ 3. REFUND & CANCELLATION POLICY ════════════════ -->
+    <section class="policy" id="refund-policy">
+      <h2>3. Refund &amp; Cancellation Policy</h2>
+      <span class="effective">Effective Date: July 30, 2026</span>
+
+      <h3 class="sub">3.1 Cancellation Window</h3>
+      <p>Orders may be cancelled free of charge up to <strong>2 hours before</strong> the scheduled delivery time. Cancellations must be made through your account on the website or by contacting us directly.</p>
+
+      <h3 class="sub">3.2 Late Cancellations</h3>
+      <p>Cancellations made less than 2 hours before the scheduled delivery time may be subject to a <strong>50% cancellation fee</strong>. This covers the cost of ingredients and preparation already incurred by our kitchen partners.</p>
+
+      <h3 class="sub">3.3 Non-Refundable Scenarios</h3>
+      <p>Refunds will not be issued in the following cases:</p>
+      <ul class="policy-list">
+        <li>Order delivered to the correct hotel and room but the customer was not present at the time of delivery</li>
+        <li>Customer provided incorrect delivery location or contact information</li>
+        <li>Customer refused to accept the delivery without valid reason</li>
+        <li>Force majeure events as defined in our Terms of Service</li>
+      </ul>
+
+      <h3 class="sub">3.4 Quality Issues</h3>
+      <p>If you receive a meal that is incorrect, damaged, or does not meet reasonable quality standards, please contact us within <strong>30 minutes of delivery</strong>. We will investigate and, at our discretion, offer a refund or replacement.</p>
+
+      <h3 class="sub">3.5 Refund Processing</h3>
+      <p>Approved refunds will be processed within <strong>5–10 business days</strong> to the original payment method. The time for the refund to appear on your account depends on your card issuer's policies.</p>
+
+      <h3 class="sub">3.6 Refund Exclusions</h3>
+      <p>We do not offer refunds based on personal taste preferences. Meal selections are made by the customer at the time of ordering.</p>
+
+      <h3 class="sub">3.7 How to Request a Refund</h3>
+      <div class="highlight-box">
+        To request a refund or cancellation, please email us at <strong>erdenebolor901@gmail.com</strong> with your Delivery ID and the reason for your request. You will find your Delivery ID in the email confirmation you received after placing your order.
+      </div>
+
+      <h3 class="sub">3.8 Force Majeure</h3>
+      <p>In the event of force majeure (including but not limited to: event cancellation by organizers, government restrictions, natural disasters, or public health emergencies), we reserve the right to cancel orders and issue full refunds. We will make reasonable efforts to notify affected customers.</p>
+    </section>
+
+    <!-- ════════════════ 4. DELIVERY POLICY ════════════════ -->
+    <section class="policy" id="delivery-policy">
+      <h2>4. Delivery Policy</h2>
+      <span class="effective">Effective Date: July 30, 2026</span>
+
+      <h3 class="sub">4.1 Service Area</h3>
+      <p>We deliver to hotels and designated locations within Ulaanbaatar, Mongolia, during the applicable conference or event period. Delivery is available only within the service area specified on our website.</p>
+
+      <h3 class="sub">4.2 Service Hours</h3>
+      <p>We operate breakfast and dinner services during the conference period. Your individual delivery time is estimated at checkout. Actual arrival depends on order volume, route order, and road conditions — delivery times are estimates and not guaranteed.</p>
+
+      <h3 class="sub">4.3 Delivery Process</h3>
+      <p>Our delivery personnel will deliver your order to the front desk of your hotel or to your room (depending on hotel policies). Each order is assigned a unique Delivery ID — please reference this ID in any communication with us regarding your delivery.</p>
+
+      <h3 class="sub">4.4 Receiving Your Order</h3>
+      <p>Please ensure someone is available to receive the delivery during the scheduled window. If no one is available and the hotel front desk cannot accept the order, the meal may be left in a designated area at our discretion. We are not responsible for meals left unattended.</p>
+
+      <h3 class="sub">4.5 Delivery Fees</h3>
+      <p>Delivery fees, if applicable, are displayed at checkout before payment is completed. The fee covers logistics, packaging, and transportation costs.</p>
+
+      <h3 class="sub">4.6 Delays</h3>
+      <p>While we strive to deliver within the scheduled window, delays may occur due to traffic, weather, event logistics, or other factors beyond our control.</p>
+
+      <h3 class="sub">4.7 Incorrect Delivery</h3>
+      <p>If your order is delivered to the wrong location or contains incorrect items, please contact us immediately at <strong>erdenebolor901@gmail.com</strong> with your Delivery ID. We will make reasonable efforts to correct the issue.</p>
+
+      <h3 class="sub">4.8 Special Instructions</h3>
+      <p>You may include delivery instructions (e.g., "leave at front desk," "call upon arrival") at checkout. We will make reasonable efforts to follow these instructions but cannot guarantee compliance in all circumstances.</p>
+    </section>
+
+  </main>
+
+  <footer>
+    "Velo Grid Linkage" LLC ("Вело Грид Линкеж" ХХК) • <a href="mailto:erdenebolor901@gmail.com">erdenebolor901@gmail.com</a>
+  </footer>
+
+</body>
+</html>
