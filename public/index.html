@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In-Room Dining — Өрөөний хоол захиалга</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="hotel-brand">
+        <div class="hotel-icon">🛎️</div>
+        <div class="hotel-info">
+          <h1 id="hotel-name">Grand Hotel</h1>
+          <p id="hotel-address">In-Room Dining Service</p>
+        </div>
+      </div>
+      <div id="guest-room-badge" class="guest-badge" style="display: none;">
+        Өрөө: <span id="badge-room-num">--</span>
+      </div>
+    </header>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- SCREEN 1: Check-in / Location Verification -->
+    <section id="screen-checkin" class="screen active">
+      <div class="welcome-card">
+        <h2 class="welcome-title">Өрөөндөө тавтай морилно уу! ✨</h2>
+        <p class="welcome-sub">Та хоол захиалахын тулд нэр болон өрөөний дугаараа оруулна уу.</p>
+
+        <form id="checkin-form">
+          <div class="form-group">
+            <label for="input-qr-token">QR Токен</label>
+            <div class="input-wrapper">
+              <input type="text" id="input-qr-token" value="test-qr-token-001" placeholder="QR код уншуулна уу..." required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-guest-name">Зочны нэр</label>
+            <div class="input-wrapper">
+              <input type="text" id="input-guest-name" placeholder="Жишээ: Болд" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-room-number">Өрөөний дугаар</label>
+            <div class="input-wrapper">
+              <input type="text" id="input-room-number" placeholder="Жишээ: 305" required>
+            </div>
+          </div>
+
+          <div class="geo-box">
+            <div class="geo-status">
+              <div id="geo-dot" class="status-dot"></div>
+              <span id="geo-text">Байршил шалгаагүй</span>
+            </div>
+            <button type="button" id="btn-verify-geo" class="btn-secondary">
+              📍 Байршил шалгах
+            </button>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-start">
+            🍽️ Цэс харах &amp; Захиалах
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: Dining Menu -->
+    <section id="screen-menu" class="screen">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="menu-search" placeholder="Хоол, уух зүйл хайх...">
+      </div>
+
+      <div class="categories-scroll" id="categories-container">
+        <button class="category-tab active" data-cat="all">Бүгд</button>
+      </div>
+
+      <div class="menu-grid" id="menu-grid">
+        <!-- Dynamic menu items will be injected here -->
+      </div>
+    </section>
+
+    <!-- SCREEN 3: Active Order Tracking -->
+    <section id="screen-order" class="screen">
+      <div class="order-status-card">
+        <p class="welcome-sub">Захиалгын дугаар: <strong id="order-id-disp">#---</strong></p>
+        <div id="order-status-badge" class="status-badge status-pending">Хүлээгдэж байна</div>
+        <h3 id="order-status-title" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">Захиалгыг гал тогоонд хүргэлээ</h3>
+        <p id="order-status-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Гал тогооны ажилтнууд таны хоолыг бэлтгэж эхлэхийг хүлээж байна.</p>
+
+        <div style="text-align: left; background: rgba(15,23,42,0.6); padding: 14px; border-radius: var(--radius-md); margin-bottom: 20px;">
+          <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 10px;">Захиалгын бүрэлдэхүүн:</h4>
+          <div id="order-items-list" style="font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+          </div>
+          <div style="border-top: 1px dashed var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 700; color: #fff;">
+            <span>Нийт дүн:</span>
+            <span id="order-total-disp" style="color: var(--success);">$0.00</span>
+          </div>
+        </div>
+
+        <button id="btn-pay-now" class="btn-primary" style="margin-bottom: 10px;">
+          💳 Төлбөр төлөх (Visa / WeChat / UnionPay)
+        </button>
+        <button id="btn-new-order" class="btn-secondary" style="width: 100%;">
+          ➕ Шинэ хоол нэмж захиалах
+        </button>
+      </div>
+    </section>
+
+    <!-- Floating Cart Bar -->
+    <div id="cart-floating-bar" class="cart-floating-bar hidden">
+      <div class="cart-summary">
+        <div id="cart-count-badge" class="cart-badge">0</div>
+        <div class="cart-total-text">Нийт: <span id="cart-total-price" style="color: var(--success);">$0.00</span></div>
+      </div>
+      <div class="cart-action-text">
+        Сагс үзэх ➔
+      </div>
+    </div>
+
+    <!-- Cart Modal Drawer -->
+    <div id="cart-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">🛒 Таны сагс</h3>
+          <button class="close-btn" id="btn-close-cart">&times;</button>
+        </div>
+        <div class="modal-body" id="cart-items-container">
+          <!-- Cart items injected here -->
+        </div>
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; margin-bottom: 16px;">
+            <span>Нийт төлөх:</span>
+            <span id="modal-cart-total" style="color: var(--success);">$0.00</span>
+          </div>
+          <button id="btn-place-order" class="btn-primary">
+            🚀 Захиалга баталгаажуулах
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
