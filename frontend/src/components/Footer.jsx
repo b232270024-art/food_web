@@ -63,9 +63,8 @@ export function Footer({ hotel, tr }) {
           <div>
             <h4 style={{ color: 'white', fontWeight: 700, marginBottom: 16, fontSize: '0.95rem' }}>Contact</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.85rem' }}>
-              <span>📞 +1 (555) 000-0000</span>
-              <span>✉️ dining@grandhotel.com</span>
-              <span>⏰ 24 / 7 Service</span>
+              <span>📞 +(976) 8527-9299</span>
+              <span>✉️ contact@velofoods.com</span>
             </div>
           </div>
         </div>
