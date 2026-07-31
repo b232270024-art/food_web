@@ -28,6 +28,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.set('logger', logger);
+// Railway зэрэг reverse proxy-н цаана ажилладаг тул X-Forwarded-For-г итгэж,
+// зөв client IP-г ашиглахын тулд шаардлагатай (rate limiter, secure cookie-д нөлөөлнө)
+app.set('trust proxy', 1);
 
 // cors тохиргоо — cookie ашиглаж байгаа тул credentials зөвшөөрөх шаардлагатай
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*', credentials: true }));
