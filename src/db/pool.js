@@ -67,6 +67,11 @@ async function handleInMemoryQuery(text, params = []) {
     return { rows: hotel ? [hotel] : [] };
   }
 
+  // 2b. SELECT id, name FROM hotels WHERE is_deleted = false (admin dashboard hotel picker)
+  if (sql.includes('FROM hotels WHERE is_deleted')) {
+    return { rows: inMemoryDb.hotels.map(h => ({ id: h.id, name: h.name })) };
+  }
+
   // 3. INSERT INTO sessions
   if (sql.startsWith('INSERT INTO sessions')) {
     const newSession = {

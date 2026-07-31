@@ -1,9 +1,66 @@
 import { Router } from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
-import { validateBody, updateOrderStatusSchema } from '../middleware/validation.js';
+import { validateBody, updateOrderStatusSchema, adminLoginSchema } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { requireAdmin } from '../middleware/adminAuth.js';
+import { loginLimiter } from '../middleware/rateLimiter.js';
 
 export const adminRouter = Router();
+
+const ADMIN_COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 12 * 60 * 60 * 1000,
+};
+
+// /dashboard-ын нэвтрэх хэсгээс дуудагдана
+adminRouter.post('/login', loginLimiter, validateBody(adminLoginSchema), asyncHandler(async (req, res) => {
+  const { username, password } = req.body;
+  const hash = process.env.ADMIN_PASSWORD_HASH || '';
+
+  const validUsername = Boolean(process.env.ADMIN_USERNAME) && username === process.env.ADMIN_USERNAME;
+  const validPassword = hash ? await bcrypt.compare(password, hash) : false;
+
+  if (!validUsername || !validPassword) {
+    return res.status(401).json({ error: 'Нэвтрэх нэр эсвэл нууц үг буруу байна.' });
+  }
+
+  const token = jwt.sign({ role: 'admin', username }, process.env.JWT_SECRET, { expiresIn: '12h' });
+  res.cookie('admin_token', token, ADMIN_COOKIE_OPTS);
+  res.json({ ok: true, username });
+}));
+
+adminRouter.post('/logout', (req, res) => {
+  res.clearCookie('admin_token');
+  res.json({ ok: true });
+});
+
+// Dashboard ачаалагдахад одоогийн cookie хүчинтэй эсэхийг шалгахад ашиглана
+adminRouter.get('/me', (req, res) => {
+  const token = req.cookies?.admin_token;
+  if (!token) return res.status(401).json({ authenticated: false });
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (payload.role !== 'admin') throw new Error('not an admin token');
+    res.json({ authenticated: true, username: payload.username });
+  } catch {
+    res.status(401).json({ authenticated: false });
+  }
+});
+
+// Доорх бүх route админ session шаардана
+adminRouter.use(requireAdmin);
+
+// Dashboard дээрх буудал сонгох dropdown-д зориулав
+adminRouter.get('/hotels', asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT id, name FROM hotels WHERE is_deleted = false ORDER BY name`
+  );
+  res.json(rows);
+}));
 
 // Тухайн буудлын идэвхтэй захиалгуудыг room_number-тэй нь буцаана
 adminRouter.get('/:hotel_id/orders/live', asyncHandler(async (req, res) => {

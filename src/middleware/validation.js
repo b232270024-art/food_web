@@ -71,6 +71,11 @@ export const updateOrderStatusSchema = z.object({
   status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['pending', 'preparing', 'served', 'paid', 'cancelled'])),
 });
 
+export const adminLoginSchema = z.object({
+  username: z.string().trim().min(1, 'Нэвтрэх нэр хоосон байж болохгүй').max(100),
+  password: z.string().min(1, 'Нууц үг хоосон байж болохгүй').max(200),
+});
+
 export const paymentInitiateSchema = z.object({
   order_id: uuidSchema('order_id зөв UUID байх ёстой'),
   gateway_provider: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['2c2p', 'airwallex', 'bank', 'qpay'])),

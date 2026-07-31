@@ -18,3 +18,13 @@ export const writeLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Хэт олон хүсэлт илгээлээ. Түр хүлээгээд дахин оролдоно уу.' },
 });
+
+// Админ login — нууц үг таамаглах (brute-force) оролдлогоос сэргийлж
+// IP тутамд 15 минутанд 10 оролдлогоор хязгаарлана
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Хэт олон нэвтрэх оролдлого хийлээ. Түр хүлээгээд дахин оролдоно уу.' },
+});

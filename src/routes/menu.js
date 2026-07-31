@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { validateBody, createMenuItemSchema } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { requireAdmin } from '../middleware/adminAuth.js';
 
 export const menuRouter = Router();
 
@@ -44,7 +45,7 @@ menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
 }));
 
 // DELETE /api/menu/item/:id — soft delete
-menuRouter.delete('/item/:id', asyncHandler(async (req, res) => {
+menuRouter.delete('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
     'UPDATE menu_items SET is_deleted = true, available = false WHERE id = $1 RETURNING id',
     [req.params.id]
@@ -54,7 +55,7 @@ menuRouter.delete('/item/:id', asyncHandler(async (req, res) => {
 }));
 
 // POST /api/menu/:hotel_id — add a new menu item (admin)
-menuRouter.post('/:hotel_id', validateBody(createMenuItemSchema), asyncHandler(async (req, res) => {
+menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), asyncHandler(async (req, res) => {
   const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured } = req.body;
   const { rows } = await pool.query(
     `INSERT INTO menu_items
@@ -79,7 +80,7 @@ menuRouter.post('/:hotel_id', validateBody(createMenuItemSchema), asyncHandler(a
 }));
 
 // PATCH /api/menu/item/:id — update a menu item (image_url, price, availability, etc.)
-menuRouter.patch('/item/:id', asyncHandler(async (req, res) => {
+menuRouter.patch('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available } = req.body;
   const { rows } = await pool.query(
     `UPDATE menu_items SET

@@ -25,6 +25,8 @@ import { LANGUAGES, useTranslation } from './i18n/translations';
 // 'delivery_type' → (one-time) hotel room vs current location
 // 'confirmation'  → order/plan confirmed (payment collected on delivery, no gateway yet)
 // ─────────────────────────────────────────────────────────────────────────────
+const FLOW_STEPS = ['hero', 'order_type', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation'];
+const pathForStep = (step) => (step === 'hero' ? '/' : `/${step}`) + window.location.search;
 
 export default function App() {
   // ─── Core state ─────────────────────────────────────────────────────────────
@@ -72,12 +74,19 @@ export default function App() {
   // checkout flow. goToStep() pushes a history entry per step change; popstate
   // (fired by Back/Forward) restores flowStep without pushing again.
   const goToStep = useCallback((step) => {
-    window.history.pushState({ flowStep: step }, '');
+    window.history.pushState({ flowStep: step }, '', pathForStep(step));
     setFlowStep(step);
   }, []);
 
   useEffect(() => {
-    window.history.replaceState({ flowStep: 'hero' }, '');
+    // Support deep-linking / refresh on a step's URL (e.g. /menu) — the server
+    // SPA fallback (src/index.js) already returns index.html for any unknown
+    // path, so this just needs to pick up wherever the browser landed.
+    const pathStep = window.location.pathname.replace(/^\//, '');
+    const initial = FLOW_STEPS.includes(pathStep) ? pathStep : 'hero';
+    window.history.replaceState({ flowStep: initial }, '', pathForStep(initial));
+    setFlowStep(initial);
+
     const handlePopState = (e) => {
       setFlowStep(e.state?.flowStep || 'hero');
       window.scrollTo({ top: 0, behavior: 'smooth' });
