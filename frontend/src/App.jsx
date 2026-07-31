@@ -12,6 +12,8 @@ import { DeliveryTypeSelection } from './components/DeliveryTypeSelection';
 import { GuestDetailsModal }   from './components/GuestDetailsModal';
 import { MenuSection }         from './components/MenuSection';
 import { CartDrawer }          from './components/CartDrawer';
+import { OrderReview }         from './components/OrderReview';
+import { TermsModal }          from './components/TermsModal';
 
 import { LANGUAGES, useTranslation } from './i18n/translations';
 
@@ -41,6 +43,8 @@ export default function App() {
   const [cartOpen,       setCartOpen]       = useState(false);
   const [submitting,     setSubmitting]     = useState(false);
   const [toast,          setToast]          = useState('');
+  const [agreeTerms,     setAgreeTerms]     = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   const tr = useTranslation(language);
 
@@ -163,6 +167,7 @@ export default function App() {
     setSession(null);
     setActiveOrder(null);
     setCart([]);
+    setAgreeTerms(false);
     setFlowStep('hero');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -199,7 +204,14 @@ export default function App() {
       return;
     }
 
-    // One-time: submit the cart as the order right away.
+    // One-time: review the order (with refund notice + terms) before paying.
+    setFlowStep('order_review');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ─── Order review: agree to terms → place the order ──────────────────────────
+  const handlePayNow = async () => {
+    if (!agreeTerms || !session?.id) return;
     setSubmitting(true);
     try {
       const orderRes = await fetch('/api/orders', {
@@ -207,21 +219,25 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          items: cart.map(c => ({ menu_item_id: c.menu_item_id, quantity: c.quantity, guest_name })),
+          items: cart.map(c => ({ menu_item_id: c.menu_item_id, quantity: c.quantity, guest_name: session.guest_name })),
         }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || 'Order failed');
       setActiveOrder(orderData);
       setCart([]);
+      setAgreeTerms(false);
       setFlowStep('confirmation');
       showToast(tr.orderPlaced);
+    } catch (err) {
+      showToast(err.message || 'Order failed');
     } finally {
       setSubmitting(false);
     }
   };
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const cartTotal = cart.reduce((s, i) => s + Number(i.price_usd) * i.quantity, 0);
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
@@ -230,6 +246,7 @@ export default function App() {
         hotel={hotel}
         session={session}
         cartCount={cartCount}
+        cartTotal={cartTotal}
         onOpenCart={() => setCartOpen(true)}
         language={language}
         onSetLanguage={handleSetLanguage}
@@ -298,6 +315,26 @@ export default function App() {
           />
         )}
 
+        {/* ── ORDER REVIEW (refund notice + agree to terms + pay) ─────────────── */}
+        {flowStep === 'order_review' && (
+          <div className="container">
+            <OrderReview
+              cart={cart}
+              hotel={hotel}
+              session={session}
+              deliveryType={deliveryType}
+              agreeTerms={agreeTerms}
+              onToggleAgree={setAgreeTerms}
+              onOpenTerms={() => setTermsModalOpen(true)}
+              onPay={handlePayNow}
+              isSubmitting={submitting}
+              onEditDetails={() => setGuestDetailsOpen(true)}
+              onBack={() => setFlowStep('menu')}
+              tr={tr}
+            />
+          </div>
+        )}
+
         {/* ── CONFIRMATION ─────────────────────────────────────────────────────── */}
         {flowStep === 'confirmation' && (
           <div className="container" style={{ maxWidth: 560, margin: '0 auto', padding: '60px 24px', textAlign: 'center' }}>
@@ -328,6 +365,13 @@ export default function App() {
         deliveryType={orderType === 'one_time' ? deliveryType : null}
         onSubmit={handleGuestDetailsSubmit}
         onClose={() => setGuestDetailsOpen(false)}
+      />
+
+      {/* Terms & Policies modal (opened from the order review step) */}
+      <TermsModal
+        isOpen={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+        tr={tr}
       />
 
       {/* Cart Drawer (one-time flow) */}

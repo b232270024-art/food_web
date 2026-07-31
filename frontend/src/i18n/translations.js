@@ -172,6 +172,16 @@ export const t = {
     orderConfirmedTitle: 'Order Confirmed!',
     orderConfirmedDesc: "We've received your order and will contact you shortly. Payment is collected on delivery.",
     backToHomeBtn: '← Back to Home',
+
+    // Order Review (refund notice + agree to terms + pay)
+    reviewTitle: 'Review Your Order',
+    refundWarning: 'Refund Policy: Orders can be cancelled free of charge up to 2 hours before delivery. Cancellations made after that may be charged a 50% fee, and delivered orders are non-refundable except for quality issues reported within 30 minutes of delivery.',
+    reviewItemsTitle: 'Order Items',
+    reviewEditBtn: 'Edit',
+    agreeTermsPrefix: 'I have read and agree to the',
+    agreeTermsLink: 'Terms of Service & Refund Policy',
+    payNowBtn: 'Pay Now',
+    termsModalTitle: 'Terms of Service & Policies',
   },
 
   ar: {
@@ -312,6 +322,15 @@ export const t = {
     orderConfirmedTitle: 'تم تأكيد الطلب!',
     orderConfirmedDesc: 'لقد استلمنا طلبك وسنتواصل معك قريباً. يتم تحصيل الدفع عند التسليم.',
     backToHomeBtn: '← العودة إلى الرئيسية',
+
+    reviewTitle: 'مراجعة طلبك',
+    refundWarning: 'سياسة الاسترداد: يمكن إلغاء الطلبات مجاناً حتى ساعتين قبل موعد التسليم. الإلغاء بعد ذلك قد يخضع لرسوم 50%، والطلبات التي تم تسليمها غير قابلة للاسترداد إلا في حال وجود مشكلة في الجودة يتم الإبلاغ عنها خلال 30 دقيقة من التسليم.',
+    reviewItemsTitle: 'عناصر الطلب',
+    reviewEditBtn: 'تعديل',
+    agreeTermsPrefix: 'لقد قرأت ووافقت على',
+    agreeTermsLink: 'شروط الخدمة وسياسة الاسترداد',
+    payNowBtn: 'ادفع الآن',
+    termsModalTitle: 'شروط الخدمة والسياسات',
   },
 
   hi: {
@@ -452,6 +471,15 @@ export const t = {
     orderConfirmedTitle: 'ऑर्डर की पुष्टि हो गई!',
     orderConfirmedDesc: 'हमें आपका ऑर्डर मिल गया है और हम जल्द ही आपसे संपर्क करेंगे। भुगतान डिलीवरी पर लिया जाता है।',
     backToHomeBtn: '← होम पर वापस जाएं',
+
+    reviewTitle: 'अपना ऑर्डर देखें',
+    refundWarning: 'रिफंड नीति: डिलीवरी से 2 घंटे पहले तक ऑर्डर मुफ्त में रद्द किए जा सकते हैं। उसके बाद रद्द करने पर 50% शुल्क लग सकता है, और डिलीवर किए गए ऑर्डर रिफंड योग्य नहीं हैं, सिवाय इसके कि डिलीवरी के 30 मिनट के भीतर गुणवत्ता संबंधी समस्या की सूचना दी जाए।',
+    reviewItemsTitle: 'ऑर्डर आइटम',
+    reviewEditBtn: 'संपादित करें',
+    agreeTermsPrefix: 'मैंने पढ़ लिया है और सहमत हूं',
+    agreeTermsLink: 'सेवा की शर्तें और रिफंड नीति',
+    payNowBtn: 'अभी भुगतान करें',
+    termsModalTitle: 'सेवा की शर्तें और नीतियां',
   },
 };
 

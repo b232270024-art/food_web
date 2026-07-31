@@ -50,12 +50,13 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
 
   return (
     <div
-      className="card"
+      className="card anim-fade-up"
       style={{
         overflow: 'hidden', display: 'flex', flexDirection: 'column',
         position: 'relative',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         border: featured ? '2px solid var(--brand-green-light)' : '1px solid var(--border-card)',
+        animationDelay: `${Math.min(idx, 10) * 0.04}s`,
       }}
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
@@ -240,6 +241,7 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
 
   const getQty = (id) => cart.find(c => c.menu_item_id === id)?.quantity ?? 0;
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const cartTotal = cart.reduce((s, i) => s + Number(i.price_usd) * i.quantity, 0);
 
   // ── 12-Day Plan Preview ────────────────────────────────────────────────────────
   if (orderType === 'twelve_day') {
@@ -418,14 +420,20 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
 
       {/* Sticky "Continue" bar once the cart has items */}
       {cartCount > 0 && (
-        <div style={{
+        <div className="anim-slide-up" style={{
           position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 150,
           background: 'var(--bg-green-dark)', padding: '18px 24px',
+          boxShadow: '0 -8px 24px rgba(0,0,0,0.15)',
         }}>
           <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-            <span style={{ color: 'white', fontWeight: 700, fontSize: '0.9rem' }}>
-              {cartCount} item{cartCount !== 1 ? 's' : ''} in cart
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: '0.78rem' }}>
+                {cartCount} item{cartCount !== 1 ? 's' : ''} in cart
+              </span>
+              <span key={cartTotal} className="anim-bump" style={{ color: 'white', fontWeight: 900, fontSize: '1.15rem' }}>
+                ${cartTotal.toFixed(2)}
+              </span>
+            </div>
             <button
               id="menu-continue-btn"
               onClick={onContinueToDelivery}

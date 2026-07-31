@@ -4,7 +4,7 @@ import { LANGUAGES } from '../i18n/translations';
 
 const EMOJI_MAP = { '🇺🇸': true, '🇦🇪': true, '🇮🇳': true };
 
-export function Header({ hotel, session, cartCount, onOpenCart, language, onSetLanguage, showCart, tr }) {
+export function Header({ hotel, session, cartCount, cartTotal, onOpenCart, language, onSetLanguage, showCart, tr }) {
   const [langOpen, setLangOpen] = React.useState(false);
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
@@ -117,29 +117,50 @@ export function Header({ hotel, session, cartCount, onOpenCart, language, onSetL
 
             {/* Cart Button — only on menu step */}
             {showCart && (
-              <button
-                id="cart-btn"
-                onClick={onOpenCart}
-                style={{
-                  position: 'relative', width: 44, height: 44,
-                  borderRadius: 'var(--r-sm)', background: 'var(--bg-white)',
-                  border: '1px solid var(--border)', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--text-dark)', boxShadow: 'var(--shadow-sm)',
-                }}
-              >
-                <ShoppingBag size={20} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {cartCount > 0 && (
-                  <span style={{
-                    position: 'absolute', top: -6, right: -6,
-                    background: '#ef4444', color: 'white', borderRadius: '50%',
-                    width: 20, height: 20, fontSize: '0.7rem', fontWeight: 800,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {cartCount}
+                  <span
+                    key={cartTotal}
+                    className="anim-bump"
+                    style={{
+                      fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '0.9rem',
+                      color: 'var(--brand-green)', background: 'var(--bg-muted)',
+                      padding: '6px 12px', borderRadius: 'var(--r-full)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    ${Number(cartTotal || 0).toFixed(2)}
                   </span>
                 )}
-              </button>
+                <button
+                  id="cart-btn"
+                  onClick={onOpenCart}
+                  style={{
+                    position: 'relative', width: 44, height: 44,
+                    borderRadius: 'var(--r-sm)', background: 'var(--bg-white)',
+                    border: '1px solid var(--border)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--text-dark)', boxShadow: 'var(--shadow-sm)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <ShoppingBag size={20} />
+                  {cartCount > 0 && (
+                    <span
+                      key={`badge-${cartCount}`}
+                      className="anim-bump"
+                      style={{
+                        position: 'absolute', top: -6, right: -6,
+                        background: '#ef4444', color: 'white', borderRadius: '50%',
+                        width: 20, height: 20, fontSize: '0.7rem', fontWeight: 800,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
