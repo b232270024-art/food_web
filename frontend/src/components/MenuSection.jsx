@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Plus, Minus, Clock, Flame, ArrowRight, ChevronLeft } from 'lucide-react';
 
 function BackButton({ label, onBack }) {
@@ -418,16 +419,17 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
         </div>
       )}
 
-      {/* Floating "Continue" bar once the cart has items — always visible, layered above content while scrolling */}
-      {cartCount > 0 && (
+      {/* Floating "Continue" bar once the cart has items — rendered via portal straight to
+          <body> so it stays pinned to the viewport (an ancestor's CSS transform/animation
+          would otherwise turn `position: fixed` into `position: absolute` relative to it). */}
+      {cartCount > 0 && createPortal(
         <div
-          className="anim-slide-up"
           style={{
-            position: 'fixed', left: '50%', bottom: 20, transform: 'translateX(-50%)',
-            width: 'calc(100% - 40px)', maxWidth: 1160, zIndex: 150,
+            position: 'fixed', left: 20, right: 20, bottom: 20,
+            maxWidth: 1160, margin: '0 auto', zIndex: 150,
           }}
         >
-          <div style={{
+          <div className="anim-slide-up" style={{
             background: 'var(--bg-green-dark)', padding: '16px 24px',
             borderRadius: 'var(--r-lg)',
             boxShadow: '0 16px 40px rgba(0,0,0,0.28)',
@@ -454,7 +456,8 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
               {tr.menuContinueBtn} <ArrowRight size={18} />
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

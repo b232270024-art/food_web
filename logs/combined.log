@@ -25,3 +25,6 @@
 {"level":"info","message":"Backend ажиллаж байна: http://localhost:4000","timestamp":"2026-07-29T17:03:38.253Z"}
 {"error":"insert or update on table \"orders\" violates foreign key constraint \"orders_session_id_fkey\"","level":"error","message":"Захиалга үүсгэхэд алдаа гарлаа","timestamp":"2026-07-29T17:15:00.292Z"}
 {"level":"info","message":"Backend ажиллаж байна: http://localhost:4000","timestamp":"2026-07-29T20:47:36.416Z"}
+{"level":"info","message":"Backend ажиллаж байна: http://localhost:4000","timestamp":"2026-07-31T16:10:05.651Z"}
+{"level":"info","message":"Backend ажиллаж байна: http://localhost:4000","timestamp":"2026-07-31T16:33:57.310Z"}
+{"level":"info","message":"Backend ажиллаж байна: http://localhost:4000","timestamp":"2026-07-31T16:51:14.071Z"}

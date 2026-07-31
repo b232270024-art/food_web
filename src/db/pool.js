@@ -29,13 +29,13 @@ const inMemoryDb = {
   ],
   sessions: [],
   menu_items: [
-    { id: 'm1', hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Стейк (Ribeye Steak 300g)', category: 'Гол хоол', price_usd: 28.00, available: true },
-    { id: 'm2', hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Цезарь Салат (Caesar Salad)', category: 'Зууш & Салат', price_usd: 12.50, available: true },
-    { id: 'm3', hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Клуб Сендвич (Club Sandwich)', category: 'Зууш & Салат', price_usd: 14.00, available: true },
-    { id: 'm4', hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Бургер ба Фри (Cheeseburger & Fries)', category: 'Гол хоол', price_usd: 16.50, available: true },
-    { id: 'm5', hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Улаан дарс (Red Wine - Pinot Noir)', category: 'Уух зүйлс', price_usd: 10.00, available: true },
-    { id: 'm6', hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Шинэхэн Жимсний Шүүс (Fresh Juice)', category: 'Уух зүйлс', price_usd: 6.00, available: true },
-    { id: 'm7', hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Чизкейк (New York Cheesecake)', category: 'Дессерт', price_usd: 8.50, available: true }
+    { id: uuidv4(), hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Стейк (Ribeye Steak 300g)', category: 'Гол хоол', price_usd: 28.00, available: true },
+    { id: uuidv4(), hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Цезарь Салат (Caesar Salad)', category: 'Зууш & Салат', price_usd: 12.50, available: true },
+    { id: uuidv4(), hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Клуб Сендвич (Club Sandwich)', category: 'Зууш & Салат', price_usd: 14.00, available: true },
+    { id: uuidv4(), hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Бургер ба Фри (Cheeseburger & Fries)', category: 'Гол хоол', price_usd: 16.50, available: true },
+    { id: uuidv4(), hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Улаан дарс (Red Wine - Pinot Noir)', category: 'Уух зүйлс', price_usd: 10.00, available: true },
+    { id: uuidv4(), hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Шинэхэн Жимсний Шүүс (Fresh Juice)', category: 'Уух зүйлс', price_usd: 6.00, available: true },
+    { id: uuidv4(), hotel_id: '11111111-1111-1111-1111-111111111111', name: 'Чизкейк (New York Cheesecake)', category: 'Дессерт', price_usd: 8.50, available: true }
   ],
   orders: [],
   order_items: [],
