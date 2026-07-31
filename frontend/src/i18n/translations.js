@@ -155,13 +155,8 @@ export const t = {
     guestHotelConfirmTitle: 'Delivering to',
     guestAddressLabel: 'Delivery Address',
     guestAddressPlaceholder: 'e.g. 123 Peace Avenue, Ulaanbaatar',
-    guestDetectLocationBtn: 'Detect My Location',
-    guestDetectingLocation: 'Detecting your location...',
-    guestDetectSuccess: '📍 Address found',
-    guestDetectFail: '⚠️ Could not detect address — please enter manually',
-    guestDetectUnsupported: 'Browser does not support geolocation',
     guestAddressEditHint: "You can edit this address if it's not accurate",
-    guestErrorAddress: 'Please enter your name and delivery address.',
+    guestLocationNextStepHint: "On the next screen you'll pinpoint your exact delivery location on a map.",
 
     // Menu — sectioned layout
     menuSpecialOffers: 'Special Offers',
@@ -182,6 +177,16 @@ export const t = {
     agreeTermsLink: 'Terms of Service & Refund Policy',
     payNowBtn: 'Pay Now',
     termsModalTitle: 'Terms of Service & Policies',
+
+    // Location picker (current-location delivery, shown on the order review page)
+    locationPickerTitle: 'Confirm Delivery Location',
+    locationPickerHint: 'Detect your location, or tap/drag the pin on the map to set exactly where we should deliver.',
+    locationDetectBtn: 'Detect My Location',
+    locationDetecting: 'Detecting your location...',
+    locationResolving: 'Looking up address...',
+    locationConfirmed: 'Location confirmed — adjust the pin if needed',
+    locationDetectFail: '⚠️ Could not detect location — tap the map to set it manually',
+    locationRequiredHint: 'Set your delivery location on the map above to continue.',
   },
 
   ar: {
@@ -307,13 +312,8 @@ export const t = {
     guestHotelConfirmTitle: 'التوصيل إلى',
     guestAddressLabel: 'عنوان التوصيل',
     guestAddressPlaceholder: 'مثال: شارع السلام 123، أولانباتار',
-    guestDetectLocationBtn: 'تحديد موقعي',
-    guestDetectingLocation: 'جارٍ تحديد موقعك...',
-    guestDetectSuccess: '📍 تم العثور على العنوان',
-    guestDetectFail: '⚠️ تعذّر تحديد العنوان — يرجى إدخاله يدوياً',
-    guestDetectUnsupported: 'المتصفح لا يدعم تحديد الموقع',
     guestAddressEditHint: 'يمكنك تعديل هذا العنوان إذا لم يكن دقيقاً',
-    guestErrorAddress: 'يرجى إدخال اسمك وعنوان التوصيل.',
+    guestLocationNextStepHint: 'في الشاشة التالية يمكنك تحديد موقع التوصيل بدقة على الخريطة.',
 
     menuSpecialOffers: 'عروض خاصة',
     menuContinueBtn: 'متابعة',
@@ -331,6 +331,15 @@ export const t = {
     agreeTermsLink: 'شروط الخدمة وسياسة الاسترداد',
     payNowBtn: 'ادفع الآن',
     termsModalTitle: 'شروط الخدمة والسياسات',
+
+    locationPickerTitle: 'تأكيد موقع التوصيل',
+    locationPickerHint: 'حدد موقعك تلقائياً، أو اضغط/اسحب الدبوس على الخريطة لتحديد مكان التوصيل بدقة.',
+    locationDetectBtn: 'تحديد موقعي',
+    locationDetecting: 'جارٍ تحديد موقعك...',
+    locationResolving: 'جارٍ البحث عن العنوان...',
+    locationConfirmed: 'تم تأكيد الموقع — يمكنك تعديل الدبوس عند الحاجة',
+    locationDetectFail: '⚠️ تعذّر تحديد الموقع — اضغط على الخريطة لتحديده يدوياً',
+    locationRequiredHint: 'حدد موقع التوصيل على الخريطة أعلاه للمتابعة.',
   },
 
   hi: {
@@ -456,13 +465,8 @@ export const t = {
     guestHotelConfirmTitle: 'डिलीवरी यहां होगी',
     guestAddressLabel: 'डिलीवरी पता',
     guestAddressPlaceholder: 'जैसे: 123 पीस एवेन्यू, उलानबातर',
-    guestDetectLocationBtn: 'मेरा स्थान पता लगाएं',
-    guestDetectingLocation: 'आपका स्थान पता लगाया जा रहा है...',
-    guestDetectSuccess: '📍 पता मिल गया',
-    guestDetectFail: '⚠️ पता नहीं मिल सका — कृपया मैन्युअल रूप से दर्ज करें',
-    guestDetectUnsupported: 'ब्राउज़र जियोलोकेशन का समर्थन नहीं करता',
     guestAddressEditHint: 'यदि यह सही नहीं है तो आप इस पते को संपादित कर सकते हैं',
-    guestErrorAddress: 'कृपया अपना नाम और डिलीवरी पता दर्ज करें।',
+    guestLocationNextStepHint: 'अगली स्क्रीन पर आप मानचित्र पर अपना सटीक डिलीवरी स्थान चुन सकेंगे।',
 
     menuSpecialOffers: 'विशेष ऑफर',
     menuContinueBtn: 'जारी रखें',
@@ -480,6 +484,15 @@ export const t = {
     agreeTermsLink: 'सेवा की शर्तें और रिफंड नीति',
     payNowBtn: 'अभी भुगतान करें',
     termsModalTitle: 'सेवा की शर्तें और नीतियां',
+
+    locationPickerTitle: 'डिलीवरी स्थान की पुष्टि करें',
+    locationPickerHint: 'अपना स्थान पता लगाएं, या नक्शे पर पिन को टैप/ड्रैग करके डिलीवरी का सटीक स्थान सेट करें।',
+    locationDetectBtn: 'मेरा स्थान पता लगाएं',
+    locationDetecting: 'आपका स्थान पता लगाया जा रहा है...',
+    locationResolving: 'पता खोजा जा रहा है...',
+    locationConfirmed: 'स्थान की पुष्टि हो गई — जरूरत हो तो पिन समायोजित करें',
+    locationDetectFail: '⚠️ स्थान पता नहीं लगाया जा सका — इसे मैन्युअल रूप से सेट करने के लिए मानचित्र पर टैप करें',
+    locationRequiredHint: 'जारी रखने के लिए ऊपर मानचित्र पर अपना डिलीवरी स्थान सेट करें।',
   },
 };
 

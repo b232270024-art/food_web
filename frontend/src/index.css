@@ -11,7 +11,7 @@
   --accent-pink: #FBCFE8;
 
   /* Backgrounds */
-  --bg-cream: #FDF8F3;
+  --bg-cream: #ffffff;
   --bg-white: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-muted: #F5F0E8;
@@ -410,6 +410,15 @@ img {
 
 .anim-pulse-glow {
   animation: softPulse 2.2s ease-out infinite;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+/* Leaflet map — keep our own radius/border, drop default Leaflet chrome */
+.leaflet-container {
+  font-family: 'Inter', sans-serif;
 }
 
 /* =============================

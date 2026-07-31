@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { MapPin, User, DoorClosed, AlertCircle, Hotel, X } from 'lucide-react';
-import { detectCurrentPosition, reverseGeocode } from '../lib/geocode';
 
 // deliveryType: 'hotel' | 'current_location' | null (null => implicit hotel, used by the
 // 12-day plan flow where delivery is always to the guest's room).
+// For 'current_location', this modal only collects the guest's name — the actual
+// location is captured with a map picker on the order review screen (no second popup).
 export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, onClose }) {
   const [name, setName] = useState('');
   const [room, setRoom] = useState('');
-  const [address, setAddress] = useState('');
   const [geo, setGeo] = useState(null);
   const [geoStatus, setGeoStatus] = useState('');
-  const [detecting, setDetecting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -31,28 +30,9 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
     );
   };
 
-  // Current-location flow: detect + reverse-geocode into an editable address.
-  const handleDetectAddress = async () => {
-    if (!navigator.geolocation) { setGeoStatus(tr.guestDetectUnsupported); return; }
-    setDetecting(true);
-    setGeoStatus(tr.guestDetectingLocation);
-    try {
-      const { lat, lng } = await detectCurrentPosition();
-      setGeo({ lat, lng });
-      const result = await reverseGeocode(lat, lng);
-      setAddress(result.address);
-      setGeoStatus(tr.guestDetectSuccess);
-    } catch {
-      setGeoStatus(tr.guestDetectFail);
-    } finally {
-      setDetecting(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim()) { setError(isCurrentLocation ? tr.guestErrorAddress : tr.checkinError); return; }
-    if (isCurrentLocation && !address.trim()) { setError(tr.guestErrorAddress); return; }
+    if (!name.trim()) { setError(tr.checkinError); return; }
     if (!isCurrentLocation && !room.trim()) { setError(tr.checkinError); return; }
 
     setError('');
@@ -61,7 +41,7 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
       await onSubmit({
         guest_name: name.trim(),
         room_number: isCurrentLocation ? null : room.trim(),
-        delivery_address: isCurrentLocation ? address.trim() : null,
+        delivery_address: null,
         geo_lat: geo?.lat ?? null,
         geo_lng: geo?.lng ?? null,
       });
@@ -165,60 +145,17 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
           </div>
 
           {isCurrentLocation ? (
-            <>
-              {/* Delivery address (current location) */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-body)', marginBottom: 6 }}>
-                  {tr.guestAddressLabel}
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <MapPin size={17} style={{ position: 'absolute', left: 14, top: 14, color: '#9ca3af' }} />
-                  <textarea
-                    id="guest-address"
-                    placeholder={tr.guestAddressPlaceholder}
-                    value={address}
-                    onChange={e => setAddress(e.target.value)}
-                    required
-                    rows={2}
-                    style={{
-                      width: '100%', padding: '12px 14px 12px 42px',
-                      borderRadius: 12, border: '1.5px solid var(--border)',
-                      fontSize: '0.95rem', outline: 'none', resize: 'vertical',
-                      fontFamily: 'inherit',
-                    }}
-                  />
-                </div>
-                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6 }}>{tr.guestAddressEditHint}</p>
-              </div>
-
-              <div style={{
-                background: 'var(--bg-muted)', border: '1px solid var(--border)',
-                borderRadius: 12, padding: '12px 14px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: 28,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <MapPin size={20} color="var(--brand-green-light)" />
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    {geoStatus || tr.guestAddressLabel}
-                  </p>
-                </div>
-                <button
-                  id="detect-location-btn"
-                  type="button"
-                  onClick={handleDetectAddress}
-                  disabled={detecting}
-                  style={{
-                    padding: '6px 14px', borderRadius: 8,
-                    background: 'white', border: '1px solid var(--border)',
-                    fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-dark)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {tr.guestDetectLocationBtn}
-                </button>
-              </div>
-            </>
+            <div style={{
+              background: 'var(--bg-muted)', border: '1px solid var(--border)',
+              borderRadius: 12, padding: '12px 14px',
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              marginBottom: 28,
+            }}>
+              <MapPin size={20} color="var(--brand-green-light)" style={{ flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-body)', lineHeight: 1.5 }}>
+                {tr.guestLocationNextStepHint}
+              </p>
+            </div>
           ) : (
             <>
               {/* Hotel confirmation card */}

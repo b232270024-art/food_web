@@ -1,12 +1,21 @@
 import React from 'react';
 import { AlertTriangle, ChevronLeft, MapPin, User } from 'lucide-react';
+import { LocationPicker } from './LocationPicker';
 
 export function OrderReview({
   cart, hotel, session, deliveryType,
+  pendingGuestName, pendingAddress, pendingGeo, onLocationChange,
   agreeTerms, onToggleAgree, onOpenTerms,
   onPay, isSubmitting, onEditDetails, onBack, tr,
 }) {
   const total = cart.reduce((s, i) => s + Number(i.price_usd) * i.quantity, 0);
+
+  // 'current_location' orders defer session creation until the map picker below
+  // has a confirmed address — until then, fall back to the not-yet-submitted values.
+  const needsLocation = deliveryType === 'current_location' && !session;
+  const guestName = session?.guest_name || pendingGuestName;
+  const addressText = session?.delivery_address || pendingAddress;
+  const canPay = agreeTerms && (!needsLocation || (pendingAddress.trim() && pendingGeo));
 
   return (
     <div className="anim-fade-up" style={{ maxWidth: 640, margin: '0 auto', padding: '40px 0 100px' }}>
@@ -24,6 +33,16 @@ export function OrderReview({
       </button>
 
       <h2 className="heading-lg" style={{ marginBottom: 24 }}>{tr.reviewTitle}</h2>
+
+      {/* Current-location delivery: confirm the drop-off point right here, no popup */}
+      {needsLocation && (
+        <LocationPicker
+          geo={pendingGeo}
+          address={pendingAddress}
+          onLocationChange={onLocationChange}
+          tr={tr}
+        />
+      )}
 
       {/* Red refund warning */}
       <div style={{
@@ -74,13 +93,13 @@ export function OrderReview({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <User size={16} color="var(--brand-green-light)" />
-              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-dark)' }}>{session?.guest_name}</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-dark)' }}>{guestName}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
               <MapPin size={16} color="var(--brand-green-light)" style={{ marginTop: 2, flexShrink: 0 }} />
               <span style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>
                 {deliveryType === 'current_location'
-                  ? session?.delivery_address
+                  ? (addressText || tr.locationPickerHint)
                   : `${hotel?.name || ''}${session?.room_number ? ` — ${tr.room} ${session.room_number}` : ''}`}
               </span>
             </div>
@@ -126,19 +145,25 @@ export function OrderReview({
         </span>
       </label>
 
+      {needsLocation && !(pendingAddress.trim() && pendingGeo) && (
+        <p style={{ fontSize: '0.78rem', color: '#b45309', fontWeight: 600, marginBottom: 10 }}>
+          {tr.locationRequiredHint}
+        </p>
+      )}
+
       <button
         id="pay-now-btn"
         onClick={onPay}
-        disabled={!agreeTerms || isSubmitting}
-        className={agreeTerms && !isSubmitting ? 'anim-pulse-glow' : ''}
+        disabled={!canPay || isSubmitting}
+        className={canPay && !isSubmitting ? 'anim-pulse-glow' : ''}
         style={{
           width: '100%', padding: 17, borderRadius: 14,
           fontWeight: 800, fontSize: '1rem',
-          background: !agreeTerms
+          background: !canPay
             ? '#d1d5db'
             : isSubmitting ? '#a7f3d0' : 'linear-gradient(135deg, #3D7A5A, #1A3C34)',
           color: 'white',
-          cursor: (!agreeTerms || isSubmitting) ? 'not-allowed' : 'pointer',
+          cursor: (!canPay || isSubmitting) ? 'not-allowed' : 'pointer',
           transition: 'background 0.25s ease, box-shadow 0.25s ease',
         }}
       >

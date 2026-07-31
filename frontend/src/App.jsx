@@ -46,6 +46,11 @@ export default function App() {
   const [agreeTerms,     setAgreeTerms]     = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
 
+  // ─── Current-location delivery: captured inline on the review page (no popup) ─
+  const [pendingGuestName, setPendingGuestName] = useState('');
+  const [pendingAddress,   setPendingAddress]   = useState('');
+  const [pendingGeo,       setPendingGeo]       = useState(null);
+
   const tr = useTranslation(language);
 
   // ─── Apply RTL for Arabic ────────────────────────────────────────────────────
@@ -168,13 +173,27 @@ export default function App() {
     setActiveOrder(null);
     setCart([]);
     setAgreeTerms(false);
+    setPendingGuestName('');
+    setPendingAddress('');
+    setPendingGeo(null);
     setFlowStep('hero');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // ─── Guest details submit → create session, then (one-time) place the order ──
+  // Exception: 'current_location' deliveries defer session creation until the guest
+  // confirms their location with the map picker on the order review screen — no
+  // separate popup is used to capture it.
   const handleGuestDetailsSubmit = async ({ guest_name, room_number, delivery_address, geo_lat, geo_lng }) => {
     if (!hotel?.id) throw new Error('Hotel not found');
+
+    if (orderType === 'one_time' && deliveryType === 'current_location') {
+      setPendingGuestName(guest_name);
+      setGuestDetailsOpen(false);
+      setFlowStep('order_review');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
     const res = await fetch('/api/sessions', {
       method: 'POST',
@@ -210,16 +229,44 @@ export default function App() {
   };
 
   // ─── Order review: agree to terms → place the order ──────────────────────────
+  // For 'current_location', the session is only created here (once the map-picked
+  // address is available), then the order is placed against it right away.
   const handlePayNow = async () => {
-    if (!agreeTerms || !session?.id) return;
+    if (!agreeTerms) return;
+    if (!session && (!pendingAddress.trim() || !pendingGeo)) return;
+
     setSubmitting(true);
     try {
+      let activeSession = session;
+
+      if (!activeSession) {
+        const sessRes = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            hotel_id: hotel.id,
+            guest_name: pendingGuestName,
+            order_type: orderType,
+            delivery_type: 'current_location',
+            room_number: null,
+            delivery_address: pendingAddress.trim(),
+            geo_lat: pendingGeo?.lat ?? null,
+            geo_lng: pendingGeo?.lng ?? null,
+          }),
+        });
+        const sessData = await sessRes.json();
+        if (!sessRes.ok) throw new Error(sessData.error || 'Check-in failed');
+        activeSession = sessData.session;
+        setSession(activeSession);
+      }
+
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          items: cart.map(c => ({ menu_item_id: c.menu_item_id, quantity: c.quantity, guest_name: session.guest_name })),
+          items: cart.map(c => ({ menu_item_id: c.menu_item_id, quantity: c.quantity, guest_name: activeSession.guest_name })),
         }),
       });
       const orderData = await orderRes.json();
@@ -323,6 +370,13 @@ export default function App() {
               hotel={hotel}
               session={session}
               deliveryType={deliveryType}
+              pendingGuestName={pendingGuestName}
+              pendingAddress={pendingAddress}
+              pendingGeo={pendingGeo}
+              onLocationChange={({ lat, lng, address }) => {
+                setPendingAddress(address);
+                setPendingGeo(lat != null && lng != null ? { lat, lng } : null);
+              }}
               agreeTerms={agreeTerms}
               onToggleAgree={setAgreeTerms}
               onOpenTerms={() => setTermsModalOpen(true)}

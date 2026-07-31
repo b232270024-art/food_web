@@ -418,14 +418,21 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
         </div>
       )}
 
-      {/* Sticky "Continue" bar once the cart has items */}
+      {/* Floating "Continue" bar once the cart has items — always visible, layered above content while scrolling */}
       {cartCount > 0 && (
-        <div className="anim-slide-up" style={{
-          position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 150,
-          background: 'var(--bg-green-dark)', padding: '18px 24px',
-          boxShadow: '0 -8px 24px rgba(0,0,0,0.15)',
-        }}>
-          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div
+          className="anim-slide-up"
+          style={{
+            position: 'fixed', left: '50%', bottom: 20, transform: 'translateX(-50%)',
+            width: 'calc(100% - 40px)', maxWidth: 1160, zIndex: 150,
+          }}
+        >
+          <div style={{
+            background: 'var(--bg-green-dark)', padding: '16px 24px',
+            borderRadius: 'var(--r-lg)',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.28)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: '0.78rem' }}>
                 {cartCount} item{cartCount !== 1 ? 's' : ''} in cart
