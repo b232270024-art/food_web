@@ -24,7 +24,7 @@ export const t = {
     heroTitle4: ' & ',
     heroTitleOrange: 'Delivery',
     heroTitle5: '.',
-    heroDesc: 'Best cooks and best delivery guys at your service. Hot tasty food will reach you in 60 minutes.',
+    heroDesc: 'Best cooks and best delivery guys at your service.',
     heroBtn: 'Get Started',
 
     // Special Offers

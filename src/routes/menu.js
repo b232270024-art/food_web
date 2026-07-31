@@ -5,11 +5,13 @@ import { asyncHandler } from '../middleware/errorHandler.js';
 
 export const menuRouter = Router();
 
-// GET /api/menu/:hotel_id — fetch all available menu items for a hotel
+// GET /api/menu/:hotel_id — fetch menu items for a hotel
 // Optional query params: ?diet_type=halal&category=Main+Course
+// ?all=true includes items marked unavailable (used by the admin dashboard) —
+// soft-deleted items are still excluded either way.
 menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
   const { hotel_id } = req.params;
-  const { diet_type, category } = req.query;
+  const { diet_type, category, all } = req.query;
 
   let query = `
     SELECT id, name, description, category, diet_type,
@@ -17,10 +19,13 @@ menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
            prep_time_min, is_featured, available
     FROM menu_items
     WHERE hotel_id = $1
-      AND available = true
       AND is_deleted = false
   `;
   const params = [hotel_id];
+
+  if (all !== 'true') {
+    query += ` AND available = true`;
+  }
 
   if (diet_type) {
     params.push(diet_type);
