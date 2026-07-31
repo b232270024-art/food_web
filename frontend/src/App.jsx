@@ -66,6 +66,26 @@ export default function App() {
     setTimeout(() => setToast(''), 3500);
   }, []);
 
+  // ─── Browser Back/Forward: keep flow steps in sync with history ──────────────
+  // The app has no real routes (single-page state machine), so without this the
+  // Back button leaves the site entirely instead of stepping back through the
+  // checkout flow. goToStep() pushes a history entry per step change; popstate
+  // (fired by Back/Forward) restores flowStep without pushing again.
+  const goToStep = useCallback((step) => {
+    window.history.pushState({ flowStep: step }, '');
+    setFlowStep(step);
+  }, []);
+
+  useEffect(() => {
+    window.history.replaceState({ flowStep: 'hero' }, '');
+    const handlePopState = (e) => {
+      setFlowStep(e.state?.flowStep || 'hero');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // ─── Initial load: resolve hotel from QR token + restore language ─────────────
   useEffect(() => {
     try {
@@ -133,7 +153,7 @@ export default function App() {
 
   // ─── "Get Started" handler ────────────────────────────────────────────────────
   const handleGetStarted = () => {
-    setFlowStep('order_type');
+    goToStep('order_type');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -143,7 +163,7 @@ export default function App() {
   const handleOrderTypeContinue = (selected) => {
     const type = selected === '12-day' ? 'twelve_day' : 'one_time';
     setOrderType(type);
-    setFlowStep(type === 'twelve_day' ? 'plan_preview' : 'menu');
+    goToStep(type === 'twelve_day' ? 'plan_preview' : 'menu');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -156,7 +176,7 @@ export default function App() {
   // ─── One-time: cart has items → ask delivery type ─────────────────────────────
   const handleContinueToDelivery = () => {
     setCartOpen(false);
-    setFlowStep('delivery_type');
+    goToStep('delivery_type');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -176,7 +196,7 @@ export default function App() {
     setPendingGuestName('');
     setPendingAddress('');
     setPendingGeo(null);
-    setFlowStep('hero');
+    goToStep('hero');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -190,7 +210,7 @@ export default function App() {
     if (orderType === 'one_time' && deliveryType === 'current_location') {
       setPendingGuestName(guest_name);
       setGuestDetailsOpen(false);
-      setFlowStep('order_review');
+      goToStep('order_review');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -218,13 +238,13 @@ export default function App() {
     setGuestDetailsOpen(false);
 
     if (orderType === 'twelve_day') {
-      setFlowStep('confirmation');
+      goToStep('confirmation');
       showToast(`Welcome, ${guest_name}! 🎉`);
       return;
     }
 
     // One-time: review the order (with refund notice + terms) before paying.
-    setFlowStep('order_review');
+    goToStep('order_review');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -274,7 +294,7 @@ export default function App() {
       setActiveOrder(orderData);
       setCart([]);
       setAgreeTerms(false);
-      setFlowStep('confirmation');
+      goToStep('confirmation');
       showToast(tr.orderPlaced);
     } catch (err) {
       showToast(err.message || 'Order failed');
@@ -318,7 +338,7 @@ export default function App() {
         {flowStep === 'order_type' && (
           <OrderTypeSelection
             tr={tr}
-            onBack={() => setFlowStep('hero')}
+            onBack={() => goToStep('hero')}
             onContinue={handleOrderTypeContinue}
           />
         )}
@@ -332,7 +352,7 @@ export default function App() {
               orderType={orderType}
               tr={tr}
               onConfirmPlan={handleConfirmPlan}
-              onBack={() => setFlowStep('order_type')}
+              onBack={() => goToStep('order_type')}
             />
           </div>
         )}
@@ -348,7 +368,7 @@ export default function App() {
               onAddToCart={handleAddToCart}
               onRemoveFromCart={handleRemoveFromCart}
               onContinueToDelivery={handleContinueToDelivery}
-              onBack={() => setFlowStep('order_type')}
+              onBack={() => goToStep('order_type')}
             />
           </div>
         )}
@@ -357,7 +377,7 @@ export default function App() {
         {flowStep === 'delivery_type' && (
           <DeliveryTypeSelection
             tr={tr}
-            onBack={() => setFlowStep('menu')}
+            onBack={() => goToStep('menu')}
             onContinue={handleDeliveryTypeContinue}
           />
         )}
@@ -383,7 +403,7 @@ export default function App() {
               onPay={handlePayNow}
               isSubmitting={submitting}
               onEditDetails={() => setGuestDetailsOpen(true)}
-              onBack={() => setFlowStep('menu')}
+              onBack={() => goToStep('menu')}
               tr={tr}
             />
           </div>

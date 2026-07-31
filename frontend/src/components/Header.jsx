@@ -21,7 +21,7 @@ export function Header({ hotel, session, cartCount, cartTotal, onOpenCart, langu
               color: 'white', fontSize: '1.2rem', fontWeight: 900,
               boxShadow: 'var(--shadow-glow)',
             }}>
-              🍽
+
             </div>
             <div style={{ minWidth: 0, overflow: 'hidden' }}>
               <div style={{
