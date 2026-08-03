@@ -62,10 +62,18 @@ adminRouter.get('/hotels', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
-// Тухайн буудлын идэвхтэй захиалгуудыг room_number-тэй нь буцаана
+// Тухайн буудлын идэвхтэй захиалгуудыг room_number, items болон төлбөртэй хамт буцаана
 adminRouter.get('/:hotel_id/orders/live', asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT o.id, o.status, o.total_usd, o.created_at, s.room_number, s.guest_name
+    `SELECT o.id, o.status, o.total_usd, o.created_at, s.room_number, s.guest_name,
+            (SELECT json_agg(json_build_object(
+               'menu_item_id', oi.menu_item_id,
+               'quantity', oi.quantity,
+               'name', mi.name,
+               'restaurant_name', mi.restaurant_name
+            )) FROM order_items oi JOIN menu_items mi ON oi.menu_item_id = mi.id WHERE oi.order_id = o.id) as items,
+            (SELECT status FROM payments p WHERE p.order_id = o.id LIMIT 1) as payment_status,
+            (SELECT paid_at FROM payments p WHERE p.order_id = o.id LIMIT 1) as paid_at
      FROM orders o
      JOIN sessions s ON s.id = o.session_id
      WHERE o.hotel_id = $1 AND o.status != 'cancelled'

@@ -15,6 +15,7 @@ import { ordersRouter } from './routes/orders.js';
 import { adminRouter } from './routes/admin.js';
 import { paymentsRouter } from './routes/payments.js';
 import { geocodeRouter } from './routes/geocode.js';
+import { uploadRouter } from './routes/upload.js';
 
 import { logger } from './services/logger.js';
 import { startSessionCleanupJob } from './services/sessionCleanup.js';
@@ -69,6 +70,7 @@ app.use('/api/orders', writeLimiter, ordersRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/payments', writeLimiter, paymentsRouter);
 app.use('/api/geocode', geocodeRouter);
+app.use('/api/upload', uploadRouter);
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 

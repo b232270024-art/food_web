@@ -143,6 +143,11 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
               <Clock size={13} /> {item.prep_time_min} min
             </span>
           )}
+          {item.stock_limit === 0 && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#dc2626' }}>
+              Sold Out
+            </span>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
@@ -150,7 +155,15 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
             ${Number(item.price_usd).toFixed(2)}
           </span>
 
-          {readOnly ? null : qty > 0 ? (
+          {readOnly ? null : item.stock_limit === 0 ? (
+            <span style={{
+              background: '#f3f4f6', color: '#9ca3af',
+              padding: '9px 20px', borderRadius: 10,
+              fontWeight: 700, fontSize: '0.875rem',
+            }}>
+              Дууссан
+            </span>
+          ) : qty > 0 ? (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: 'var(--bg-muted)', borderRadius: 10, padding: '4px',
@@ -168,9 +181,10 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
               <span style={{ fontWeight: 800, minWidth: 22, textAlign: 'center', fontSize: '0.9rem' }}>{qty}</span>
               <button
                 onClick={() => onAddToCart(item)}
+                disabled={item.stock_limit !== null && qty >= item.stock_limit}
                 style={{
                   width: 30, height: 30, borderRadius: 7,
-                  background: 'var(--brand-green)', color: 'white',
+                  background: item.stock_limit !== null && qty >= item.stock_limit ? '#ccc' : 'var(--brand-green)', color: 'white',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >

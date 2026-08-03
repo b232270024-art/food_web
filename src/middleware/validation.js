@@ -51,8 +51,17 @@ export const createSessionSchema = z
 
 export const createMenuItemSchema = z.object({
   name: z.string().trim().min(1).max(150),
+  description: z.string().trim().max(1000).nullish(),
   category: z.string().trim().max(50).nullish(),
+  diet_type: z.string().trim().max(50).nullish(),
   price_usd: z.number().positive('Үнэ 0-ээс их байх ёстой'),
+  image_url: z.string().trim().nullish(),
+  calories: z.number().int().positive().nullish(),
+  allergens: z.array(z.string()).nullish(),
+  prep_time_min: z.number().int().positive().nullish(),
+  is_featured: z.boolean().nullish(),
+  restaurant_name: z.string().trim().max(150).nullish(),
+  stock_limit: z.number().int().nullish(),
 });
 
 export const createOrderSchema = z.object({

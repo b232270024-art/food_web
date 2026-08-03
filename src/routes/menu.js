@@ -17,7 +17,8 @@ menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
   let query = `
     SELECT id, name, description, category, diet_type,
            price_usd, image_url, calories, allergens,
-           prep_time_min, is_featured, available
+           prep_time_min, is_featured, available,
+           restaurant_name, stock_limit
     FROM menu_items
     WHERE hotel_id = $1
       AND is_deleted = false
@@ -56,11 +57,11 @@ menuRouter.delete('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
 
 // POST /api/menu/:hotel_id — add a new menu item (admin)
 menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), asyncHandler(async (req, res) => {
-  const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured } = req.body;
+  const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_name, stock_limit } = req.body;
   const { rows } = await pool.query(
     `INSERT INTO menu_items
-       (hotel_id, name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       (hotel_id, name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_name, stock_limit)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
      RETURNING *`,
     [
       req.params.hotel_id,
@@ -74,6 +75,8 @@ menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), 
       allergens ?? [],
       prep_time_min ?? 15,
       is_featured ?? false,
+      restaurant_name ?? 'Main',
+      stock_limit ?? null,
     ]
   );
   res.status(201).json(rows[0]);
@@ -81,7 +84,7 @@ menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), 
 
 // PATCH /api/menu/item/:id — update a menu item (image_url, price, availability, etc.)
 menuRouter.patch('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
-  const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available } = req.body;
+  const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, restaurant_name, stock_limit } = req.body;
   const { rows } = await pool.query(
     `UPDATE menu_items SET
       name          = COALESCE($1, name),
@@ -94,10 +97,12 @@ menuRouter.patch('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
       allergens     = COALESCE($8, allergens),
       prep_time_min = COALESCE($9, prep_time_min),
       is_featured   = COALESCE($10, is_featured),
-      available     = COALESCE($11, available)
-    WHERE id = $12 AND is_deleted = false
+      available     = COALESCE($11, available),
+      restaurant_name = COALESCE($12, restaurant_name),
+      stock_limit   = $13
+    WHERE id = $14 AND is_deleted = false
     RETURNING *`,
-    [name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, req.params.id]
+    [name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, restaurant_name, stock_limit, req.params.id]
   );
   if (rows.length === 0) return res.status(404).json({ error: 'Menu item not found.' });
   res.json(rows[0]);

@@ -12,6 +12,7 @@ const DIET_OPTIONS = [
 const EMPTY_FORM = {
   name: '', category: '', diet_type: 'standard',
   price_usd: '', description: '', prep_time_min: '', is_featured: false,
+  restaurant_name: 'Ресторан 1', stock_limit: '', image_url: '',
 };
 
 function ItemForm({ initial, onCancel, onSave, saving }) {
@@ -29,7 +30,26 @@ function ItemForm({ initial, onCancel, onSave, saving }) {
       description: form.description.trim() || null,
       prep_time_min: form.prep_time_min ? Number(form.prep_time_min) : null,
       is_featured: !!form.is_featured,
+      restaurant_name: form.restaurant_name,
+      stock_limit: form.stock_limit === '' ? null : Number(form.stock_limit),
+      image_url: form.image_url || null,
     });
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setForm(f => ({ ...f, image_url: data.url }));
+      }
+    } catch (err) {
+      alert('Зураг оруулахад алдаа гарлаа');
+    }
   };
 
   return (
@@ -44,8 +64,24 @@ function ItemForm({ initial, onCancel, onSave, saving }) {
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }}>
         {DIET_OPTIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
       </select>
+      
+      <select value={form.restaurant_name} onChange={set('restaurant_name')}
+        style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }}>
+        <option value="Ресторан 1">Ресторан 1</option>
+        <option value="Ресторан 2">Ресторан 2</option>
+        <option value="Ресторан 3">Ресторан 3</option>
+      </select>
+
+      <input placeholder="Лимит (хоосон = хязгааргүй)" type="number" min="0" value={form.stock_limit} onChange={set('stock_limit')}
+        style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
+
       <input placeholder="Бэлтгэх хугацаа (мин)" type="number" min="0" value={form.prep_time_min} onChange={set('prep_time_min')}
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
+        
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem' }}>
+        Зураг: <input type="file" accept="image/*" onChange={handleImageUpload} style={{ flex: 1 }} />
+        {form.image_url && <img src={form.image_url} alt="preview" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6 }} />}
+      </div>
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-body)' }}>
         <input type="checkbox" checked={form.is_featured} onChange={set('is_featured')} /> Онцлох
       </label>
@@ -79,7 +115,7 @@ function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
           {item.is_featured && <span style={{ fontSize: '0.7rem' }}>⭐</span>}
         </div>
         <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>
-          {item.category || '—'} · {item.diet_type}
+          {item.category || '—'} · {item.diet_type} · {item.restaurant_name} {item.stock_limit !== null && `(Лимит: ${item.stock_limit})`}
         </div>
       </div>
       <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--brand-green)', minWidth: 64, textAlign: 'right' }}>
@@ -221,6 +257,9 @@ export function MenuManager({ hotelId }) {
             description: editingItem.description || '',
             prep_time_min: editingItem.prep_time_min || '',
             is_featured: editingItem.is_featured || false,
+            restaurant_name: editingItem.restaurant_name || 'Ресторан 1',
+            stock_limit: editingItem.stock_limit !== null ? editingItem.stock_limit : '',
+            image_url: editingItem.image_url || '',
           }}
           onCancel={() => setEditingItem(null)}
           onSave={handleUpdate}

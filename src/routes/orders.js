@@ -24,14 +24,27 @@ ordersRouter.post('/', requireSession, validateBody(createOrderSchema), async (r
     let total = 0;
     for (const item of items) {
       const menuItem = await client.query(
-        'SELECT price_usd FROM menu_items WHERE id = $1 AND hotel_id = $2 FOR UPDATE',
+        'SELECT price_usd, stock_limit FROM menu_items WHERE id = $1 AND hotel_id = $2 FOR UPDATE',
         [item.menu_item_id, hotel_id]
       );
       if (menuItem.rows.length === 0) {
         throw new Error(`Menu item олдсонгүй: ${item.menu_item_id}`);
       }
-      const unitPrice = Number(menuItem.rows[0].price_usd);
+      
+      const { price_usd, stock_limit } = menuItem.rows[0];
+      if (stock_limit !== null && stock_limit < item.quantity) {
+        throw new Error(`Уучлаарай, сонгосон хоолны үлдэгдэл хүрэлцэхгүй байна.`);
+      }
+
+      const unitPrice = Number(price_usd);
       total += unitPrice * item.quantity;
+
+      if (stock_limit !== null) {
+        await client.query(
+          'UPDATE menu_items SET stock_limit = stock_limit - $1 WHERE id = $2',
+          [item.quantity, item.menu_item_id]
+        );
+      }
 
       await client.query(
         `INSERT INTO order_items (order_id, menu_item_id, guest_name, quantity, unit_price_usd)

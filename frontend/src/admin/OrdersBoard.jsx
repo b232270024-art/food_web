@@ -29,8 +29,17 @@ function timeAgo(dateStr) {
   return `${hrs} цаг өмнө`;
 }
 
-function OrderCard({ order, onChangeStatus, updating }) {
+function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
   const colors = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
+  
+  // Filter items by restaurant if one is selected
+  const items = order.items || [];
+  const displayItems = selectedRestaurant === 'All' 
+    ? items 
+    : items.filter(i => i.restaurant_name === selectedRestaurant);
+
+  if (selectedRestaurant !== 'All' && displayItems.length === 0) return null;
+
   return (
     <div className="card" style={{ padding: '16px 18px', marginBottom: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
@@ -52,10 +61,27 @@ function OrderCard({ order, onChangeStatus, updating }) {
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+      <div style={{ background: 'var(--bg-muted)', padding: '8px 12px', borderRadius: 6, marginBottom: 12 }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 4, color: 'var(--text-dark)' }}>Захиалсан зүйлс:</div>
+        {displayItems.map((item, idx) => (
+          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-body)', marginBottom: 2 }}>
+            <span>{item.quantity}x {item.name}</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.restaurant_name}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
           <Clock size={12} /> {timeAgo(order.created_at)}
         </span>
+        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: order.payment_status === 'paid' ? 'var(--brand-green)' : 'var(--text-muted)' }}>
+          {order.payment_status === 'paid' ? 'Төлөгдсөн' : 'Төлөөгүй'} 
+          {order.paid_at && ` (${new Date(order.paid_at).toLocaleTimeString()})`}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <select
           value={order.status}
           disabled={updating}
@@ -75,8 +101,15 @@ function OrderCard({ order, onChangeStatus, updating }) {
   );
 }
 
-function Column({ status, orders, onChangeStatus, updatingId }) {
+function Column({ status, orders, onChangeStatus, updatingId, selectedRestaurant }) {
   const colors = STATUS_COLOR[status];
+  
+  // Count how many orders actually have items for the selected restaurant
+  const visibleCount = orders.filter(o => {
+    if (selectedRestaurant === 'All') return true;
+    const items = o.items || [];
+    return items.some(i => i.restaurant_name === selectedRestaurant);
+  }).length;
   return (
     <div style={{ flex: '1 1 240px', minWidth: 240 }}>
       <div style={{
@@ -91,10 +124,10 @@ function Column({ status, orders, onChangeStatus, updatingId }) {
           marginLeft: 'auto', background: 'var(--bg-muted)', color: 'var(--text-muted)',
           fontSize: '0.72rem', fontWeight: 800, padding: '2px 9px', borderRadius: 999,
         }}>
-          {orders.length}
+          {visibleCount}
         </span>
       </div>
-      {orders.length === 0 ? (
+      {visibleCount === 0 ? (
         <div style={{
           padding: '28px 12px', textAlign: 'center', color: 'var(--text-muted)',
           fontSize: '0.8rem', border: '1.5px dashed var(--border)', borderRadius: 'var(--r-md)',
@@ -103,7 +136,7 @@ function Column({ status, orders, onChangeStatus, updatingId }) {
         </div>
       ) : (
         orders.map(o => (
-          <OrderCard key={o.id} order={o} onChangeStatus={onChangeStatus} updating={updatingId === o.id} />
+          <OrderCard key={o.id} order={o} onChangeStatus={onChangeStatus} updating={updatingId === o.id} selectedRestaurant={selectedRestaurant} />
         ))
       )}
     </div>
@@ -116,6 +149,7 @@ export function OrdersBoard({ hotelId }) {
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState(null);
   const [showCancelled, setShowCancelled] = useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState('All');
   const socketRef = useRef(null);
 
   const fetchOrders = useCallback(async () => {
@@ -179,6 +213,19 @@ export function OrdersBoard({ hotelId }) {
             <input type="checkbox" checked={showCancelled} onChange={e => setShowCancelled(e.target.checked)} />
             Цуцлагдсаныг харуулах
           </label>
+          <select 
+            value={selectedRestaurant} 
+            onChange={e => setSelectedRestaurant(e.target.value)}
+            style={{
+              padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)',
+              fontSize: '0.8rem', fontWeight: 700, background: 'var(--bg-muted)'
+            }}
+          >
+            <option value="All">Бүх ресторан</option>
+            <option value="Ресторан 1">Ресторан 1</option>
+            <option value="Ресторан 2">Ресторан 2</option>
+            <option value="Ресторан 3">Ресторан 3</option>
+          </select>
           <button
             onClick={fetchOrders}
             style={{
@@ -210,6 +257,7 @@ export function OrdersBoard({ hotelId }) {
               orders={visibleOrders.filter(o => o.status === status)}
               onChangeStatus={handleChangeStatus}
               updatingId={updatingId}
+              selectedRestaurant={selectedRestaurant}
             />
           ))}
         </div>
