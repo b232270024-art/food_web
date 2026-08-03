@@ -9,7 +9,7 @@ const DIET_OPTIONS = [
   { value: 'gluten_free', label: 'Gluten Free' },
 ];
 
-function emptyForm(restaurants) {
+export function emptyItemForm(restaurants) {
   return {
     name: '', category: '', diet_type: 'standard',
     price_usd: '', description: '', prep_time_min: '', is_featured: false,
@@ -17,7 +17,7 @@ function emptyForm(restaurants) {
   };
 }
 
-function ItemForm({ initial, restaurants, onCancel, onSave, saving }) {
+export function ItemForm({ initial, restaurants, onCancel, onSave, saving }) {
   const [form, setForm] = useState(initial);
   const [uploading, setUploading] = useState(false);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
@@ -291,7 +291,7 @@ export function MenuManager({ hotelId }) {
       )}
 
       {adding && (
-        <ItemForm initial={emptyForm(restaurants)} restaurants={restaurants} onCancel={() => setAdding(false)} onSave={handleCreate} saving={saving} />
+        <ItemForm initial={emptyItemForm(restaurants)} restaurants={restaurants} onCancel={() => setAdding(false)} onSave={handleCreate} saving={saving} />
       )}
 
       {editingItem && (

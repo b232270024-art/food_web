@@ -2,6 +2,7 @@
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+DROP TABLE IF EXISTS twelve_day_plan_items CASCADE;
 DROP TABLE IF EXISTS payments CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
@@ -15,12 +16,14 @@ DROP TYPE IF EXISTS session_status CASCADE;
 DROP TYPE IF EXISTS diet_type CASCADE;
 DROP TYPE IF EXISTS session_order_type CASCADE;
 DROP TYPE IF EXISTS session_delivery_type CASCADE;
+DROP TYPE IF EXISTS meal_time CASCADE;
 
 CREATE TYPE order_status AS ENUM ('pending', 'preparing', 'served', 'paid', 'cancelled', 'refunded');
 CREATE TYPE session_status AS ENUM ('active', 'expired');
 CREATE TYPE diet_type AS ENUM ('standard', 'vegetarian', 'vegan', 'halal', 'gluten_free');
 CREATE TYPE session_order_type AS ENUM ('twelve_day', 'one_time');
 CREATE TYPE session_delivery_type AS ENUM ('hotel', 'current_location');
+CREATE TYPE meal_time AS ENUM ('morning', 'lunch', 'evening');
 
 CREATE TABLE hotels (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -105,6 +108,19 @@ CREATE TABLE order_items (
   unit_price_usd   numeric(10,2) NOT NULL
 );
 CREATE INDEX idx_order_items_order ON order_items(order_id);
+
+-- Admin-ийн удирддаг "12 хоногийн цэс" — өдөр (1-12) тус бүрийн
+-- өглөө/өдөр/оройн хоолонд ямар menu item(ууд) орохыг тодорхойлно.
+CREATE TABLE twelve_day_plan_items (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  hotel_id      uuid NOT NULL REFERENCES hotels(id),
+  day_number    integer NOT NULL CHECK (day_number BETWEEN 1 AND 12),
+  meal_time     meal_time NOT NULL,
+  menu_item_id  uuid NOT NULL REFERENCES menu_items(id),
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (hotel_id, day_number, meal_time, menu_item_id)
+);
+CREATE INDEX idx_plan_items_hotel_day ON twelve_day_plan_items(hotel_id, day_number);
 
 CREATE TABLE payments (
   id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),

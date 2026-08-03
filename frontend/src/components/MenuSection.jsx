@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, Plus, Minus, Clock, Flame, ArrowRight, ChevronLeft } from 'lucide-react';
+import { Search, Plus, Minus, ArrowRight, ChevronLeft } from 'lucide-react';
 
 function BackButton({ label, onBack }) {
   return (
@@ -126,29 +126,11 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
           </p>
         )}
 
-        {item.allergens && item.allergens.length > 0 && (
-          <p style={{ fontSize: '0.72rem', color: '#b45309', marginBottom: 10, fontWeight: 600 }}>
-            ⚠ Contains: {item.allergens.join(', ')}
-          </p>
+{item.stock_limit === 0 && (
+          <div style={{ fontSize: '0.78rem', color: '#dc2626', marginBottom: 14, fontWeight: 700 }}>
+            Sold Out
+          </div>
         )}
-
-        <div style={{ display: 'flex', gap: 14, fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 14, fontWeight: 600 }}>
-          {item.calories && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Flame size={13} color="#ef4444" /> {item.calories} cal
-            </span>
-          )}
-          {item.prep_time_min && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Clock size={13} /> {item.prep_time_min} min
-            </span>
-          )}
-          {item.stock_limit === 0 && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#dc2626' }}>
-              Sold Out
-            </span>
-          )}
-        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
           <span style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--brand-green)' }}>

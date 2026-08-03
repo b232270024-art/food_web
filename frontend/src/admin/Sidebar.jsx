@@ -1,9 +1,10 @@
 import React from 'react';
-import { LayoutDashboard, UtensilsCrossed, ClipboardList, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, ClipboardList, CalendarDays, Settings, LogOut } from 'lucide-react';
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'menu', label: 'Цэс', icon: UtensilsCrossed },
+  { key: 'plan', label: '12 хоногийн цэс', icon: CalendarDays },
   { key: 'orders', label: 'Захиалгууд', icon: ClipboardList },
   { key: 'settings', label: 'Тохиргоо', icon: Settings },
 ];
@@ -16,7 +17,7 @@ export function Sidebar({ tab, onSetTab, onLogout }) {
       padding: '20px 14px', position: 'sticky', top: 0,
     }}>
       <div style={{ padding: '4px 10px 22px', fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '1.05rem', color: 'var(--brand-green)' }}>
-        Admin панел
+        Admin
       </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>

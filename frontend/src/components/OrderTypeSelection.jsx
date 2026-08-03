@@ -65,42 +65,6 @@ export function OrderTypeSelection({ tr, onBack, onContinue }) {
           {tr.orderTypeClick}
         </p>
 
-        {/* Selection cards */}
-        <div style={{
-          border: '2px solid var(--border)',
-          borderRadius: 'var(--r-lg)',
-          overflow: 'hidden',
-          marginBottom: 16,
-        }}>
-          {/* 12-day */}
-          <div
-            id="plan-12day"
-            onClick={() => setSelected('12-day')}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              padding: '22px 20px',
-              background: selected === '12-day' ? '#f9fafb' : 'white',
-              borderBottom: '2px solid var(--border)',
-              cursor: 'pointer',
-              flex: 1,
-              borderRight: '1px solid var(--border)',
-            }}
-          >
-            <RadioDot active={selected === '12-day'} />
-            <span style={{
-              fontWeight: 700, textAlign: 'center', whiteSpace: 'pre-line',
-              fontSize: '0.95rem', color: 'var(--text-dark)', lineHeight: 1.4,
-            }}>
-              {tr.orderType12}
-            </span>
-          </div>
-
-          {/* One-time — side by side using flex row */}
-          <div style={{ display: 'flex' }}>
-            {/* Reuse the 12-day as left and one-time as right */}
-          </div>
-        </div>
-
         {/* Side-by-side layout */}
         <div style={{
           border: '2px solid var(--border)',

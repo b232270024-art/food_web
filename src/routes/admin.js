@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../db/pool.js';
-import { validateBody, updateOrderStatusSchema, adminLoginSchema, renameRestaurantSchema } from '../middleware/validation.js';
+import { validateBody, updateOrderStatusSchema, adminLoginSchema, renameRestaurantSchema, createPlanItemSchema } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
@@ -160,6 +160,55 @@ adminRouter.get('/:hotel_id/orders', asyncHandler(async (req, res) => {
     params
   );
   res.json(rows);
+}));
+
+// --- 12 хоногийн цэс (admin-ийн удирддаг өдөр тус бүрийн хоол) -----------
+// Flat list буцаана — frontend талдаа өдөр/цагаар нь ангилна.
+adminRouter.get('/:hotel_id/plan', asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT pi.id, pi.day_number, pi.meal_time, pi.menu_item_id,
+            mi.name, mi.price_usd, mi.image_url, r.name AS restaurant_name
+     FROM twelve_day_plan_items pi
+     JOIN menu_items mi ON mi.id = pi.menu_item_id
+     JOIN restaurants r ON r.id = mi.restaurant_id
+     WHERE pi.hotel_id = $1
+     ORDER BY pi.day_number, pi.meal_time`,
+    [req.params.hotel_id]
+  );
+  res.json(rows);
+}));
+
+// Тухайн (өдөр, цаг)-т menu item нэмнэ. Аль хэдийн нэмэгдсэн бол дахин
+// давхардуулахгүй (UNIQUE constraint + ON CONFLICT DO NOTHING).
+adminRouter.post('/plan-items', validateBody(createPlanItemSchema), asyncHandler(async (req, res) => {
+  const { hotel_id, day_number, meal_time, menu_item_id } = req.body;
+
+  const menuItem = await pool.query(
+    'SELECT id FROM menu_items WHERE id = $1 AND hotel_id = $2 AND is_deleted = false',
+    [menu_item_id, hotel_id]
+  );
+  if (menuItem.rows.length === 0) {
+    return res.status(400).json({ error: 'Сонгосон хоол энэ буудалд харьяалагдахгүй байна.' });
+  }
+
+  const { rows } = await pool.query(
+    `INSERT INTO twelve_day_plan_items (hotel_id, day_number, meal_time, menu_item_id)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (hotel_id, day_number, meal_time, menu_item_id) DO NOTHING
+     RETURNING *`,
+    [hotel_id, day_number, meal_time, menu_item_id]
+  );
+  res.status(201).json(rows[0] ?? { alreadyExists: true });
+}));
+
+// Slot-с хоол хасна.
+adminRouter.delete('/plan-items/:id', asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    'DELETE FROM twelve_day_plan_items WHERE id = $1 RETURNING id',
+    [req.params.id]
+  );
+  if (rows.length === 0) return res.status(404).json({ error: 'Олдсонгүй.' });
+  res.json({ deleted: true, id: rows[0].id });
 }));
 
 // Ажилтан захиалгын статус солих (жишээ нь "бэлэн боллоо", "буцаагдсан")

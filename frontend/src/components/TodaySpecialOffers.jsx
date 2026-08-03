@@ -126,15 +126,9 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
         </p>
       )}
 
-      {/* Price + real calories (when available) — no invented nutrition numbers */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.8rem', fontWeight: 700 }}>
-        <span style={{ color: 'var(--brand-green)' }}>${Number(item.price_usd ?? item.price ?? 0).toFixed(2)}</span>
-        {item.calories != null && (
-          <>
-            <span style={{ color: 'var(--border)' }}>|</span>
-            <span style={{ color: 'var(--text-body)', fontWeight: 600 }}>{item.calories} {tr.specialCal}</span>
-          </>
-        )}
+      {/* Price */}
+      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--brand-green)' }}>
+        ${Number(item.price_usd ?? item.price ?? 0).toFixed(2)}
       </div>
 
       {/* CTA */}

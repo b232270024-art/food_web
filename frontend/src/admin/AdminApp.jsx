@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { DashboardHome } from './DashboardHome';
 import { OrdersBoard } from './OrdersBoard';
 import { MenuManager } from './MenuManager';
+import { PlanManager } from './PlanManager';
 import { SettingsPage } from './SettingsPage';
 
 function LoginForm({ onLoggedIn }) {
@@ -87,7 +88,7 @@ function Dashboard({ onLoggedOut }) {
     onLoggedOut();
   };
 
-  const TAB_LABEL = { dashboard: 'Dashboard', menu: 'Цэс', orders: 'Захиалгууд', settings: 'Тохиргоо' };
+  const TAB_LABEL = { dashboard: 'Dashboard', menu: 'Цэс', plan: '12 хоногийн цэс', orders: 'Захиалгууд', settings: 'Тохиргоо' };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-muted)', display: 'flex' }}>
@@ -115,6 +116,8 @@ function Dashboard({ onLoggedOut }) {
             <p style={{ color: 'var(--text-muted)' }}>Буудал алга.</p>
           ) : tab === 'dashboard' ? (
             <DashboardHome hotelId={hotelId} />
+          ) : tab === 'plan' ? (
+            <PlanManager hotelId={hotelId} />
           ) : tab === 'orders' ? (
             <OrdersBoard hotelId={hotelId} />
           ) : tab === 'settings' ? (

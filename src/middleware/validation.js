@@ -102,6 +102,13 @@ export const updateOrderStatusSchema = z.object({
   status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['pending', 'preparing', 'served', 'paid', 'cancelled', 'refunded'])),
 });
 
+export const createPlanItemSchema = z.object({
+  hotel_id: uuidSchema('hotel_id зөв UUID байх ёстой'),
+  day_number: z.number().int().min(1, 'Өдөр 1-12 хооронд байх ёстой').max(12, 'Өдөр 1-12 хооронд байх ёстой'),
+  meal_time: z.enum(['morning', 'lunch', 'evening'], { message: 'meal_time нь morning/lunch/evening байх ёстой' }),
+  menu_item_id: uuidSchema('menu_item_id зөв UUID байх ёстой'),
+});
+
 export const adminLoginSchema = z.object({
   username: z.string().trim().min(1, 'Нэвтрэх нэр хоосон байж болохгүй').max(100),
   password: z.string().min(1, 'Нууц үг хоосон байж болохгүй').max(200),
