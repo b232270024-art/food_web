@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../db/pool.js';
-import { validateBody, updateOrderStatusSchema, adminLoginSchema, renameRestaurantSchema, createPlanItemSchema } from '../middleware/validation.js';
+import { validateBody, updateOrderStatusSchema, adminLoginSchema, renameRestaurantSchema, createRestaurantSchema, dietTypeNameSchema, createPlanItemSchema } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
@@ -82,14 +82,75 @@ adminRouter.get('/hotels', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
-// --- Ресторан нэр солих (Settings) ----------------------------------------
+// --- Ресторан нэмэх / нэр солих (Settings) ---------------------------------
+adminRouter.post('/restaurants', validateBody(createRestaurantSchema), asyncHandler(async (req, res) => {
+  const { hotel_id, name } = req.body;
+  const hotel = await pool.query('SELECT id FROM hotels WHERE id = $1 AND is_deleted = false', [hotel_id]);
+  if (hotel.rows.length === 0) {
+    return res.status(400).json({ error: 'Буудал олдсонгүй.' });
+  }
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO restaurants (hotel_id, name) VALUES ($1, $2) RETURNING *',
+      [hotel_id, name]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'Энэ нэртэй ресторан аль хэдийн байна.' });
+    throw err;
+  }
+}));
+
 adminRouter.patch('/restaurants/:id', validateBody(renameRestaurantSchema), asyncHandler(async (req, res) => {
-  const { rows } = await pool.query(
-    'UPDATE restaurants SET name = $1 WHERE id = $2 RETURNING *',
-    [req.body.name, req.params.id]
-  );
-  if (rows.length === 0) return res.status(404).json({ error: 'Ресторан олдсонгүй.' });
-  res.json(rows[0]);
+  try {
+    const { rows } = await pool.query(
+      'UPDATE restaurants SET name = $1 WHERE id = $2 RETURNING *',
+      [req.body.name, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Ресторан олдсонгүй.' });
+    res.json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'Энэ нэртэй ресторан аль хэдийн байна.' });
+    throw err;
+  }
+}));
+
+// --- Ангилал (diet type) нэмэх / нэр солих / устгах (Settings) -------------
+adminRouter.post('/diet-types', validateBody(dietTypeNameSchema), asyncHandler(async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO diet_types (name) VALUES ($1) RETURNING *',
+      [req.body.name]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'Энэ нэртэй ангилал аль хэдийн байна.' });
+    throw err;
+  }
+}));
+
+adminRouter.patch('/diet-types/:id', validateBody(dietTypeNameSchema), asyncHandler(async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'UPDATE diet_types SET name = $1 WHERE id = $2 RETURNING *',
+      [req.body.name, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Ангилал олдсонгүй.' });
+    res.json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'Энэ нэртэй ангилал аль хэдийн байна.' });
+    throw err;
+  }
+}));
+
+adminRouter.delete('/diet-types/:id', asyncHandler(async (req, res) => {
+  const inUse = await pool.query('SELECT count(*)::int AS n FROM menu_items WHERE diet_type_id = $1', [req.params.id]);
+  if (inUse.rows[0].n > 0) {
+    return res.status(400).json({ error: `Энэ ангилалыг ${inUse.rows[0].n} хоол ашиглаж байгаа тул устгах боломжгүй. Эхлээд тэдгээр хоолны ангиллыг өөрчилнө үү.` });
+  }
+  const { rows } = await pool.query('DELETE FROM diet_types WHERE id = $1 RETURNING id', [req.params.id]);
+  if (rows.length === 0) return res.status(404).json({ error: 'Ангилал олдсонгүй.' });
+  res.json({ deleted: true, id: rows[0].id });
 }));
 
 // --- Dashboard-ийн үзүүлэлт (нийт хоол, захиалга, орлого, сүүлийн захиалгууд) ---

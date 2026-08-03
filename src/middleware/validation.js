@@ -49,13 +49,11 @@ export const createSessionSchema = z
     }
   });
 
-const dietTypeEnum = z.enum(['standard', 'vegetarian', 'vegan', 'halal', 'gluten_free']);
-
 export const createMenuItemSchema = z.object({
   name: z.string().trim().min(1).max(150),
   description: z.string().trim().max(1000).nullish(),
   category: z.string().trim().max(50).nullish(),
-  diet_type: dietTypeEnum.nullish(),
+  diet_type_id: uuidSchema('diet_type_id зөв UUID байх ёстой'),
   price_usd: z.number().positive('Үнэ 0-ээс их байх ёстой'),
   image_url: z.string().trim().max(500).nullish(),
   calories: z.number().int().positive().nullish(),
@@ -70,7 +68,7 @@ export const updateMenuItemSchema = z.object({
   name: z.string().trim().min(1).max(150).nullish(),
   description: z.string().trim().max(1000).nullish(),
   category: z.string().trim().max(50).nullish(),
-  diet_type: dietTypeEnum.nullish(),
+  diet_type_id: uuidSchema('diet_type_id зөв UUID байх ёстой').nullish(),
   price_usd: z.number().positive('Үнэ 0-ээс их байх ёстой').nullish(),
   image_url: z.string().trim().max(500).nullish(),
   calories: z.number().int().positive().nullish(),
@@ -84,6 +82,15 @@ export const updateMenuItemSchema = z.object({
 
 export const renameRestaurantSchema = z.object({
   name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100),
+});
+
+export const createRestaurantSchema = z.object({
+  hotel_id: uuidSchema('hotel_id зөв UUID байх ёстой'),
+  name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100),
+});
+
+export const dietTypeNameSchema = z.object({
+  name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(50),
 });
 
 export const createOrderSchema = z.object({

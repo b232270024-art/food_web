@@ -6,15 +6,24 @@ import { requireAdmin } from '../middleware/adminAuth.js';
 
 export const menuRouter = Router();
 
+// GET /api/menu/diet-types — бүх ангиллын жагсаалт (бүх буудал дундаа нэг,
+// hotel-аар тусгаарлагдаагүй). Auth хэрэггүй — зочны filter pills-д ашиглана.
+// Анхаар: энэ route заавал /:hotel_id-ээс ӨМНӨ бичигдсэн байх ёстой —
+// эс бөгөөс Express "diet-types"-г hotel_id гэж андуурна.
+menuRouter.get('/diet-types', asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(`SELECT id, name FROM diet_types ORDER BY name`);
+  res.json(rows);
+}));
+
 // GET /api/menu/:hotel_id — fetch menu items for a hotel
-// Optional query params: ?diet_type=halal&category=Main+Course&restaurant_id=...
+// Optional query params: ?diet_type_id=...&category=Main+Course&restaurant_id=...
 // ?all=true includes items marked unavailable (used by the admin dashboard) —
 // soft-deleted items are still excluded either way. In admin (?all=true) mode we
 // also attach sold_today — Ази/Улаанбаатарын өнөөдрийн (00:00-оос хойших)
 // зарагдсан тоо — stock_limit-тэй хамт "X/Y өнөөдөр" харуулахад ашиглана.
 menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
   const { hotel_id } = req.params;
-  const { diet_type, category, restaurant_id, all } = req.query;
+  const { diet_type_id, category, restaurant_id, all } = req.query;
 
   const soldTodayExpr = all === 'true'
     ? `, COALESCE((
@@ -27,13 +36,15 @@ menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
     : '';
 
   let query = `
-    SELECT mi.id, mi.name, mi.description, mi.category, mi.diet_type,
+    SELECT mi.id, mi.name, mi.description, mi.category,
+           mi.diet_type_id, dt.name AS diet_type_name,
            mi.price_usd, mi.image_url, mi.calories, mi.allergens,
            mi.prep_time_min, mi.is_featured, mi.available,
            mi.restaurant_id, mi.stock_limit, r.name AS restaurant_name
            ${soldTodayExpr}
     FROM menu_items mi
     JOIN restaurants r ON r.id = mi.restaurant_id
+    JOIN diet_types dt ON dt.id = mi.diet_type_id
     WHERE mi.hotel_id = $1
       AND mi.is_deleted = false
   `;
@@ -43,9 +54,9 @@ menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
     query += ` AND mi.available = true`;
   }
 
-  if (diet_type) {
-    params.push(diet_type);
-    query += ` AND mi.diet_type = $${params.length}`;
+  if (diet_type_id) {
+    params.push(diet_type_id);
+    query += ` AND mi.diet_type_id = $${params.length}`;
   }
 
   if (category) {
@@ -105,7 +116,7 @@ menuRouter.delete('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
 
 // POST /api/menu/:hotel_id — add a new menu item (admin)
 menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), asyncHandler(async (req, res) => {
-  const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_id, stock_limit } = req.body;
+  const { name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_id, stock_limit } = req.body;
 
   const restaurant = await pool.query(
     'SELECT id FROM restaurants WHERE id = $1 AND hotel_id = $2',
@@ -115,9 +126,14 @@ menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), 
     return res.status(400).json({ error: 'Сонгосон ресторан энэ буудалд харьяалагдахгүй байна.' });
   }
 
+  const dietType = await pool.query('SELECT id FROM diet_types WHERE id = $1', [diet_type_id]);
+  if (dietType.rows.length === 0) {
+    return res.status(400).json({ error: 'Сонгосон ангилал олдсонгүй.' });
+  }
+
   const { rows } = await pool.query(
     `INSERT INTO menu_items
-       (hotel_id, name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_id, stock_limit)
+       (hotel_id, name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_id, stock_limit)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
      RETURNING *`,
     [
@@ -125,7 +141,7 @@ menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), 
       name,
       description ?? null,
       category ?? null,
-      diet_type ?? 'standard',
+      diet_type_id,
       price_usd,
       image_url ?? null,
       calories ?? null,
@@ -141,7 +157,7 @@ menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), 
 
 // PATCH /api/menu/item/:id — update a menu item (image_url, price, availability, etc.)
 menuRouter.patch('/item/:id', requireAdmin, validateBody(updateMenuItemSchema), asyncHandler(async (req, res) => {
-  const { name, description, category, diet_type, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, restaurant_id, stock_limit } = req.body;
+  const { name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, restaurant_id, stock_limit } = req.body;
 
   if (restaurant_id) {
     const current = await pool.query('SELECT hotel_id FROM menu_items WHERE id = $1', [req.params.id]);
@@ -155,12 +171,19 @@ menuRouter.patch('/item/:id', requireAdmin, validateBody(updateMenuItemSchema), 
     }
   }
 
+  if (diet_type_id) {
+    const dietType = await pool.query('SELECT id FROM diet_types WHERE id = $1', [diet_type_id]);
+    if (dietType.rows.length === 0) {
+      return res.status(400).json({ error: 'Сонгосон ангилал олдсонгүй.' });
+    }
+  }
+
   const { rows } = await pool.query(
     `UPDATE menu_items SET
       name          = COALESCE($1, name),
       description   = COALESCE($2, description),
       category      = COALESCE($3, category),
-      diet_type     = COALESCE($4::diet_type, diet_type),
+      diet_type_id  = COALESCE($4, diet_type_id),
       price_usd     = COALESCE($5, price_usd),
       image_url     = COALESCE($6, image_url),
       calories      = COALESCE($7, calories),
@@ -173,7 +196,7 @@ menuRouter.patch('/item/:id', requireAdmin, validateBody(updateMenuItemSchema), 
     WHERE id = $15 AND is_deleted = false
     RETURNING *`,
     [
-      name, description, category, diet_type, price_usd, image_url, calories,
+      name, description, category, diet_type_id, price_usd, image_url, calories,
       allergens, prep_time_min, is_featured, available, restaurant_id,
       Object.prototype.hasOwnProperty.call(req.body, 'stock_limit'), stock_limit,
       req.params.id,

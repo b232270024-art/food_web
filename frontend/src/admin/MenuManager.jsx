@@ -1,34 +1,26 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
 
-const DIET_OPTIONS = [
-  { value: 'standard', label: 'Стандарт' },
-  { value: 'vegetarian', label: 'Vegetarian' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'halal', label: 'Halal' },
-  { value: 'gluten_free', label: 'Gluten Free' },
-];
-
-export function emptyItemForm(restaurants) {
+export function emptyItemForm(restaurants, dietTypes) {
   return {
-    name: '', category: '', diet_type: 'standard',
+    name: '', category: '', diet_type_id: dietTypes?.[0]?.id || '',
     price_usd: '', description: '', prep_time_min: '', is_featured: false,
     restaurant_id: restaurants[0]?.id || '', stock_limit: '', image_url: '',
   };
 }
 
-export function ItemForm({ initial, restaurants, onCancel, onSave, saving }) {
+export function ItemForm({ initial, restaurants, dietTypes, onCancel, onSave, saving }) {
   const [form, setForm] = useState(initial);
   const [uploading, setUploading] = useState(false);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.price_usd || !form.restaurant_id) return;
+    if (!form.name.trim() || !form.price_usd || !form.restaurant_id || !form.diet_type_id) return;
     onSave({
       name: form.name.trim(),
       category: form.category.trim() || null,
-      diet_type: form.diet_type,
+      diet_type_id: form.diet_type_id,
       price_usd: Number(form.price_usd),
       description: form.description.trim() || null,
       prep_time_min: form.prep_time_min ? Number(form.prep_time_min) : null,
@@ -66,9 +58,10 @@ export function ItemForm({ initial, restaurants, onCancel, onSave, saving }) {
       <input placeholder="Үнэ (USD) *" type="number" step="0.01" min="0" value={form.price_usd} onChange={set('price_usd')} required
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
 
-      <select value={form.diet_type} onChange={set('diet_type')}
+      <select value={form.diet_type_id} onChange={set('diet_type_id')} required
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }}>
-        {DIET_OPTIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+        <option value="" disabled>Ангилал сонгох *</option>
+        {dietTypes.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
       </select>
 
       <select value={form.restaurant_id} onChange={set('restaurant_id')} required
@@ -138,7 +131,7 @@ function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
           {item.is_featured && <span style={{ fontSize: '0.7rem' }}>⭐</span>}
         </div>
         <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>
-          {item.category || '—'} · {item.diet_type} · {item.restaurant_name}
+          {item.category || '—'} · {item.diet_type_name} · {item.restaurant_name}
           {limitLabel && ` · ${limitLabel}`}
         </div>
       </div>
@@ -164,6 +157,7 @@ function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
 export function MenuManager({ hotelId }) {
   const [items, setItems] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
+  const [dietTypes, setDietTypes] = useState([]);
   const [restaurantFilter, setRestaurantFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -173,14 +167,17 @@ export function MenuManager({ hotelId }) {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [itemsRes, restaurantsRes] = await Promise.all([
+      const [itemsRes, restaurantsRes, dietTypesRes] = await Promise.all([
         fetch(`/api/menu/${hotelId}?all=true`),
         fetch(`/api/menu/${hotelId}/restaurants`),
+        fetch('/api/menu/diet-types'),
       ]);
       const itemsData = await itemsRes.json();
       const restaurantsData = await restaurantsRes.json();
+      const dietTypesData = await dietTypesRes.json();
       if (Array.isArray(itemsData)) setItems(itemsData);
       if (Array.isArray(restaurantsData)) setRestaurants(restaurantsData);
+      if (Array.isArray(dietTypesData)) setDietTypes(dietTypesData);
       setError('');
     } catch {
       setError('Цэсний мэдээлэл татахад алдаа гарлаа.');
@@ -291,16 +288,17 @@ export function MenuManager({ hotelId }) {
       )}
 
       {adding && (
-        <ItemForm initial={emptyItemForm(restaurants)} restaurants={restaurants} onCancel={() => setAdding(false)} onSave={handleCreate} saving={saving} />
+        <ItemForm initial={emptyItemForm(restaurants, dietTypes)} restaurants={restaurants} dietTypes={dietTypes} onCancel={() => setAdding(false)} onSave={handleCreate} saving={saving} />
       )}
 
       {editingItem && (
         <ItemForm
           restaurants={restaurants}
+          dietTypes={dietTypes}
           initial={{
             name: editingItem.name,
             category: editingItem.category || '',
-            diet_type: editingItem.diet_type || 'standard',
+            diet_type_id: editingItem.diet_type_id,
             price_usd: editingItem.price_usd,
             description: editingItem.description || '',
             prep_time_min: editingItem.prep_time_min || '',

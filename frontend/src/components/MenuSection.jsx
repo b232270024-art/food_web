@@ -81,7 +81,9 @@ function BackButton({ label, onBack }) {
   );
 }
 
-// Diet type display config
+// Танигдсан ангиллын нэрсэд зориулсан стиль (emoji/өнгө) — admin шинээр
+// нэмсэн/сольсон ангилалд DIET_CONFIG.standard-ийн стандарт стиль fallback
+// болно (нэрийг нь rename хийсэн ч харагдац эвдрэхгүй).
 const DIET_CONFIG = {
   halal:        { label: 'Halal',        emoji: '☪️',  color: '#065f46', bg: '#d1fae5' },
   vegetarian:   { label: 'Vegetarian',   emoji: '🌿',  color: '#166534', bg: '#dcfce7' },
@@ -90,13 +92,10 @@ const DIET_CONFIG = {
   standard:     { label: 'Standard',     emoji: '🍽',  color: '#374151', bg: '#f3f4f6' },
 };
 
-const DIET_FILTERS = [
-  { key: 'all',        label: 'All',         emoji: '🍽' },
-  { key: 'halal',      label: 'Halal',       emoji: '☪️' },
-  { key: 'vegetarian', label: 'Vegetarian',  emoji: '🌿' },
-  { key: 'vegan',      label: 'Vegan',       emoji: '🌱' },
-  { key: 'gluten_free',label: 'Gluten Free', emoji: '🌾✕' },
-];
+function dietStyle(name) {
+  const key = (name || '').toLowerCase().trim().replace(/\s+/g, '_');
+  return DIET_CONFIG[key] || { ...DIET_CONFIG.standard, label: name || DIET_CONFIG.standard.label };
+}
 
 const CATEGORY_EMOJI = {
   'Main Course': '🥩', 'Salad & Appetizer': '🥗', 'Appetizer': '🥗',
@@ -106,7 +105,7 @@ const CATEGORY_EMOJI = {
 const CARD_BG = ['#fff3e8', '#e8f5e9', '#fff8e1', '#fce4ec', '#e8f0fe', '#f0fdf4'];
 
 function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
-  const diet = DIET_CONFIG[item.diet_type] || DIET_CONFIG.standard;
+  const diet = dietStyle(item.diet_type_name);
   const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
   const bg = CARD_BG[idx % CARD_BG.length];
   const featured = item.is_featured;
@@ -295,9 +294,17 @@ export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCa
     return ['All', ...cats];
   }, [menuItems]);
 
+  // Тухайн буудлын menu-д бодитоор ашиглагдаж буй ангиллуудаас л filter pill
+  // үүсгэнэ (dietFilter одоо fixed key биш, diet_type_id (uuid) хадгална).
+  const dietFilters = useMemo(() => {
+    const map = new Map();
+    menuItems.forEach(i => { if (i.diet_type_id && !map.has(i.diet_type_id)) map.set(i.diet_type_id, i.diet_type_name); });
+    return [...map.entries()].map(([id, name]) => ({ id, name }));
+  }, [menuItems]);
+
   const filtered = useMemo(() =>
     menuItems.filter(item => {
-      const matchDiet   = dietFilter === 'all' || item.diet_type === dietFilter;
+      const matchDiet   = dietFilter === 'all' || item.diet_type_id === dietFilter;
       const matchCat    = catFilter === 'All'  || item.category === catFilter;
       const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
       return matchDiet && matchCat && matchSearch;
@@ -393,26 +400,40 @@ export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCa
         </div>
       </div>
 
-      {/* Diet type filter pills */}
+      {/* Diet type filter pills — тухайн буудлын menu-д бодитоор байгаа ангиллуудаас */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-        {DIET_FILTERS.map(f => {
-          const active = dietFilter === f.key;
-          const cfg = DIET_CONFIG[f.key] || DIET_CONFIG.standard;
+        <button
+          onClick={() => setDietFilter('all')}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '8px 18px', borderRadius: 'var(--r-full)',
+            fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
+            border: `2px solid ${dietFilter === 'all' ? DIET_CONFIG.standard.color : 'var(--border)'}`,
+            background: dietFilter === 'all' ? DIET_CONFIG.standard.bg : 'var(--bg-card)',
+            color: dietFilter === 'all' ? DIET_CONFIG.standard.color : 'var(--text-body)',
+            transition: 'all 0.2s',
+          }}
+        >
+          <span>🍽</span> {tr.menuAllCat}
+        </button>
+        {dietFilters.map(f => {
+          const active = dietFilter === f.id;
+          const cfg = dietStyle(f.name);
           return (
             <button
-              key={f.key}
-              onClick={() => setDietFilter(f.key)}
+              key={f.id}
+              onClick={() => setDietFilter(f.id)}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 padding: '8px 18px', borderRadius: 'var(--r-full)',
                 fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
                 border: `2px solid ${active ? cfg.color : 'var(--border)'}`,
-                background: active ? cfg.bg : 'white',
+                background: active ? cfg.bg : 'var(--bg-card)',
                 color: active ? cfg.color : 'var(--text-body)',
                 transition: 'all 0.2s',
               }}
             >
-              <span>{f.emoji}</span> {f.label}
+              <span>{cfg.emoji}</span> {cfg.label}
             </button>
           );
         })}

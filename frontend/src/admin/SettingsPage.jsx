@@ -1,49 +1,176 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pencil, Check, X } from 'lucide-react';
+import { Pencil, Check, X, Plus, Trash2 } from 'lucide-react';
+
+function EditableRow({ item, editingId, draftName, onStartEdit, onDraftChange, onSave, onCancel, onDelete, saving }) {
+  const isEditing = editingId === item.id;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '10px 12px', borderRadius: 10, background: 'var(--bg-muted)',
+    }}>
+      {isEditing ? (
+        <>
+          <input
+            value={draftName}
+            onChange={e => onDraftChange(e.target.value)}
+            autoFocus
+            style={{ flex: 1, padding: '7px 10px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.87rem' }}
+          />
+          <button onClick={() => onSave(item.id)} disabled={saving} title="Хадгалах"
+            style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--brand-green)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Check size={15} />
+          </button>
+          <button onClick={onCancel} title="Цуцлах"
+            style={{ width: 32, height: 32, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={15} />
+          </button>
+        </>
+      ) : (
+        <>
+          <span style={{ flex: 1, fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-dark)' }}>{item.name}</span>
+          <button onClick={() => onStartEdit(item)} title="Нэр солих"
+            style={{ width: 32, height: 32, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Pencil size={14} />
+          </button>
+          {onDelete && (
+            <button onClick={() => onDelete(item)} title="Устгах"
+              style={{ width: 32, height: 32, borderRadius: 8, background: '#fef2f2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trash2 size={14} />
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 export function SettingsPage({ hotelId }) {
   const [restaurants, setRestaurants] = useState([]);
+  const [dietTypes, setDietTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [draftName, setDraftName] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const fetchRestaurants = useCallback(async () => {
+  const [editingRestId, setEditingRestId] = useState(null);
+  const [restDraft, setRestDraft] = useState('');
+  const [newRestName, setNewRestName] = useState('');
+
+  const [editingDietId, setEditingDietId] = useState(null);
+  const [dietDraft, setDietDraft] = useState('');
+  const [newDietName, setNewDietName] = useState('');
+
+  const fetchAll = useCallback(async () => {
     try {
-      const res = await fetch(`/api/menu/${hotelId}/restaurants`);
-      const data = await res.json();
-      if (Array.isArray(data)) setRestaurants(data);
+      const [rRes, dRes] = await Promise.all([
+        fetch(`/api/menu/${hotelId}/restaurants`),
+        fetch('/api/menu/diet-types'),
+      ]);
+      const [r, d] = await Promise.all([rRes.json(), dRes.json()]);
+      if (Array.isArray(r)) setRestaurants(r);
+      if (Array.isArray(d)) setDietTypes(d);
       setError('');
     } catch {
-      setError('Рестораны мэдээлэл татахад алдаа гарлаа.');
+      setError('Мэдээлэл татахад алдаа гарлаа.');
     } finally {
       setLoading(false);
     }
   }, [hotelId]);
 
-  useEffect(() => { if (hotelId) fetchRestaurants(); }, [hotelId, fetchRestaurants]);
+  useEffect(() => { if (hotelId) fetchAll(); }, [hotelId, fetchAll]);
 
-  const startEdit = (r) => { setEditingId(r.id); setDraftName(r.name); };
-  const cancelEdit = () => { setEditingId(null); setDraftName(''); };
+  // --- Ресторан ---
+  const addRestaurant = async (e) => {
+    e.preventDefault();
+    if (!newRestName.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/restaurants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hotel_id: hotelId, name: newRestName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Нэмэхэд алдаа гарлаа.');
+      setRestaurants(prev => [...prev, data]);
+      setNewRestName('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const saveEdit = async (id) => {
-    if (!draftName.trim()) return;
+  const saveRestaurant = async (id) => {
+    if (!restDraft.trim()) return;
     setSaving(true);
     try {
       const res = await fetch(`/api/admin/restaurants/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: draftName.trim() }),
+        body: JSON.stringify({ name: restDraft.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Хадгалахад алдаа гарлаа.');
       setRestaurants(prev => prev.map(r => r.id === id ? data : r));
-      cancelEdit();
+      setEditingRestId(null);
     } catch (err) {
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  // --- Ангилал (diet type) ---
+  const addDietType = async (e) => {
+    e.preventDefault();
+    if (!newDietName.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/diet-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newDietName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Нэмэхэд алдаа гарлаа.');
+      setDietTypes(prev => [...prev, data]);
+      setNewDietName('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveDietType = async (id) => {
+    if (!dietDraft.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/diet-types/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: dietDraft.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Хадгалахад алдаа гарлаа.');
+      setDietTypes(prev => prev.map(d => d.id === id ? data : d));
+      setEditingDietId(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteDietType = async (item) => {
+    if (!window.confirm(`"${item.name}" ангиллыг устгах уу?`)) return;
+    try {
+      const res = await fetch(`/api/admin/diet-types/${item.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Устгахад алдаа гарлаа.');
+      setDietTypes(prev => prev.filter(d => d.id !== item.id));
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -57,52 +184,88 @@ export function SettingsPage({ hotelId }) {
         </div>
       )}
 
-      <div className="card" style={{ padding: 20 }}>
+      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h3 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '0.9rem', marginBottom: 4 }}>
           Ресторанууд
         </h3>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 14 }}>
-          Menu болон Захиалгууд хуудсанд ашиглагдах 3 dining outlet-ийн нэрийг эндээс өөрчилнө.
+          Menu болон Захиалгууд хуудсанд ашиглагдах dining outlet-уудыг эндээс нэмэх/нэр солих боломжтой.
         </p>
 
         {loading ? (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Ачааллаж байна...</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {restaurants.map(r => (
-              <div key={r.id} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 12px', borderRadius: 10, background: 'var(--bg-muted)',
-              }}>
-                {editingId === r.id ? (
-                  <>
-                    <input
-                      value={draftName}
-                      onChange={e => setDraftName(e.target.value)}
-                      autoFocus
-                      style={{ flex: 1, padding: '7px 10px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.87rem' }}
-                    />
-                    <button onClick={() => saveEdit(r.id)} disabled={saving} title="Хадгалах"
-                      style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--brand-green)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Check size={15} />
-                    </button>
-                    <button onClick={cancelEdit} title="Цуцлах"
-                      style={{ width: 32, height: 32, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <X size={15} />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span style={{ flex: 1, fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-dark)' }}>{r.name}</span>
-                    <button onClick={() => startEdit(r)} title="Нэр солих"
-                      style={{ width: 32, height: 32, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Pencil size={14} />
-                    </button>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+              {restaurants.map(r => (
+                <EditableRow
+                  key={r.id}
+                  item={r}
+                  editingId={editingRestId}
+                  draftName={restDraft}
+                  onStartEdit={(item) => { setEditingRestId(item.id); setRestDraft(item.name); }}
+                  onDraftChange={setRestDraft}
+                  onSave={saveRestaurant}
+                  onCancel={() => setEditingRestId(null)}
+                  saving={saving}
+                />
+              ))}
+            </div>
+            <form onSubmit={addRestaurant} style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={newRestName}
+                onChange={e => setNewRestName(e.target.value)}
+                placeholder="Шинэ рестораны нэр"
+                style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.87rem' }}
+              />
+              <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                <Plus size={15} /> Нэмэх
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '0.9rem', marginBottom: 4 }}>
+          Ангилал
+        </h3>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 14 }}>
+          Хоолны ангилал (Halal, Vegan, гэх мэт) — бүх буудал дундаа нэг жагсаалт. Ашиглагдаж буй ангиллыг устгах боломжгүй.
+        </p>
+
+        {loading ? (
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Ачааллаж байна...</p>
+        ) : (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+              {dietTypes.map(d => (
+                <EditableRow
+                  key={d.id}
+                  item={d}
+                  editingId={editingDietId}
+                  draftName={dietDraft}
+                  onStartEdit={(item) => { setEditingDietId(item.id); setDietDraft(item.name); }}
+                  onDraftChange={setDietDraft}
+                  onSave={saveDietType}
+                  onCancel={() => setEditingDietId(null)}
+                  onDelete={deleteDietType}
+                  saving={saving}
+                />
+              ))}
+            </div>
+            <form onSubmit={addDietType} style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={newDietName}
+                onChange={e => setNewDietName(e.target.value)}
+                placeholder="Шинэ ангиллын нэр"
+                style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.87rem' }}
+              />
+              <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                <Plus size={15} /> Нэмэх
+              </button>
+            </form>
+          </>
         )}
       </div>
     </div>
