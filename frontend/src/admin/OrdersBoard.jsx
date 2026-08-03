@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { RefreshCw, Clock, DoorClosed, User } from 'lucide-react';
+import { RefreshCw, Clock, DoorClosed, MapPin, User } from 'lucide-react';
 
 const STATUS_FLOW = ['pending', 'preparing', 'served', 'paid'];
+const TERMINAL_EXTRA = ['cancelled', 'refunded'];
 
 const STATUS_LABEL = {
   pending: 'Хүлээгдэж буй',
@@ -10,6 +11,7 @@ const STATUS_LABEL = {
   served: 'Хүргэгдсэн',
   paid: 'Төлбөр төлөгдсөн',
   cancelled: 'Цуцлагдсан',
+  refunded: 'Буцаагдсан',
 };
 
 const STATUS_COLOR = {
@@ -18,24 +20,20 @@ const STATUS_COLOR = {
   served: { bg: '#e0e7ff', text: '#3730a3', dot: '#6366f1' },
   paid: { bg: '#dcfce7', text: '#166534', dot: '#22c55e' },
   cancelled: { bg: '#f3f4f6', text: '#6b7280', dot: '#9ca3af' },
+  refunded: { bg: '#fee2e2', text: '#991b1b', dot: '#ef4444' },
 };
 
-function timeAgo(dateStr) {
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.max(0, Math.floor(diffMs / 60000));
-  if (mins < 1) return 'дөнгөж сая';
-  if (mins < 60) return `${mins} мин өмнө`;
-  const hrs = Math.floor(mins / 60);
-  return `${hrs} цаг өмнө`;
+function formatDateTime(dateStr) {
+  return new Date(dateStr).toLocaleString('mn-MN', {
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  });
 }
 
 function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
   const colors = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
-  
-  // Filter items by restaurant if one is selected
   const items = order.items || [];
-  const displayItems = selectedRestaurant === 'All' 
-    ? items 
+  const displayItems = selectedRestaurant === 'All'
+    ? items
     : items.filter(i => i.restaurant_name === selectedRestaurant);
 
   if (selectedRestaurant !== 'All' && displayItems.length === 0) return null;
@@ -48,15 +46,15 @@ function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
             <User size={14} color="var(--brand-green-light)" />
             {order.guest_name || 'Guest'}
           </div>
-          {order.room_number && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
-              <DoorClosed size={13} /> Өрөө {order.room_number}
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
+            {order.room_number ? (
+              <><DoorClosed size={13} /> Өрөө {order.room_number}</>
+            ) : order.delivery_address ? (
+              <><MapPin size={13} /> {order.delivery_address}</>
+            ) : null}
+          </div>
         </div>
-        <span style={{
-          fontWeight: 900, fontSize: '1rem', color: 'var(--brand-green)',
-        }}>
+        <span style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--brand-green)' }}>
           ${Number(order.total_usd).toFixed(2)}
         </span>
       </div>
@@ -73,11 +71,10 @@ function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <Clock size={12} /> {timeAgo(order.created_at)}
+          <Clock size={12} /> {formatDateTime(order.created_at)}
         </span>
         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: order.payment_status === 'paid' ? 'var(--brand-green)' : 'var(--text-muted)' }}>
-          {order.payment_status === 'paid' ? 'Төлөгдсөн' : 'Төлөөгүй'} 
-          {order.paid_at && ` (${new Date(order.paid_at).toLocaleTimeString()})`}
+          {order.payment_status === 'paid' ? 'Төлөгдсөн' : 'Төлөөгүй'}
         </span>
       </div>
 
@@ -92,7 +89,7 @@ function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
             opacity: updating ? 0.6 : 1,
           }}
         >
-          {[...STATUS_FLOW, 'cancelled'].map(s => (
+          {[...STATUS_FLOW, ...TERMINAL_EXTRA].map(s => (
             <option key={s} value={s}>{STATUS_LABEL[s]}</option>
           ))}
         </select>
@@ -103,19 +100,16 @@ function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
 
 function Column({ status, orders, onChangeStatus, updatingId, selectedRestaurant }) {
   const colors = STATUS_COLOR[status];
-  
-  // Count how many orders actually have items for the selected restaurant
+
   const visibleCount = orders.filter(o => {
     if (selectedRestaurant === 'All') return true;
     const items = o.items || [];
     return items.some(i => i.restaurant_name === selectedRestaurant);
   }).length;
+
   return (
     <div style={{ flex: '1 1 240px', minWidth: 240 }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        marginBottom: 12, padding: '8px 4px',
-      }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 4px' }}>
         <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors.dot }} />
         <h3 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '0.95rem' }}>
           {STATUS_LABEL[status]}
@@ -145,16 +139,17 @@ function Column({ status, orders, onChangeStatus, updatingId, selectedRestaurant
 
 export function OrdersBoard({ hotelId }) {
   const [orders, setOrders] = useState([]);
+  const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState(null);
-  const [showCancelled, setShowCancelled] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState('All');
   const socketRef = useRef(null);
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/${hotelId}/orders/live`);
+      const res = await fetch(`/api/admin/${hotelId}/orders`);
       const data = await res.json();
       if (Array.isArray(data)) setOrders(data);
       setError('');
@@ -163,6 +158,14 @@ export function OrdersBoard({ hotelId }) {
     } finally {
       setLoading(false);
     }
+  }, [hotelId]);
+
+  useEffect(() => {
+    if (!hotelId) return;
+    fetch(`/api/menu/${hotelId}/restaurants`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setRestaurants(data); })
+      .catch(() => {});
   }, [hotelId]);
 
   useEffect(() => {
@@ -202,29 +205,27 @@ export function OrdersBoard({ hotelId }) {
     }
   };
 
-  const visibleOrders = showCancelled ? orders : orders.filter(o => o.status !== 'cancelled');
+  const visibleOrders = showTerminal ? orders : orders.filter(o => !TERMINAL_EXTRA.includes(o.status));
 
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-        <h2 className="heading-md">Идэвхтэй захиалгууд</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <h2 className="heading-md">Захиалгууд</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-body)', cursor: 'pointer' }}>
-            <input type="checkbox" checked={showCancelled} onChange={e => setShowCancelled(e.target.checked)} />
-            Цуцлагдсаныг харуулах
+            <input type="checkbox" checked={showTerminal} onChange={e => setShowTerminal(e.target.checked)} />
+            Цуцлагдсан/Буцаагдсаныг харуулах
           </label>
-          <select 
-            value={selectedRestaurant} 
+          <select
+            value={selectedRestaurant}
             onChange={e => setSelectedRestaurant(e.target.value)}
             style={{
               padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)',
-              fontSize: '0.8rem', fontWeight: 700, background: 'var(--bg-muted)'
+              fontSize: '0.8rem', fontWeight: 700, background: 'var(--bg-muted)',
             }}
           >
             <option value="All">Бүх ресторан</option>
-            <option value="Ресторан 1">Ресторан 1</option>
-            <option value="Ресторан 2">Ресторан 2</option>
-            <option value="Ресторан 3">Ресторан 3</option>
+            {restaurants.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
           </select>
           <button
             onClick={fetchOrders}
@@ -250,7 +251,7 @@ export function OrdersBoard({ hotelId }) {
         <p style={{ color: 'var(--text-muted)' }}>Ачааллаж байна...</p>
       ) : (
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          {(showCancelled ? [...STATUS_FLOW, 'cancelled'] : STATUS_FLOW).map(status => (
+          {(showTerminal ? [...STATUS_FLOW, ...TERMINAL_EXTRA] : STATUS_FLOW).map(status => (
             <Column
               key={status}
               status={status}

@@ -49,19 +49,41 @@ export const createSessionSchema = z
     }
   });
 
+const dietTypeEnum = z.enum(['standard', 'vegetarian', 'vegan', 'halal', 'gluten_free']);
+
 export const createMenuItemSchema = z.object({
   name: z.string().trim().min(1).max(150),
   description: z.string().trim().max(1000).nullish(),
   category: z.string().trim().max(50).nullish(),
-  diet_type: z.string().trim().max(50).nullish(),
+  diet_type: dietTypeEnum.nullish(),
   price_usd: z.number().positive('Үнэ 0-ээс их байх ёстой'),
-  image_url: z.string().trim().nullish(),
+  image_url: z.string().trim().max(500).nullish(),
   calories: z.number().int().positive().nullish(),
-  allergens: z.array(z.string()).nullish(),
+  allergens: z.array(z.string().trim().max(50)).nullish(),
   prep_time_min: z.number().int().positive().nullish(),
   is_featured: z.boolean().nullish(),
-  restaurant_name: z.string().trim().max(150).nullish(),
-  stock_limit: z.number().int().nullish(),
+  restaurant_id: uuidSchema('restaurant_id зөв UUID байх ёстой'),
+  stock_limit: z.number().int().nonnegative('Лимит 0-ээс их байх ёстой').nullish(),
+});
+
+export const updateMenuItemSchema = z.object({
+  name: z.string().trim().min(1).max(150).nullish(),
+  description: z.string().trim().max(1000).nullish(),
+  category: z.string().trim().max(50).nullish(),
+  diet_type: dietTypeEnum.nullish(),
+  price_usd: z.number().positive('Үнэ 0-ээс их байх ёстой').nullish(),
+  image_url: z.string().trim().max(500).nullish(),
+  calories: z.number().int().positive().nullish(),
+  allergens: z.array(z.string().trim().max(50)).nullish(),
+  prep_time_min: z.number().int().positive().nullish(),
+  is_featured: z.boolean().nullish(),
+  available: z.boolean().nullish(),
+  restaurant_id: uuidSchema('restaurant_id зөв UUID байх ёстой').nullish(),
+  stock_limit: z.number().int().nonnegative('Лимит 0-ээс их байх ёстой').nullish(),
+});
+
+export const renameRestaurantSchema = z.object({
+  name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100),
 });
 
 export const createOrderSchema = z.object({
@@ -77,7 +99,7 @@ export const createOrderSchema = z.object({
 });
 
 export const updateOrderStatusSchema = z.object({
-  status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['pending', 'preparing', 'served', 'paid', 'cancelled'])),
+  status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['pending', 'preparing', 'served', 'paid', 'cancelled', 'refunded'])),
 });
 
 export const adminLoginSchema = z.object({

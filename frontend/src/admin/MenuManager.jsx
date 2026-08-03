@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, Check, EyeOff, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
 
 const DIET_OPTIONS = [
   { value: 'standard', label: 'Стандарт' },
@@ -9,19 +9,22 @@ const DIET_OPTIONS = [
   { value: 'gluten_free', label: 'Gluten Free' },
 ];
 
-const EMPTY_FORM = {
-  name: '', category: '', diet_type: 'standard',
-  price_usd: '', description: '', prep_time_min: '', is_featured: false,
-  restaurant_name: 'Ресторан 1', stock_limit: '', image_url: '',
-};
+function emptyForm(restaurants) {
+  return {
+    name: '', category: '', diet_type: 'standard',
+    price_usd: '', description: '', prep_time_min: '', is_featured: false,
+    restaurant_id: restaurants[0]?.id || '', stock_limit: '', image_url: '',
+  };
+}
 
-function ItemForm({ initial, onCancel, onSave, saving }) {
-  const [form, setForm] = useState(initial || EMPTY_FORM);
+function ItemForm({ initial, restaurants, onCancel, onSave, saving }) {
+  const [form, setForm] = useState(initial);
+  const [uploading, setUploading] = useState(false);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.price_usd) return;
+    if (!form.name.trim() || !form.price_usd || !form.restaurant_id) return;
     onSave({
       name: form.name.trim(),
       category: form.category.trim() || null,
@@ -30,65 +33,79 @@ function ItemForm({ initial, onCancel, onSave, saving }) {
       description: form.description.trim() || null,
       prep_time_min: form.prep_time_min ? Number(form.prep_time_min) : null,
       is_featured: !!form.is_featured,
-      restaurant_name: form.restaurant_name,
+      restaurant_id: form.restaurant_id,
       stock_limit: form.stock_limit === '' ? null : Number(form.stock_limit),
-      image_url: form.image_url || null,
+      image_url: form.image_url.trim() || null,
     });
   };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setUploading(true);
     const formData = new FormData();
     formData.append('image', file);
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
-      if (res.ok && data.url) {
-        setForm(f => ({ ...f, image_url: data.url }));
-      }
+      if (!res.ok) throw new Error(data.error || 'Зураг оруулахад алдаа гарлаа.');
+      setForm(f => ({ ...f, image_url: data.url }));
     } catch (err) {
-      alert('Зураг оруулахад алдаа гарлаа');
+      alert(err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="card" style={{ padding: 20, marginBottom: 16, display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12 }}>
       <input placeholder="Нэр *" value={form.name} onChange={set('name')} required
-        style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem', gridColumn: 'span 1' }} />
+        style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
       <input placeholder="Ангилал (жишээ: Гол хоол)" value={form.category} onChange={set('category')}
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
       <input placeholder="Үнэ (USD) *" type="number" step="0.01" min="0" value={form.price_usd} onChange={set('price_usd')} required
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
+
       <select value={form.diet_type} onChange={set('diet_type')}
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }}>
         {DIET_OPTIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
       </select>
-      
-      <select value={form.restaurant_name} onChange={set('restaurant_name')}
+
+      <select value={form.restaurant_id} onChange={set('restaurant_id')} required
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }}>
-        <option value="Ресторан 1">Ресторан 1</option>
-        <option value="Ресторан 2">Ресторан 2</option>
-        <option value="Ресторан 3">Ресторан 3</option>
+        <option value="" disabled>Ресторан сонгох *</option>
+        {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
       </select>
 
-      <input placeholder="Лимит (хоосон = хязгааргүй)" type="number" min="0" value={form.stock_limit} onChange={set('stock_limit')}
+      <input placeholder="Өдрийн лимит (хоосон = хязгааргүй)" type="number" min="0" value={form.stock_limit} onChange={set('stock_limit')}
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
 
       <input placeholder="Бэлтгэх хугацаа (мин)" type="number" min="0" value={form.prep_time_min} onChange={set('prep_time_min')}
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
-        
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem' }}>
-        Зураг: <input type="file" accept="image/*" onChange={handleImageUpload} style={{ flex: 1 }} />
-        {form.image_url && <img src={form.image_url} alt="preview" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6 }} />}
-      </div>
+
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-body)' }}>
         <input type="checkbox" checked={form.is_featured} onChange={set('is_featured')} /> Онцлох
       </label>
+
+      <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 700 }}>Зураг:</span>
+        <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} style={{ fontSize: '0.8rem' }} />
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>эсвэл</span>
+        <input
+          placeholder="Зургийн URL paste хийх"
+          value={form.image_url}
+          onChange={set('image_url')}
+          style={{ flex: 1, minWidth: 180, padding: '7px 10px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.82rem' }}
+        />
+        {form.image_url && <img src={form.image_url} alt="preview" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+        {uploading && <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Оруулж байна...</span>}
+      </div>
+
       <textarea placeholder="Тайлбар" value={form.description} onChange={set('description')} rows={2}
         style={{ gridColumn: '1 / -1', padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem', fontFamily: 'inherit', resize: 'vertical' }} />
+
       <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
-        <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '9px 20px', fontSize: '0.85rem' }}>
+        <button type="submit" disabled={saving || uploading} className="btn-primary" style={{ padding: '9px 20px', fontSize: '0.85rem' }}>
           {saving ? 'Хадгалж байна...' : 'Хадгалах'}
         </button>
         <button type="button" onClick={onCancel} style={{
@@ -103,19 +120,26 @@ function ItemForm({ initial, onCancel, onSave, saving }) {
 }
 
 function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
+  const limitLabel = item.stock_limit !== null
+    ? `${item.sold_today ?? 0}/${item.stock_limit} өнөөдөр`
+    : null;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '12px 16px', borderBottom: '1px solid var(--border)',
       opacity: item.available ? 1 : 0.55,
     }}>
+      {item.image_url
+        ? <img src={item.image_url} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+        : <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-muted)', flexShrink: 0 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-dark)' }}>{item.name}</span>
           {item.is_featured && <span style={{ fontSize: '0.7rem' }}>⭐</span>}
         </div>
         <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>
-          {item.category || '—'} · {item.diet_type} · {item.restaurant_name} {item.stock_limit !== null && `(Лимит: ${item.stock_limit})`}
+          {item.category || '—'} · {item.diet_type} · {item.restaurant_name}
+          {limitLabel && ` · ${limitLabel}`}
         </div>
       </div>
       <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--brand-green)', minWidth: 64, textAlign: 'right' }}>
@@ -139,17 +163,25 @@ function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
 
 export function MenuManager({ hotelId }) {
   const [items, setItems] = useState([]);
+  const [restaurants, setRestaurants] = useState([]);
+  const [restaurantFilter, setRestaurantFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [adding, setAdding] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const fetchItems = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     try {
-      const res = await fetch(`/api/menu/${hotelId}?all=true`);
-      const data = await res.json();
-      if (Array.isArray(data)) setItems(data);
+      const [itemsRes, restaurantsRes] = await Promise.all([
+        fetch(`/api/menu/${hotelId}?all=true`),
+        fetch(`/api/menu/${hotelId}/restaurants`),
+      ]);
+      const itemsData = await itemsRes.json();
+      const restaurantsData = await restaurantsRes.json();
+      if (Array.isArray(itemsData)) setItems(itemsData);
+      if (Array.isArray(restaurantsData)) setRestaurants(restaurantsData);
+      setError('');
     } catch {
       setError('Цэсний мэдээлэл татахад алдаа гарлаа.');
     } finally {
@@ -157,7 +189,7 @@ export function MenuManager({ hotelId }) {
     }
   }, [hotelId]);
 
-  useEffect(() => { if (hotelId) fetchItems(); }, [hotelId, fetchItems]);
+  useEffect(() => { if (hotelId) fetchAll(); }, [hotelId, fetchAll]);
 
   const handleCreate = async (payload) => {
     setSaving(true);
@@ -167,11 +199,12 @@ export function MenuManager({ hotelId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Хоол нэмэхэд алдаа гарлаа.');
       setAdding(false);
-      fetchItems();
-    } catch {
-      setError('Хоол нэмэхэд алдаа гарлаа.');
+      fetchAll();
+    } catch (err) {
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -185,11 +218,12 @@ export function MenuManager({ hotelId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Шинэчлэхэд алдаа гарлаа.');
       setEditingItem(null);
-      fetchItems();
-    } catch {
-      setError('Шинэчлэхэд алдаа гарлаа.');
+      fetchAll();
+    } catch (err) {
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -198,14 +232,15 @@ export function MenuManager({ hotelId }) {
   const handleToggleAvailable = async (item) => {
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, available: !i.available } : i));
     try {
-      await fetch(`/api/menu/item/${item.id}`, {
+      const res = await fetch(`/api/menu/item/${item.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ available: !item.available }),
       });
+      if (!res.ok) throw new Error();
     } catch {
       setError('Шинэчлэхэд алдаа гарлаа.');
-      fetchItems();
+      fetchAll();
     }
   };
 
@@ -213,14 +248,16 @@ export function MenuManager({ hotelId }) {
     if (!window.confirm(`"${item.name}"-г устгах уу?`)) return;
     setItems(prev => prev.filter(i => i.id !== item.id));
     try {
-      await fetch(`/api/menu/item/${item.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/menu/item/${item.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
     } catch {
       setError('Устгахад алдаа гарлаа.');
-      fetchItems();
+      fetchAll();
     }
   };
 
-  const grouped = items.reduce((acc, item) => {
+  const visibleItems = restaurantFilter === 'All' ? items : items.filter(i => i.restaurant_id === restaurantFilter);
+  const grouped = visibleItems.reduce((acc, item) => {
     const cat = item.category || 'Бусад';
     (acc[cat] = acc[cat] || []).push(item);
     return acc;
@@ -228,13 +265,23 @@ export function MenuManager({ hotelId }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <h2 className="heading-md">Цэсний удирдлага</h2>
-        {!adding && !editingItem && (
-          <button onClick={() => setAdding(true)} className="btn-primary" style={{ padding: '9px 18px', fontSize: '0.85rem' }}>
-            <Plus size={16} /> Хоол нэмэх
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <select
+            value={restaurantFilter}
+            onChange={e => setRestaurantFilter(e.target.value)}
+            style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.8rem', fontWeight: 700, background: 'var(--bg-muted)' }}
+          >
+            <option value="All">Бүх ресторан</option>
+            {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+          </select>
+          {!adding && !editingItem && (
+            <button onClick={() => setAdding(true)} className="btn-primary" style={{ padding: '9px 18px', fontSize: '0.85rem' }}>
+              <Plus size={16} /> Хоол нэмэх
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -244,11 +291,12 @@ export function MenuManager({ hotelId }) {
       )}
 
       {adding && (
-        <ItemForm onCancel={() => setAdding(false)} onSave={handleCreate} saving={saving} />
+        <ItemForm initial={emptyForm(restaurants)} restaurants={restaurants} onCancel={() => setAdding(false)} onSave={handleCreate} saving={saving} />
       )}
 
       {editingItem && (
         <ItemForm
+          restaurants={restaurants}
           initial={{
             name: editingItem.name,
             category: editingItem.category || '',
@@ -257,7 +305,7 @@ export function MenuManager({ hotelId }) {
             description: editingItem.description || '',
             prep_time_min: editingItem.prep_time_min || '',
             is_featured: editingItem.is_featured || false,
-            restaurant_name: editingItem.restaurant_name || 'Ресторан 1',
+            restaurant_id: editingItem.restaurant_id,
             stock_limit: editingItem.stock_limit !== null ? editingItem.stock_limit : '',
             image_url: editingItem.image_url || '',
           }}
@@ -269,7 +317,7 @@ export function MenuManager({ hotelId }) {
 
       {loading ? (
         <p style={{ color: 'var(--text-muted)' }}>Ачааллаж байна...</p>
-      ) : items.length === 0 ? (
+      ) : visibleItems.length === 0 ? (
         <p style={{ color: 'var(--text-muted)' }}>Одоогоор хоол алга.</p>
       ) : (
         Object.entries(grouped).map(([cat, catItems]) => (

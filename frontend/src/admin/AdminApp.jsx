@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { Sidebar } from './Sidebar';
+import { DashboardHome } from './DashboardHome';
 import { OrdersBoard } from './OrdersBoard';
 import { MenuManager } from './MenuManager';
+import { SettingsPage } from './SettingsPage';
 
 function LoginForm({ onLoggedIn }) {
   const [username, setUsername] = useState('');
@@ -63,7 +66,7 @@ function LoginForm({ onLoggedIn }) {
 }
 
 function Dashboard({ onLoggedOut }) {
-  const [tab, setTab] = useState('orders');
+  const [tab, setTab] = useState('dashboard');
   const [hotels, setHotels] = useState([]);
   const [hotelId, setHotelId] = useState(null);
 
@@ -84,30 +87,18 @@ function Dashboard({ onLoggedOut }) {
     onLoggedOut();
   };
 
-  const tabBtn = (key, label) => (
-    <button
-      onClick={() => setTab(key)}
-      style={{
-        padding: '8px 16px', fontSize: '0.85rem', borderRadius: 8, fontWeight: 700,
-        background: tab === key ? 'var(--brand-green)' : 'var(--bg-muted)',
-        color: tab === key ? '#fff' : 'var(--text-body)',
-      }}
-    >
-      {label}
-    </button>
-  );
+  const TAB_LABEL = { dashboard: 'Dashboard', menu: 'Цэс', orders: 'Захиалгууд', settings: 'Тохиргоо' };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-muted)' }}>
-      <header style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
-        padding: '16px 24px', background: '#fff', borderBottom: '1px solid var(--border)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {tabBtn('orders', 'Захиалгууд')}
-            {tabBtn('menu', 'Цэс')}
-          </div>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-muted)', display: 'flex' }}>
+      <Sidebar tab={tab} onSetTab={setTab} onLogout={handleLogout} />
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <header style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
+          padding: '16px 24px', background: '#fff', borderBottom: '1px solid var(--border)',
+        }}>
+          <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1rem' }}>{TAB_LABEL[tab]}</h1>
           {hotels.length > 1 && (
             <select
               value={hotelId || ''}
@@ -117,20 +108,22 @@ function Dashboard({ onLoggedOut }) {
               {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           )}
-        </div>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', fontSize: '0.85rem', borderRadius: 8, background: 'var(--bg-muted)', fontWeight: 700 }}>
-          Гарах
-        </button>
-      </header>
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 20px' }}>
-        {!hotelId ? (
-          <p style={{ color: 'var(--text-muted)' }}>Буудал алга.</p>
-        ) : tab === 'orders' ? (
-          <OrdersBoard hotelId={hotelId} />
-        ) : (
-          <MenuManager hotelId={hotelId} />
-        )}
-      </main>
+        </header>
+
+        <main style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 20px' }}>
+          {!hotelId ? (
+            <p style={{ color: 'var(--text-muted)' }}>Буудал алга.</p>
+          ) : tab === 'dashboard' ? (
+            <DashboardHome hotelId={hotelId} />
+          ) : tab === 'orders' ? (
+            <OrdersBoard hotelId={hotelId} />
+          ) : tab === 'settings' ? (
+            <SettingsPage hotelId={hotelId} />
+          ) : (
+            <MenuManager hotelId={hotelId} />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

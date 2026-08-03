@@ -23,28 +23,40 @@ ordersRouter.post('/', requireSession, validateBody(createOrderSchema), async (r
 
     let total = 0;
     for (const item of items) {
+      // FOR UPDATE энэ menu_item мөрийг захиалга дуустал түгжинэ — зэрэгцээ
+      // ирсэн захиалгууд ижил item дээр дараалан биелэх тул stock_limit
+      // хэтэрч overselling болохоос сэргийлнэ.
       const menuItem = await client.query(
-        'SELECT price_usd, stock_limit FROM menu_items WHERE id = $1 AND hotel_id = $2 FOR UPDATE',
+        'SELECT name, price_usd, stock_limit FROM menu_items WHERE id = $1 AND hotel_id = $2 FOR UPDATE',
         [item.menu_item_id, hotel_id]
       );
       if (menuItem.rows.length === 0) {
         throw new Error(`Menu item олдсонгүй: ${item.menu_item_id}`);
       }
-      
-      const { price_usd, stock_limit } = menuItem.rows[0];
-      if (stock_limit !== null && stock_limit < item.quantity) {
-        throw new Error(`Уучлаарай, сонгосон хоолны үлдэгдэл хүрэлцэхгүй байна.`);
+
+      const { name, price_usd, stock_limit } = menuItem.rows[0];
+
+      if (stock_limit !== null) {
+        // stock_limit нь өдөр бүр 0-ээс дахин эхэлдэг лимит — тул зогсоохгүйгээр
+        // тухайн item-ийн "Ази/Улаанбаатарын өнөөдөр" аль хэдийн зарагдсан нийт
+        // тоог тооцоод шинэ захиалгатай нийлбэрлэж лимиттэй харьцуулна.
+        const soldToday = await client.query(
+          `SELECT COALESCE(SUM(oi.quantity), 0)::int AS sold FROM order_items oi
+           JOIN orders o ON o.id = oi.order_id
+           WHERE oi.menu_item_id = $1
+             AND o.status != 'cancelled'
+             AND (o.created_at AT TIME ZONE 'Asia/Ulaanbaatar')::date = (now() AT TIME ZONE 'Asia/Ulaanbaatar')::date`,
+          [item.menu_item_id]
+        );
+        const alreadySold = soldToday.rows[0].sold;
+        if (alreadySold + item.quantity > stock_limit) {
+          const remaining = Math.max(0, stock_limit - alreadySold);
+          throw new Error(`"${name}" өнөөдрийн лимит хүрэлцэхгүй байна (үлдсэн: ${remaining}).`);
+        }
       }
 
       const unitPrice = Number(price_usd);
       total += unitPrice * item.quantity;
-
-      if (stock_limit !== null) {
-        await client.query(
-          'UPDATE menu_items SET stock_limit = stock_limit - $1 WHERE id = $2',
-          [item.quantity, item.menu_item_id]
-        );
-      }
 
       await client.query(
         `INSERT INTO order_items (order_id, menu_item_id, guest_name, quantity, unit_price_usd)

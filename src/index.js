@@ -19,6 +19,7 @@ import { uploadRouter } from './routes/upload.js';
 
 import { logger } from './services/logger.js';
 import { startSessionCleanupJob } from './services/sessionCleanup.js';
+import { startOrderAutoCancelJob } from './services/orderAutoCancel.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { generalLimiter, writeLimiter } from './middleware/rateLimiter.js';
 
@@ -91,6 +92,7 @@ app.get('*', (req, res, next) => {
 app.use(errorHandler);
 
 startSessionCleanupJob(logger);
+startOrderAutoCancelJob(logger, io);
 
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
-import { validateBody, updateOrderStatusSchema, adminLoginSchema } from '../middleware/validation.js';
+import { validateBody, updateOrderStatusSchema, adminLoginSchema, renameRestaurantSchema } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
@@ -54,7 +54,9 @@ adminRouter.get('/me', (req, res) => {
 // Доорх бүх route админ session шаардана
 adminRouter.use(requireAdmin);
 
-// Dashboard дээрх буудал сонгох dropdown-д зориулав
+// Зургийн upload нь тусдаа /api/upload router-т байгаа (src/routes/upload.js).
+
+// --- Буудал сонгох (Dashboard/Menu/Orders толгой хэсгийн dropdown) -------
 adminRouter.get('/hotels', asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
     `SELECT id, name FROM hotels WHERE is_deleted = false ORDER BY name`
@@ -62,28 +64,87 @@ adminRouter.get('/hotels', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
-// Тухайн буудлын идэвхтэй захиалгуудыг room_number, items болон төлбөртэй хамт буцаана
-adminRouter.get('/:hotel_id/orders/live', asyncHandler(async (req, res) => {
+// --- Ресторан нэр солих (Settings) ----------------------------------------
+adminRouter.patch('/restaurants/:id', validateBody(renameRestaurantSchema), asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT o.id, o.status, o.total_usd, o.created_at, s.room_number, s.guest_name,
+    'UPDATE restaurants SET name = $1 WHERE id = $2 RETURNING *',
+    [req.body.name, req.params.id]
+  );
+  if (rows.length === 0) return res.status(404).json({ error: 'Ресторан олдсонгүй.' });
+  res.json(rows[0]);
+}));
+
+// --- Dashboard-ийн үзүүлэлт (нийт хоол, захиалга, орлого, сүүлийн захиалгууд) ---
+adminRouter.get('/:hotel_id/stats', asyncHandler(async (req, res) => {
+  const { hotel_id } = req.params;
+  const [menuCount, orderStats, recent] = await Promise.all([
+    pool.query(
+      `SELECT count(*)::int AS n FROM menu_items WHERE hotel_id = $1 AND is_deleted = false`,
+      [hotel_id]
+    ),
+    pool.query(
+      `SELECT count(*)::int AS total,
+              count(*) FILTER (WHERE status = 'paid')::int AS paid,
+              COALESCE(SUM(total_usd) FILTER (WHERE status = 'paid'), 0) AS revenue
+       FROM orders WHERE hotel_id = $1`,
+      [hotel_id]
+    ),
+    pool.query(
+      `SELECT o.id, o.status, o.total_usd, o.created_at,
+              s.guest_name, s.room_number, s.delivery_address
+       FROM orders o
+       JOIN sessions s ON s.id = o.session_id
+       WHERE o.hotel_id = $1
+       ORDER BY o.created_at DESC LIMIT 8`,
+      [hotel_id]
+    ),
+  ]);
+
+  res.json({
+    menuItemCount: menuCount.rows[0].n,
+    totalOrders: orderStats.rows[0].total,
+    paidOrders: orderStats.rows[0].paid,
+    totalRevenue: Number(orderStats.rows[0].revenue),
+    recentOrders: recent.rows,
+  });
+}));
+
+// --- Тухайн буудлын захиалгууд (бүх статус, item/ресторан/хүргэлтийн дэлгэрэнгүйтэй) ---
+// ?status=paid гэх мэт filter дэмжинэ. Хамгийн сүүлийн 200-г буцаана.
+adminRouter.get('/:hotel_id/orders', asyncHandler(async (req, res) => {
+  const params = [req.params.hotel_id];
+  let statusFilter = '';
+  if (req.query.status) {
+    params.push(req.query.status);
+    statusFilter = ` AND o.status = $${params.length}`;
+  }
+
+  const { rows } = await pool.query(
+    `SELECT o.id, o.status, o.total_usd, o.created_at,
+            s.guest_name, s.room_number, s.delivery_address, s.delivery_type,
             (SELECT json_agg(json_build_object(
                'menu_item_id', oi.menu_item_id,
                'quantity', oi.quantity,
                'name', mi.name,
-               'restaurant_name', mi.restaurant_name
-            )) FROM order_items oi JOIN menu_items mi ON oi.menu_item_id = mi.id WHERE oi.order_id = o.id) as items,
-            (SELECT status FROM payments p WHERE p.order_id = o.id LIMIT 1) as payment_status,
-            (SELECT paid_at FROM payments p WHERE p.order_id = o.id LIMIT 1) as paid_at
+               'restaurant_name', r.name
+             ))
+             FROM order_items oi
+             JOIN menu_items mi ON mi.id = oi.menu_item_id
+             JOIN restaurants r ON r.id = mi.restaurant_id
+             WHERE oi.order_id = o.id) AS items,
+            (SELECT p.status FROM payments p WHERE p.order_id = o.id ORDER BY p.paid_at DESC NULLS LAST LIMIT 1) AS payment_status,
+            (SELECT p.paid_at FROM payments p WHERE p.order_id = o.id ORDER BY p.paid_at DESC NULLS LAST LIMIT 1) AS paid_at
      FROM orders o
      JOIN sessions s ON s.id = o.session_id
-     WHERE o.hotel_id = $1 AND o.status != 'cancelled'
-     ORDER BY o.created_at DESC`,
-    [req.params.hotel_id]
+     WHERE o.hotel_id = $1 ${statusFilter}
+     ORDER BY o.created_at DESC
+     LIMIT 200`,
+    params
   );
   res.json(rows);
 }));
 
-// Ажилтан захиалгын статус солих (жишээ нь "бэлэн боллоо")
+// Ажилтан захиалгын статус солих (жишээ нь "бэлэн боллоо", "буцаагдсан")
 adminRouter.patch('/orders/:id/status', validateBody(updateOrderStatusSchema), asyncHandler(async (req, res) => {
   const { status } = req.body;
   const { rows } = await pool.query(

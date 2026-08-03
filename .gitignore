@@ -4,3 +4,5 @@ logs/*.log
 frontend/dist
 *.local
 .DS_Store
+public/uploads/*
+!public/uploads/.gitkeep
