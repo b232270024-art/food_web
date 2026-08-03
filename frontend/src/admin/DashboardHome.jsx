@@ -51,9 +51,13 @@ export function DashboardHome({ hotelId }) {
     if (!hotelId) return;
     setLoading(true);
     fetch(`/api/admin/${hotelId}/stats`)
-      .then(r => r.json())
-      .then(data => { setStats(data); setError(''); })
-      .catch(() => setError('Мэдээлэл татахад алдаа гарлаа.'))
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Мэдээлэл татахад алдаа гарлаа.');
+        setStats(data);
+        setError('');
+      })
+      .catch((err) => setError(err.message || 'Мэдээлэл татахад алдаа гарлаа.'))
       .finally(() => setLoading(false));
   }, [hotelId]);
 
