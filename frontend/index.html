@@ -7,6 +7,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Luxury in-room dining service — order fresh meals delivered to your hotel room." />
   <title>Velofoods</title>
+  <script>
+    // Set the theme before first paint so there's no flash of the wrong
+    // theme while React loads. Same resolution logic as lib/useTheme.js.
+    (function () {
+      try {
+        var saved = localStorage.getItem('velofoods_theme');
+        var theme = saved === 'light' || saved === 'dark'
+          ? saved
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
 </head>
 
 <body>

@@ -1,14 +1,14 @@
 import React from 'react';
 
-export function Footer({ hotel, tr }) {
+export function Footer({ tr }) {
   return (
-    <footer style={{
+    <footer className="site-footer" style={{
       background: 'var(--bg-green-dark)',
       color: 'rgba(255,255,255,0.85)',
       padding: '56px 0 28px',
     }}>
       <div className="container">
-        <div style={{
+        <div className="footer-grid" style={{
           display: 'grid',
           gridTemplateColumns: '2fr 1fr 1fr',
           gap: 40,
@@ -17,20 +17,17 @@ export function Footer({ hotel, tr }) {
           {/* Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 10,
-                background: 'rgba(255,255,255,0.15)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.3rem',
-              }}>
-                🍽
-              </div>
+              <img
+                src="/velofoods.jpeg"
+                alt="Velofoods"
+                style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover' }}
+              />
               <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.1rem', color: 'white' }}>
-                {hotel?.name || 'Grand Hotel'}
+                Velofoods
               </span>
             </div>
             <p style={{ fontSize: '0.85rem', lineHeight: 1.7, maxWidth: 280 }}>
-              {hotel?.address || 'Luxury In-Room Dining Service'}
+              {tr.footerTagline}
             </p>
           </div>
 
@@ -73,9 +70,9 @@ export function Footer({ hotel, tr }) {
         <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', marginBottom: 24 }} />
 
         {/* Bottom row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+        <div className="footer-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', flexWrap: 'wrap', gap: 12 }}>
           <span style={{ color: 'rgba(255,255,255,0.5)' }}>
-            © {new Date().getFullYear()} {hotel?.name || 'Grand Hotel'}. {tr.footerRights}
+            © {new Date().getFullYear()} Velofoods. {tr.footerRights}
           </span>
           <div style={{ display: 'flex', gap: 16 }}>
             {['🌐', '📸', '🐦'].map((icon, i) => (
@@ -91,6 +88,13 @@ export function Footer({ hotel, tr }) {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .footer-bottom { justify-content: center !important; text-align: center; }
+        }
+      `}</style>
     </footer>
   );
 }

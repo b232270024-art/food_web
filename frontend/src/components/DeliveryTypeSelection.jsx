@@ -99,12 +99,12 @@ export function DeliveryTypeSelection({ tr, onBack, onContinue }) {
               left: selected === 'hotel' ? '25%' : '75%',
               transform: 'translateX(-50%) rotate(45deg)',
               width: 16, height: 16,
-              background: 'white',
+              background: 'var(--bg-card)',
               borderTop: '1px solid var(--border)',
               borderLeft: '1px solid var(--border)',
             }} />
             <div style={{
-              background: 'white', border: '1px solid var(--border)',
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
               borderRadius: 'var(--r-md)', padding: '20px 24px',
               boxShadow: 'var(--shadow-sm)', position: 'relative', zIndex: 1,
             }}>

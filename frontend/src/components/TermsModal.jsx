@@ -21,7 +21,7 @@ export function TermsModal({ isOpen, onClose, tr }) {
         className="anim-scale-in"
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'white', borderRadius: 'var(--r-xl)',
+          background: 'var(--bg-card)', borderRadius: 'var(--r-xl)',
           width: '100%', maxWidth: 760, height: '85vh',
           boxShadow: 'var(--shadow-lg)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',

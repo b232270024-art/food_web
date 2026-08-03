@@ -134,6 +134,7 @@ export const t = {
     footerMenu: 'Menu',
     footerContact: 'Contact',
     footerRights: 'All rights reserved.',
+    footerTagline: 'Fresh, chef-prepared meals delivered straight to your hotel room.',
 
     // Delivery Type
     deliveryTypeTitle: 'Choose delivery method',
@@ -293,6 +294,7 @@ export const t = {
     footerMenu: 'القائمة',
     footerContact: 'اتصل بنا',
     footerRights: 'جميع الحقوق محفوظة.',
+    footerTagline: 'وجبات طازجة يعدها الطهاة، تُوصَل مباشرة إلى غرفة فندقك.',
 
     deliveryTypeTitle: 'اختر طريقة التوصيل',
     deliveryTypeP1: 'خطوة أخيرة — أخبرنا أين نُحضر طعامك.',
@@ -446,6 +448,7 @@ export const t = {
     footerMenu: 'मेनू',
     footerContact: 'संपर्क करें',
     footerRights: 'सर्वाधिकार सुरक्षित।',
+    footerTagline: 'ताज़ा, शेफ द्वारा तैयार भोजन सीधे आपके होटल के कमरे में पहुँचाया जाता है।',
 
     deliveryTypeTitle: 'डिलीवरी का तरीका चुनें',
     deliveryTypeP1: 'आखिरी कदम — हमें बताएं कि आपका खाना कहाँ पहुंचाएं।',

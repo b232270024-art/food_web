@@ -4,7 +4,7 @@ export function AboutSection({ tr }) {
   return (
     <section style={{ padding: '80px 0', background: 'var(--bg-cream)' }}>
       <div className="container">
-        <div style={{
+        <div className="about-grid" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: 60,
@@ -66,6 +66,12 @@ export function AboutSection({ tr }) {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .about-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+        }
+      `}</style>
     </section>
   );
 }

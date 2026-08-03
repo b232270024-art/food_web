@@ -20,14 +20,6 @@ const CARD_COLORS = [
   { bg: '#fce4ec', ring: '#e91e63' },
 ];
 
-// Fake nutrition info for visual appeal (no nutrition in DB)
-const NUTRITION = [
-  { cal: 590, protein: 33, carbs: 48 },
-  { cal: 320, protein: 18, carbs: 22 },
-  { cal: 440, protein: 24, carbs: 35 },
-  { cal: 680, protein: 41, carbs: 52 },
-];
-
 export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
   const featured = menuItems.slice(0, 4);
 
@@ -53,21 +45,11 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
           gap: 28,
         }}>
           {featured.length === 0
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <SpecialCard
-                  key={i}
-                  name={['Kebab', 'Chicken Tikka', 'Desi Chaswein', 'Chicken Chargha'][i]}
-                  category="Main Course"
-                  index={i}
-                  tr={tr}
-                  onGetStarted={onGetStarted}
-                />
-              ))
+            ? Array.from({ length: 4 }).map((_, i) => <SpecialCardSkeleton key={i} />)
             : featured.map((item, i) => (
                 <SpecialCard
                   key={item.id}
-                  name={item.name}
-                  category={item.category}
+                  item={item}
                   index={i}
                   tr={tr}
                   onGetStarted={onGetStarted}
@@ -80,10 +62,19 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
   );
 }
 
-function SpecialCard({ name, category, index, tr, onGetStarted }) {
+function SpecialCardSkeleton() {
+  return (
+    <div className="card anim-fade-in" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+      <div style={{ width: 120, height: 120, borderRadius: '50%', background: 'var(--bg-muted)' }} />
+      <div style={{ width: '70%', height: 16, borderRadius: 4, background: 'var(--bg-muted)' }} />
+      <div style={{ width: '100%', height: 34, borderRadius: 8, background: 'var(--bg-muted)' }} />
+    </div>
+  );
+}
+
+function SpecialCard({ item, index, tr, onGetStarted }) {
   const color = CARD_COLORS[index % CARD_COLORS.length];
-  const nutrition = NUTRITION[index % NUTRITION.length];
-  const emoji = CATEGORY_EMOJI[category] || CATEGORY_EMOJI.default;
+  const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
 
   return (
     <div
@@ -99,36 +90,51 @@ function SpecialCard({ name, category, index, tr, onGetStarted }) {
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
     >
       {/* Dish avatar */}
-      <div style={{
-        width: 120, height: 120, borderRadius: '50%',
-        background: color.bg,
-        border: `3px solid ${color.ring}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '3.2rem', boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-      }}>
-        {emoji}
-      </div>
+      {item.image_url ? (
+        <img
+          src={item.image_url}
+          alt={item.name}
+          style={{
+            width: 120, height: 120, borderRadius: '50%', objectFit: 'cover',
+            border: `3px solid ${color.ring}`, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+          }}
+        />
+      ) : (
+        <div style={{
+          width: 120, height: 120, borderRadius: '50%',
+          background: color.bg,
+          border: `3px solid ${color.ring}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '3.2rem', boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+        }}>
+          {emoji}
+        </div>
+      )}
 
       {/* Name */}
       <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-dark)', lineHeight: 1.3 }}>
-        {name}
+        {item.name}
       </h3>
 
-      {/* Description placeholder */}
-      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-        Lorem ipsum is Simply Dummy Text Of The Printing And Typesetting Industry
-      </p>
+      {/* Real description from the menu, when the dish has one */}
+      {item.description && (
+        <p style={{
+          fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5,
+          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+        }}>
+          {item.description}
+        </p>
+      )}
 
-      {/* Nutrition strip */}
-      <div style={{
-        display: 'flex', gap: 12,
-        fontSize: '0.75rem', color: 'var(--text-body)', fontWeight: 600,
-      }}>
-        <span style={{ color: '#ef4444' }}>{nutrition.cal} {tr.specialCal}</span>
-        <span>|</span>
-        <span>{nutrition.protein}g {tr.specialProtein}</span>
-        <span>|</span>
-        <span>{nutrition.carbs}g {tr.specialCarbs}</span>
+      {/* Price + real calories (when available) — no invented nutrition numbers */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.8rem', fontWeight: 700 }}>
+        <span style={{ color: 'var(--brand-green)' }}>${Number(item.price_usd ?? item.price ?? 0).toFixed(2)}</span>
+        {item.calories != null && (
+          <>
+            <span style={{ color: 'var(--border)' }}>|</span>
+            <span style={{ color: 'var(--text-body)', fontWeight: 600 }}>{item.calories} {tr.specialCal}</span>
+          </>
+        )}
       </div>
 
       {/* CTA */}

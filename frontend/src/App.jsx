@@ -319,7 +319,6 @@ export default function App() {
   return (
     <div className="app-wrapper">
       <Header
-        hotel={hotel}
         session={session}
         cartCount={cartCount}
         cartTotal={cartTotal}
@@ -336,7 +335,7 @@ export default function App() {
         {/* ── HERO FLOW ─────────────────────────────────────────────────────── */}
         {flowStep === 'hero' && (
           <>
-            <HeroSection hotel={hotel} tr={tr} onGetStarted={handleGetStarted} />
+            <HeroSection tr={tr} onGetStarted={handleGetStarted} />
             <TodaySpecialOffers menuItems={menuItems} tr={tr} onGetStarted={handleGetStarted} />
             <HowItWorks tr={tr} />
             <AboutSection tr={tr} />
@@ -438,7 +437,7 @@ export default function App() {
       </main>
 
       {/* Footer — shown on hero only */}
-      {flowStep === 'hero' && <Footer hotel={hotel} tr={tr} />}
+      {flowStep === 'hero' && <Footer tr={tr} />}
 
       {/* Guest Details Modal */}
       <GuestDetailsModal

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowDown } from 'lucide-react';
 
-export function HeroSection({ hotel, tr, onGetStarted }) {
+export function HeroSection({ tr, onGetStarted }) {
   return (
     <section style={{
       background: 'var(--bg-cream)',
@@ -9,7 +9,7 @@ export function HeroSection({ hotel, tr, onGetStarted }) {
       overflow: 'hidden',
     }}>
       <div className="container">
-        <div style={{
+        <div id="hero-grid" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: 48,
@@ -94,9 +94,10 @@ export function HeroSection({ hotel, tr, onGetStarted }) {
               />
 
               {/* Badge: Hot & Fresh */}
-              <div style={{
+              <div className="hero-badge" style={{
                 position: 'absolute', top: '12%', right: '4%',
-                background: 'white', padding: '10px 16px', borderRadius: 16,
+                background: 'var(--bg-card)', border: '1px solid var(--border-card)',
+                padding: '10px 16px', borderRadius: 16,
                 boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: 10,
                 fontWeight: 700, fontSize: '0.82rem',
               }}>
@@ -108,9 +109,10 @@ export function HeroSection({ hotel, tr, onGetStarted }) {
               </div>
 
               {/* Badge: Rating */}
-              <div style={{
+              <div className="hero-badge" style={{
                 position: 'absolute', bottom: '10%', left: '4%',
-                background: 'white', padding: '10px 16px', borderRadius: 16,
+                background: 'var(--bg-card)', border: '1px solid var(--border-card)',
+                padding: '10px 16px', borderRadius: 16,
                 boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: 10,
                 fontWeight: 700, fontSize: '0.82rem',
               }}>
@@ -128,7 +130,13 @@ export function HeroSection({ hotel, tr, onGetStarted }) {
       {/* Responsive style */}
       <style>{`
         @media (max-width: 768px) {
-          #hero-grid { grid-template-columns: 1fr !important; }
+          #hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+        }
+        @media (max-width: 480px) {
+          .hero-badge { padding: 7px 11px !important; gap: 7px !important; }
+          .hero-badge span:first-child { font-size: 1rem !important; }
+          .hero-badge div div:first-child { font-size: 0.72rem !important; }
+          .hero-badge div div:last-child { font-size: 0.62rem !important; }
         }
       `}</style>
     </section>

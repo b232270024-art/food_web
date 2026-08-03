@@ -1,44 +1,34 @@
 import React from 'react';
-import { ShoppingBag, Globe } from 'lucide-react';
+import { ShoppingBag, Globe, Sun, Moon } from 'lucide-react';
 import { LANGUAGES } from '../i18n/translations';
+import { useTheme } from '../lib/useTheme';
 
-const EMOJI_MAP = { '🇺🇸': true, '🇦🇪': true, '🇮🇳': true };
-
-export function Header({ hotel, session, cartCount, cartTotal, onOpenCart, language, onSetLanguage, showCart, tr }) {
+export function Header({ session, cartCount, cartTotal, onOpenCart, language, onSetLanguage, showCart, tr }) {
   const [langOpen, setLangOpen] = React.useState(false);
+  const { theme, toggleTheme } = useTheme();
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   return (
     <header className="navbar">
       <div className="container">
         <div className="navbar-inner">
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, overflow: 'hidden' }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-              background: 'linear-gradient(135deg, #3D7A5A, #1A3C34)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontSize: '1.2rem', fontWeight: 900,
-              boxShadow: 'var(--shadow-glow)',
+          {/* Logo — Velofoods brand (not the guest's hotel) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, overflow: 'hidden' }}>
+            <img
+              src="/velofoods.jpeg"
+              alt="Velofoods"
+              style={{
+                width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                objectFit: 'cover', boxShadow: 'var(--shadow-glow)',
+              }}
+            />
+            <span style={{
+              fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.15rem',
+              color: 'var(--text-dark)', lineHeight: 1, letterSpacing: '-0.01em',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
-
-            </div>
-            <div style={{ minWidth: 0, overflow: 'hidden' }}>
-              <div style={{
-                fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1rem',
-                color: 'var(--text-dark)', lineHeight: 1.2,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {hotel?.name || 'Grand Hotel'}
-              </div>
-              <div style={{
-                fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#4CAF80', flexShrink: 0 }} />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hotel?.address || 'In-Room Dining'}</span>
-              </div>
-            </div>
+              Velofoods
+            </span>
           </div>
 
           {/* Nav Links (desktop) — hidden on mobile via .nav-links in index.css */}
@@ -68,6 +58,20 @@ export function Header({ hotel, session, cartCount, cartTotal, onOpenCart, langu
               </div>
             )}
 
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              style={{
+                width: 38, height: 38, borderRadius: 'var(--r-sm)', flexShrink: 0,
+                background: 'var(--bg-muted)', border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--text-dark)',
+              }}
+            >
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+
             {/* Language Switcher */}
             <div style={{ position: 'relative' }}>
               <button
@@ -80,7 +84,7 @@ export function Header({ hotel, session, cartCount, cartTotal, onOpenCart, langu
                 }}
               >
                 <span style={{ fontSize: '1.1rem' }}>{currentLang.flag}</span>
-                <span>{currentLang.label}</span>
+                <span className="lang-label">{currentLang.label}</span>
                 <Globe size={14} style={{ color: 'var(--text-muted)' }} />
               </button>
 
@@ -173,6 +177,13 @@ export function Header({ hotel, session, cartCount, cartTotal, onOpenCart, langu
           style={{ position: 'fixed', inset: 0, zIndex: 150 }}
         />
       )}
+
+      {/* Narrow phones: drop the language label text, keep the flag + chevron */}
+      <style>{`
+        @media (max-width: 420px) {
+          .lang-label { display: none; }
+        }
+      `}</style>
     </header>
   );
 }

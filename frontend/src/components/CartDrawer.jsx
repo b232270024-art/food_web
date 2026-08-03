@@ -25,7 +25,7 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0,
           width: '100%', maxWidth: 420,
-          background: 'white',
+          background: 'var(--bg-card)',
           boxShadow: 'var(--shadow-lg)',
           zIndex: 400,
           display: 'flex', flexDirection: 'column',
@@ -131,7 +131,7 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
                       onClick={() => onRemoveFromCart(item.menu_item_id)}
                       style={{
                         width: 28, height: 28, borderRadius: 7,
-                        background: 'white', border: '1px solid var(--border)',
+                        background: 'var(--bg-card)', border: '1px solid var(--border)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}
                     >
@@ -160,7 +160,7 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
           <div style={{
             padding: '20px 24px',
             borderTop: '1px solid var(--border)',
-            background: 'white',
+            background: 'var(--bg-card)',
           }}>
             {/* Subtotal */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>

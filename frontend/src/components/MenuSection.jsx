@@ -172,7 +172,7 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
                 onClick={() => onRemoveFromCart(item.id)}
                 style={{
                   width: 30, height: 30, borderRadius: 7,
-                  background: 'white', boxShadow: 'var(--shadow-sm)',
+                  background: 'var(--bg-card)', boxShadow: 'var(--shadow-sm)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
@@ -332,7 +332,7 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
               width: '100%', padding: '10px 14px 10px 42px',
               borderRadius: 'var(--r-full)',
               border: '1.5px solid var(--border)',
-              background: 'white', fontSize: '0.875rem', outline: 'none',
+              background: 'var(--bg-card)', fontSize: '0.875rem', outline: 'none',
             }}
           />
         </div>
@@ -381,7 +381,7 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
         filtered.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '80px 20px',
-            background: 'white', borderRadius: 'var(--r-xl)', color: 'var(--text-muted)',
+            background: 'var(--bg-card)', borderRadius: 'var(--r-xl)', color: 'var(--text-muted)',
           }}>
             <div style={{ fontSize: '4rem', marginBottom: 16 }}>🔍</div>
             <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>{tr.menuEmpty}</p>

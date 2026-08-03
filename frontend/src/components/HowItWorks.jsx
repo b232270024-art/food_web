@@ -34,7 +34,7 @@ export function HowItWorks({ tr }) {
         </div>
 
         {/* Steps grid */}
-        <div style={{
+        <div id="how-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: 32,

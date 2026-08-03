@@ -62,7 +62,7 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
       padding: 20,
     }}>
       <div className="anim-fade-up" style={{
-        background: 'white', borderRadius: 'var(--r-xl)',
+        background: 'var(--bg-card)', borderRadius: 'var(--r-xl)',
         maxWidth: 440, width: '100%',
         padding: '36px 32px',
         boxShadow: 'var(--shadow-lg)',
@@ -224,7 +224,7 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
                   onClick={handleVerifyLocation}
                   style={{
                     padding: '6px 14px', borderRadius: 8,
-                    background: 'white', border: '1px solid var(--border)',
+                    background: 'var(--bg-card)', border: '1px solid var(--border)',
                     fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-dark)',
                   }}
                 >
