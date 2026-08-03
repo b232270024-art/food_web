@@ -43,11 +43,18 @@ app.use(generalLimiter);
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 const publicPath = path.join(__dirname, '../public');
 
+// public/ (uploads гэх мэт) болон frontend/dist (React build) хоёулаа served
+// байх ёстой — өмнө нь frontend/dist байгаа үед (production дээр үргэлж тийм)
+// public/-г огт serve хийдэггүй байсан тул /uploads/* хэзээ ч ажилладаггүй баг
+// байсан (express.static тохирохгүй үед next()-рүү дамждаг тул SPA catch-all
+// route index.html-г буцаадаг байсан — 200 ирдэг ч бодит зураг биш).
+// Дараалал чухал: frontend/dist эхэнд байх ёстой — public/index.html нь
+// хуучин (React-аас өмнөх) хувилбар тул дараа нь байрлуулбал нүүр хуудсыг
+// халхлана.
 if (fs.existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));
-} else {
-  app.use(express.static(publicPath));
 }
+app.use(express.static(publicPath));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: '*' } });
