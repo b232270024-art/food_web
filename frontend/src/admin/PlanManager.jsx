@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, X, Search } from 'lucide-react';
+import { Plus, X, Search, Check } from 'lucide-react';
 import { ItemForm, emptyItemForm } from './MenuManager';
 
 const MEAL_TIMES = [
@@ -105,6 +105,7 @@ export function PlanManager({ hotelId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -167,6 +168,13 @@ export function PlanManager({ hotelId }) {
       setError(err.message);
       setSaving(false);
     }
+  };
+
+  // Хоол нэмэх/хасах бүр аль хэдийн шууд серверт хадгалагддаг (assign/removeItem) —
+  // энэ товч зөвхөн admin-д "хадгалагдсан" гэдгийг тодорхой харуулах баталгаажуулалт.
+  const handleSaveConfirm = () => {
+    setSavedToast(true);
+    setTimeout(() => setSavedToast(false), 2500);
   };
 
   const removeItem = async (planItemId) => {
@@ -254,6 +262,20 @@ export function PlanManager({ hotelId }) {
           </div>
         ))}
       </div>
+
+      <button
+        onClick={handleSaveConfirm}
+        className="btn-primary"
+        style={{ marginTop: 24, padding: '12px 28px', fontSize: '0.9rem' }}
+      >
+        <Check size={16} /> Хадгалах
+      </button>
+
+      {savedToast && (
+        <div className="toast anim-fade-up">
+          ✓ {selectedDay}-р өдрийн цэс хадгалагдлаа
+        </div>
+      )}
 
       {addingSlot && (
         <AddItemModal

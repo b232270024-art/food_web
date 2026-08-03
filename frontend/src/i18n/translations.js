@@ -163,6 +163,7 @@ export const t = {
     menuSpecialOffers: 'Special Offers',
     menuContinueBtn: 'Continue',
     menuPlanPreviewTitle: 'Dishes included in your plan',
+    menuPlanScheduleTitle: 'Your day-by-day meal schedule',
 
     // Order confirmation (payment collected separately for now)
     orderConfirmedTitle: 'Order Confirmed!',
@@ -320,6 +321,7 @@ export const t = {
     menuSpecialOffers: 'عروض خاصة',
     menuContinueBtn: 'متابعة',
     menuPlanPreviewTitle: 'الأطباق المشمولة في خطتك',
+    menuPlanScheduleTitle: 'جدول وجباتك اليومي',
 
     orderConfirmedTitle: 'تم تأكيد الطلب!',
     orderConfirmedDesc: 'لقد استلمنا طلبك وسنتواصل معك قريباً. يتم تحصيل الدفع عند التسليم.',
@@ -474,6 +476,7 @@ export const t = {
     menuSpecialOffers: 'विशेष ऑफर',
     menuContinueBtn: 'जारी रखें',
     menuPlanPreviewTitle: 'आपकी योजना में शामिल व्यंजन',
+    menuPlanScheduleTitle: 'आपकी दिन-प्रतिदिन भोजन अनुसूची',
 
     orderConfirmedTitle: 'ऑर्डर की पुष्टि हो गई!',
     orderConfirmedDesc: 'हमें आपका ऑर्डर मिल गया है और हम जल्द ही आपसे संपर्क करेंगे। भुगतान डिलीवरी पर लिया जाता है।',

@@ -74,6 +74,25 @@ menuRouter.get('/:hotel_id/restaurants', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
+// GET /api/menu/:hotel_id/plan — тухайн буудлын "12 хоногийн цэс" (admin-ийн
+// тохируулсан өдөр тус бүрийн өглөө/өдөр/оройн хоол). Auth шаардахгүй —
+// зочин нэвтрээгүй байхдаа ч (12-day план сонгохоосоо өмнө) урьдчилан харах
+// ёстой тул public. Admin-ийн ижил query-той (src/routes/admin.js), гэхдээ
+// энд requireAdmin байхгүй тул тусдаа бичигдсэн.
+menuRouter.get('/:hotel_id/plan', asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT pi.id, pi.day_number, pi.meal_time, pi.menu_item_id,
+            mi.name, mi.price_usd, mi.image_url, r.name AS restaurant_name
+     FROM twelve_day_plan_items pi
+     JOIN menu_items mi ON mi.id = pi.menu_item_id
+     JOIN restaurants r ON r.id = mi.restaurant_id
+     WHERE pi.hotel_id = $1
+     ORDER BY pi.day_number, pi.meal_time`,
+    [req.params.hotel_id]
+  );
+  res.json(rows);
+}));
+
 // DELETE /api/menu/item/:id — soft delete
 menuRouter.delete('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { rows } = await pool.query(

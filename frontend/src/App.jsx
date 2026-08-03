@@ -358,6 +358,7 @@ export default function App() {
               menuItems={menuItems}
               cart={cart}
               orderType={orderType}
+              hotelId={hotel?.id}
               tr={tr}
               onConfirmPlan={handleConfirmPlan}
               onBack={() => goToStep('order_type')}

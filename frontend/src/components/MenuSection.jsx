@@ -1,6 +1,68 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, Plus, Minus, ArrowRight, ChevronLeft } from 'lucide-react';
+
+const MEAL_TIME_LABEL = { morning: 'Өглөө', lunch: 'Өдөр', evening: 'Орой' };
+
+// Admin-ийн PlanManager-с тохируулсан бодит өдөр тус бүрийн хуваарийг
+// татаж, өдрөөр сонгож харуулна. Захиалга биш тул readonly (сагслах товчгүй).
+function DayPlanPreview({ planItems, tr }) {
+  const [selectedDay, setSelectedDay] = useState(1);
+
+  const daysWithItems = [...new Set(planItems.map(p => p.day_number))].sort((a, b) => a - b);
+  const activeDay = daysWithItems.includes(selectedDay) ? selectedDay : daysWithItems[0];
+  const byMeal = { morning: [], lunch: [], evening: [] };
+  planItems.filter(p => p.day_number === activeDay).forEach(p => byMeal[p.meal_time]?.push(p));
+
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-dark)', marginBottom: 16 }}>
+        {tr.menuPlanScheduleTitle}
+      </h3>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+        {daysWithItems.map(day => (
+          <button
+            key={day}
+            onClick={() => setSelectedDay(day)}
+            style={{
+              width: 40, height: 40, borderRadius: 10, fontWeight: 800, fontSize: '0.85rem',
+              background: activeDay === day ? 'var(--brand-green)' : 'var(--bg-muted)',
+              color: activeDay === day ? '#fff' : 'var(--text-body)',
+            }}
+          >
+            {day}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+        {Object.entries(MEAL_TIME_LABEL).map(([key, label]) => (
+          <div key={key} className="card" style={{ padding: 16 }}>
+            <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-dark)', marginBottom: 10 }}>{label}</div>
+            {byMeal[key].length === 0 ? (
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>—</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {byMeal[key].map(item => (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {item.image_url
+                      ? <img src={item.image_url} alt="" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                      : <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--bg-muted)', flexShrink: 0 }} />}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.restaurant_name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function BackButton({ label, onBack }) {
   return (
@@ -214,10 +276,19 @@ function CardGrid({ items, getQty, onAddToCart, onRemoveFromCart, readOnly }) {
   );
 }
 
-export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRemoveFromCart, onConfirmPlan, onContinueToDelivery, onBack }) {
+export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCart, onRemoveFromCart, onConfirmPlan, onContinueToDelivery, onBack }) {
   const [search,      setSearch]      = useState('');
   const [dietFilter,  setDietFilter]  = useState('all');
   const [catFilter,   setCatFilter]   = useState('All');
+  const [planItems,   setPlanItems]   = useState(null); // admin-ийн тохируулсан 12 хоногийн хуваарь (12-day preview-д ашиглана)
+
+  useEffect(() => {
+    if (!hotelId || orderType !== 'twelve_day') return;
+    fetch(`/api/menu/${hotelId}/plan`)
+      .then(r => r.json())
+      .then(data => setPlanItems(Array.isArray(data) ? data : []))
+      .catch(() => setPlanItems([]));
+  }, [hotelId, orderType]);
 
   const categories = useMemo(() => {
     const cats = [...new Set(menuItems.map(i => i.category).filter(Boolean))];
@@ -263,7 +334,9 @@ export function MenuSection({ menuItems, cart, orderType, tr, onAddToCart, onRem
           </ul>
         </div>
 
-        {menuItems.length > 0 && (
+        {planItems && planItems.length > 0 ? (
+          <DayPlanPreview planItems={planItems} tr={tr} />
+        ) : menuItems.length > 0 && (
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-dark)', marginBottom: 16 }}>
               {tr.menuPlanPreviewTitle}
