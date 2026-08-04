@@ -58,7 +58,7 @@ export function HeroSection({ tr, onGetStarted }) {
             </div>
           </div>
 
-          <div className="anim-fade-up anim-delay-2" style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          <div id="hero-image-wrapper" className="anim-fade-up anim-delay-2" style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
             <div style={{
               position: 'relative',
               width: '100%', maxWidth: 460,
@@ -111,6 +111,7 @@ export function HeroSection({ tr, onGetStarted }) {
       <style>{`
         @media (max-width: 768px) {
           #hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          #hero-image-wrapper { display: none !important; }
         }
         @media (max-width: 480px) {
           .hero-badge { padding: 7px 11px !important; gap: 7px !important; }

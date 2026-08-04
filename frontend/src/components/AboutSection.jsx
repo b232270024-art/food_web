@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function AboutSection({ tr }) {
+export function AboutSection({ tr, onAboutClick }) {
   return (
     <section style={{ padding: '80px 0', background: 'var(--bg-cream)' }}>
       <div className="container">
@@ -60,7 +60,7 @@ export function AboutSection({ tr }) {
               {tr.aboutDesc}
             </p>
 
-            <button className="btn-primary" style={{ padding: '13px 32px' }}>
+            <button className="btn-primary" style={{ padding: '13px 32px' }} onClick={onAboutClick}>
               {tr.aboutBtn}
             </button>
           </div>

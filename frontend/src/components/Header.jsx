@@ -3,7 +3,7 @@ import { ShoppingBag, Globe, Sun, Moon } from 'lucide-react';
 import { LANGUAGES } from '../i18n/translations';
 import { useTheme } from '../lib/useTheme';
 
-export function Header({ session, cartCount, cartTotal, onOpenCart, language, onSetLanguage, showCart, tr }) {
+export function Header({ session, cartCount, cartTotal, onOpenCart, language, onSetLanguage, showCart, tr, onOpenAbout, onOpenMenu, onBackToHome }) {
   const [langOpen, setLangOpen] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
@@ -12,7 +12,10 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
     <header className="navbar">
       <div className="container">
         <div className="navbar-inner">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, overflow: 'hidden' }}>
+          <div 
+            onClick={onBackToHome}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, overflow: 'hidden', cursor: 'pointer' }}
+          >
             <img
               src="/velofoods.jpeg"
               alt="Velofoods"
@@ -30,9 +33,8 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
             </span>
           </div>
           <nav className="nav-links">
-            {[tr.navSpecialOffers, tr.navMenu, tr.navPopular].map((label) => (
-              <span key={label} className="nav-link">{label}</span>
-            ))}
+            <span className="nav-link" onClick={onOpenAbout} style={{ cursor: 'pointer' }}>{tr.aboutBtn || 'About Us'}</span>
+            <span className="nav-link" onClick={onOpenMenu} style={{ cursor: 'pointer' }}>{tr.navMenu}</span>
           </nav>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>

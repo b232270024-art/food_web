@@ -14,6 +14,7 @@ import { MenuSection }         from './components/MenuSection';
 import { CartDrawer }          from './components/CartDrawer';
 import { OrderReview }         from './components/OrderReview';
 import { TermsModal }          from './components/TermsModal';
+import { AboutPage }           from './components/AboutPage';
 
 import { LANGUAGES, useTranslation } from './i18n/translations';
 
@@ -25,7 +26,7 @@ import { LANGUAGES, useTranslation } from './i18n/translations';
 // 'delivery_type' → (one-time) hotel room vs current location
 // 'confirmation'  → order/plan confirmed (payment collected on delivery, no gateway yet)
 // ─────────────────────────────────────────────────────────────────────────────
-const FLOW_STEPS = ['hero', 'order_type', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation'];
+const FLOW_STEPS = ['hero', 'about_us', 'order_type', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation'];
 const pathForStep = (step) => (step === 'hero' ? '/' : `/${step}`) + window.location.search;
 
 export default function App() {
@@ -326,6 +327,9 @@ export default function App() {
         onSetLanguage={handleSetLanguage}
         showCart={flowStep === 'menu'}
         tr={tr}
+        onOpenAbout={() => { goToStep('about_us'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        onOpenMenu={() => { goToStep('menu'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        onBackToHome={handleBackToHome}
       />
 
       <main style={{ flex: 1 }}>
@@ -337,8 +341,13 @@ export default function App() {
             <HeroSection tr={tr} onGetStarted={handleGetStarted} />
             <TodaySpecialOffers menuItems={menuItems} tr={tr} onGetStarted={handleGetStarted} />
             <HowItWorks tr={tr} />
-            <AboutSection tr={tr} />
+            <AboutSection tr={tr} onAboutClick={() => { goToStep('about_us'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
           </>
+        )}
+
+        {/* ── ABOUT US PAGE ─────────────────────────────────────────────────── */}
+        {flowStep === 'about_us' && (
+          <AboutPage tr={tr} onBackToHome={handleBackToHome} />
         )}
 
         {/* ── ORDER TYPE SELECTION ──────────────────────────────────────────── */}

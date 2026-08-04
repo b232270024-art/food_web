@@ -24,8 +24,11 @@ const STATUS_COLOR = {
 };
 
 function formatDateTime(dateStr) {
+  if (!dateStr) return '';
   return new Date(dateStr).toLocaleString('mn-MN', {
-    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    timeZone: 'Asia/Ulaanbaatar',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
   });
 }
 
@@ -75,9 +78,16 @@ function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <Clock size={12} /> {formatDateTime(order.created_at)}
-        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            <Clock size={12} /> Захиалга: {formatDateTime(order.created_at)}
+          </span>
+          {order.paid_at && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: 'var(--brand-green)' }}>
+              <Clock size={12} /> Төлбөр: {formatDateTime(order.paid_at)}
+            </span>
+          )}
+        </div>
         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: order.payment_status === 'paid' ? 'var(--brand-green)' : 'var(--text-muted)' }}>
           {order.payment_status === 'paid' ? 'Төлөгдсөн' : 'Төлөөгүй'}
         </span>

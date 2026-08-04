@@ -50,13 +50,11 @@ export const t = {
     step3Desc: '',
 
     // About
-    aboutTitle: 'We are ',
-    aboutTitleAccent: 'more',
-    aboutTitle2: ' than ',
-    aboutTitleAccent2: 'multiple',
-    aboutTitle3: ' service',
-    aboutDesc: 'This is a type of restaurant which typically serves fixed area diets, a quick service type of refreshment meals such as instant cuisine or soda. The farm carries the further work meaning food.',
-    aboutBtn: 'About Us',
+    aboutTitle: 'Trusted meals ',
+    aboutTitleAccent: 'for every',
+    aboutTitle2: ' lifestyle',
+    aboutDesc: 'We provide reliable food delivery services with carefully selected meals for every guest. From Halal certified dishes to Vegetarian, Vegan, and Standard menus, we connect you with trusted restaurants that meet quality and safety standards./n Every partner restaurant is verified to ensure authentic taste, professional service, and customer satisfaction.',
+    aboutBtn: 'Meet our partner',
 
     // Order Type
     orderTypeTitle: 'Select an order type',
