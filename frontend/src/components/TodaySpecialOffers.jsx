@@ -42,7 +42,7 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
-    
+
     // Infinite loop trick: jump to the identical position in the next/prev set
     // when getting too close to the edges.
     if (el.scrollLeft < setWidth * 0.2) {
@@ -69,7 +69,7 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
       </div>
 
       {/* Infinite Scroll Container */}
-      <div 
+      <div
         ref={scrollRef}
         onScroll={handleScroll}
         className="special-offers-scroll"
