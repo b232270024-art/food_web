@@ -18,18 +18,8 @@ export function HeroSection({ tr, onGetStarted }) {
         }}>
           {/* LEFT — Copy */}
           <div className="anim-fade-up">
-            {/* Tag */}
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: '#ecfdf5', color: '#065f46',
-              padding: '8px 18px', borderRadius: 'var(--r-full)',
-              fontSize: '0.8rem', fontWeight: 700, marginBottom: 28,
-              border: '1px solid #a7f3d0',
-            }}>
-              ✦ {tr.heroTag}
-            </div>
 
-            {/* Headline */}
+
             <h1 className="heading-xl" style={{ marginBottom: 20 }}>
               {tr.heroTitle1}
               <span style={{ color: 'var(--brand-green-light)' }}>{tr.heroTitleGreen}</span>
@@ -40,19 +30,16 @@ export function HeroSection({ tr, onGetStarted }) {
               {tr.heroTitle5}
             </h1>
 
-            {/* Underline decoration */}
             <div style={{
               width: 120, height: 4, borderRadius: 4,
               background: 'linear-gradient(90deg, var(--accent-yellow), transparent)',
               marginBottom: 24,
             }} />
 
-            {/* Description */}
             <p style={{ color: 'var(--text-body)', fontSize: '1rem', maxWidth: 420, lineHeight: 1.7, marginBottom: 36 }}>
               {tr.heroDesc}
             </p>
 
-            {/* CTA */}
             <button
               id="hero-get-started"
               onClick={onGetStarted}
@@ -62,7 +49,6 @@ export function HeroSection({ tr, onGetStarted }) {
               {tr.heroBtn}
             </button>
 
-            {/* Scroll indicator */}
             <div style={{ marginTop: 48, display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
@@ -72,7 +58,6 @@ export function HeroSection({ tr, onGetStarted }) {
             </div>
           </div>
 
-          {/* RIGHT — Hero image ring */}
           <div className="anim-fade-up anim-delay-2" style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
             <div style={{
               position: 'relative',
@@ -92,8 +77,6 @@ export function HeroSection({ tr, onGetStarted }) {
                   e.target.parentElement.innerHTML = '<div style="font-size:8rem;opacity:0.3">🍽</div>';
                 }}
               />
-
-              {/* Badge: Hot & Fresh */}
               <div className="hero-badge" style={{
                 position: 'absolute', top: '12%', right: '4%',
                 background: 'var(--bg-card)', border: '1px solid var(--border-card)',
@@ -108,7 +91,6 @@ export function HeroSection({ tr, onGetStarted }) {
                 </div>
               </div>
 
-              {/* Badge: Rating */}
               <div className="hero-badge" style={{
                 position: 'absolute', bottom: '10%', left: '4%',
                 background: 'var(--bg-card)', border: '1px solid var(--border-card)',
@@ -126,8 +108,6 @@ export function HeroSection({ tr, onGetStarted }) {
           </div>
         </div>
       </div>
-
-      {/* Responsive style */}
       <style>{`
         @media (max-width: 768px) {
           #hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }

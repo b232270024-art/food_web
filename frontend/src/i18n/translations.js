@@ -16,7 +16,6 @@ export const t = {
     navPopular: 'Our Popular Food',
 
     // Hero
-    heroTag: 'Luxury In-Room Dining Service',
     heroTitle1: "We're ",
     heroTitleGreen: 'Serious',
     heroTitle2: ' For',
@@ -24,7 +23,7 @@ export const t = {
     heroTitle4: ' & ',
     heroTitleOrange: 'Delivery',
     heroTitle5: '.',
-    heroDesc: 'Best cooks and best delivery guys at your service.',
+    heroDesc: 'Test',
     heroBtn: 'Get Started',
 
     // Special Offers
@@ -181,7 +180,7 @@ export const t = {
     locationDetecting: 'Detecting your location...',
     locationResolving: 'Looking up address...',
     locationConfirmed: 'Location confirmed — adjust the pin if needed',
-    locationDetectFail: '⚠️ Could not detect location — tap the map to set it manually',
+    locationDetectFail: 'Could not detect location — tap the map to set it manually',
     locationRequiredHint: 'Set your delivery location on the map above to continue.',
   },
 

@@ -12,7 +12,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
     <header className="navbar">
       <div className="container">
         <div className="navbar-inner">
-          {/* Logo — Velofoods brand (not the guest's hotel) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, overflow: 'hidden' }}>
             <img
               src="/velofoods.jpeg"
@@ -30,17 +29,13 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
               Velofoods
             </span>
           </div>
-
-          {/* Nav Links (desktop) — hidden on mobile via .nav-links in index.css */}
           <nav className="nav-links">
             {[tr.navSpecialOffers, tr.navMenu, tr.navPopular].map((label) => (
               <span key={label} className="nav-link">{label}</span>
             ))}
           </nav>
 
-          {/* Right Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
-            {/* Session chip */}
             {session && (
               <div style={{
                 background: '#ecfdf5', border: '1px solid #a7f3d0',
@@ -58,7 +53,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
               </div>
             )}
 
-            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
@@ -72,7 +66,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
 
-            {/* Language Switcher */}
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setLangOpen(o => !o)}
@@ -119,7 +112,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
               )}
             </div>
 
-            {/* Cart Button — only on menu step */}
             {showCart && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {cartCount > 0 && (
@@ -170,7 +162,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
         </div>
       </div>
 
-      {/* Close lang dropdown on outside click */}
       {langOpen && (
         <div
           onClick={() => setLangOpen(false)}
@@ -178,7 +169,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
         />
       )}
 
-      {/* Narrow phones: drop the language label text, keep the flag + chevron */}
       <style>{`
         @media (max-width: 420px) {
           .lang-label { display: none; }

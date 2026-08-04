@@ -47,14 +47,14 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
           {featured.length === 0
             ? Array.from({ length: 4 }).map((_, i) => <SpecialCardSkeleton key={i} />)
             : featured.map((item, i) => (
-                <SpecialCard
-                  key={item.id}
-                  item={item}
-                  index={i}
-                  tr={tr}
-                  onGetStarted={onGetStarted}
-                />
-              ))
+              <SpecialCard
+                key={item.id}
+                item={item}
+                index={i}
+                tr={tr}
+                onGetStarted={onGetStarted}
+              />
+            ))
           }
         </div>
       </div>
@@ -111,12 +111,10 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
         </div>
       )}
 
-      {/* Name */}
       <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-dark)', lineHeight: 1.3 }}>
         {item.name}
       </h3>
 
-      {/* Real description from the menu, when the dish has one */}
       {item.description && (
         <p style={{
           fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5,
