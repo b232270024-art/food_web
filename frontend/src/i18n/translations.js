@@ -3,9 +3,9 @@
 // ======================================================
 
 export const LANGUAGES = [
-  { code: 'en', label: 'EN', flag: '🇺🇸', name: 'English', dir: 'ltr' },
-  { code: 'ar', label: 'AR', flag: '🇦🇪', name: 'العربية', dir: 'rtl' },
-  { code: 'hi', label: 'HI', flag: '🇮🇳', name: 'हिन्दी', dir: 'ltr' },
+  { code: 'en', label: 'EN', name: 'English', dir: 'ltr' },
+  { code: 'ar', label: 'AR', name: 'العربية', dir: 'rtl' },
+  { code: 'hi', label: 'HI', name: 'हिन्दी', dir: 'ltr' },
 ];
 
 export const t = {

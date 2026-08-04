@@ -78,7 +78,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
                   fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-dark)',
                 }}
               >
-                <span style={{ fontSize: '1.1rem' }}>{currentLang.flag}</span>
                 <span className="lang-label">{currentLang.label}</span>
                 <Globe size={14} style={{ color: 'var(--text-muted)' }} />
               </button>
@@ -105,7 +104,6 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
                         textAlign: 'left',
                       }}
                     >
-                      <span style={{ fontSize: '1.2rem' }}>{lang.flag}</span>
                       <span>{lang.name}</span>
                       {lang.code === language && <span style={{ marginLeft: 'auto', color: 'var(--brand-green-light)' }}>✓</span>}
                     </button>

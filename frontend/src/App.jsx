@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
 
-import { Header }              from './components/Header';
-import { HeroSection }         from './components/HeroSection';
-import { TodaySpecialOffers }  from './components/TodaySpecialOffers';
-import { HowItWorks }          from './components/HowItWorks';
-import { AboutSection }        from './components/AboutSection';
-import { Footer }              from './components/Footer';
-import { OrderTypeSelection }  from './components/OrderTypeSelection';
+import { Header } from './components/Header';
+import { HeroSection } from './components/HeroSection';
+import { TodaySpecialOffers } from './components/TodaySpecialOffers';
+import { HowItWorks } from './components/HowItWorks';
+import { AboutSection } from './components/AboutSection';
+import { Footer } from './components/Footer';
+import { OrderTypeSelection } from './components/OrderTypeSelection';
 import { DeliveryTypeSelection } from './components/DeliveryTypeSelection';
-import { GuestDetailsModal }   from './components/GuestDetailsModal';
-import { MenuSection }         from './components/MenuSection';
-import { CartDrawer }          from './components/CartDrawer';
-import { OrderReview }         from './components/OrderReview';
-import { TermsModal }          from './components/TermsModal';
-import { AboutPage }           from './components/AboutPage';
+import { GuestDetailsModal } from './components/GuestDetailsModal';
+import { MenuSection } from './components/MenuSection';
+import { CartDrawer } from './components/CartDrawer';
+import { OrderReview } from './components/OrderReview';
+import { TermsModal } from './components/TermsModal';
+import { AboutPage } from './components/AboutPage';
 
 import { LANGUAGES, useTranslation } from './i18n/translations';
 
@@ -31,28 +31,28 @@ const pathForStep = (step) => (step === 'hero' ? '/' : `/${step}`) + window.loca
 
 export default function App() {
   // ─── Core state ─────────────────────────────────────────────────────────────
-  const [hotel,       setHotel]       = useState(null);
-  const [session,     setSession]     = useState(null);
-  const [menuItems,   setMenuItems]   = useState([]);
-  const [cart,        setCart]        = useState([]);
+  const [hotel, setHotel] = useState(null);
+  const [session, setSession] = useState(null);
+  const [menuItems, setMenuItems] = useState([]);
+  const [cart, setCart] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
 
   // ─── UI/Flow state ───────────────────────────────────────────────────────────
-  const [language,       setLanguage]       = useState('en');
-  const [flowStep,       setFlowStep]       = useState('hero');
-  const [orderType,      setOrderType]      = useState(null);   // 'twelve_day' | 'one_time'
-  const [deliveryType,   setDeliveryType]   = useState(null);   // 'hotel' | 'current_location'
+  const [language, setLanguage] = useState('en');
+  const [flowStep, setFlowStep] = useState('hero');
+  const [orderType, setOrderType] = useState(null);   // 'twelve_day' | 'one_time'
+  const [deliveryType, setDeliveryType] = useState(null);   // 'hotel' | 'current_location'
   const [guestDetailsOpen, setGuestDetailsOpen] = useState(false);
-  const [cartOpen,       setCartOpen]       = useState(false);
-  const [submitting,     setSubmitting]     = useState(false);
-  const [toast,          setToast]          = useState('');
-  const [agreeTerms,     setAgreeTerms]     = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState('');
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   // ─── Current-location delivery: captured inline on the review page (no popup) ─
   const [pendingGuestName, setPendingGuestName] = useState('');
-  const [pendingAddress,   setPendingAddress]   = useState('');
-  const [pendingGeo,       setPendingGeo]       = useState(null);
+  const [pendingAddress, setPendingAddress] = useState('');
+  const [pendingGeo, setPendingGeo] = useState(null);
 
   const tr = useTranslation(language);
 
