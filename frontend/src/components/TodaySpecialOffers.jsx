@@ -21,9 +21,36 @@ const CARD_COLORS = [
 ];
 
 export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
+  const scrollRef = React.useRef(null);
+
   let featured = menuItems.filter(item => item.is_featured);
-  if (featured.length === 0) featured = menuItems; // Fallback to normal items if none are featured
+  if (featured.length < 10) {
+    const nonFeatured = menuItems.filter(item => !item.is_featured);
+    featured = [...featured, ...nonFeatured];
+  }
   featured = featured.slice(0, 10);
+
+  const setWidth = featured.length * (280 + 24); // width of one set of cards (card + gap)
+
+  React.useEffect(() => {
+    // On mount, position the scroll in the middle set to allow scrolling left or right
+    if (scrollRef.current && setWidth > 0) {
+      scrollRef.current.scrollLeft = setWidth;
+    }
+  }, [setWidth]);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    
+    // Infinite loop trick: jump to the identical position in the next/prev set
+    // when getting too close to the edges.
+    if (el.scrollLeft < setWidth * 0.2) {
+      el.scrollLeft += setWidth;
+    } else if (el.scrollLeft > setWidth * 1.8) {
+      el.scrollLeft -= setWidth;
+    }
+  };
 
   return (
     <section id="today-special-offers" style={{ padding: '80px 0', background: 'var(--bg-cream)' }}>
@@ -41,33 +68,30 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
         </div>
       </div>
 
-      {/* Horizontal scroll container - Full width bleed */}
+      {/* Infinite Scroll Container */}
       <div 
+        ref={scrollRef}
+        onScroll={handleScroll}
         className="special-offers-scroll"
         style={{
           display: 'flex',
           overflowX: 'auto',
           gap: 24,
-          paddingBottom: 40, 
-          paddingLeft: 'max(24px, calc(50vw - 580px))', // Aligns with container (max-width 1160)
+          paddingBottom: 40,
+          paddingLeft: 'max(24px, calc(50vw - 580px))',
           paddingRight: 'max(24px, calc(50vw - 580px))',
           scrollSnapType: 'x mandatory',
           WebkitOverflowScrolling: 'touch',
+          width: '100%',
         }}
       >
-          {featured.length === 0
-            ? Array.from({ length: 4 }).map((_, i) => <SpecialCardSkeleton key={i} />)
-            : featured.map((item, i) => (
-              <SpecialCard
-                key={item.id}
-                item={item}
-                index={i}
-                tr={tr}
-                onGetStarted={onGetStarted}
-              />
-            ))
-          }
-        </div>
+        {/* We render 3 sets. Middle set is the starting point. */}
+        {[...featured, ...featured, ...featured].length === 0
+          ? Array.from({ length: 12 }).map((_, i) => <SpecialCardSkeleton key={`skel-${i}`} />)
+          : [...featured, ...featured, ...featured].map((item, i) => (
+            <SpecialCard key={`set-${i}-${item.id}`} item={item} index={i % featured.length} tr={tr} onGetStarted={onGetStarted} />
+          ))
+        }
       </div>
       <style>{`
         .special-offers-scroll::-webkit-scrollbar { height: 0px; display: none; }
