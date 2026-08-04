@@ -5,11 +5,13 @@ import { MapPin, User, DoorClosed, AlertCircle, Hotel, X } from 'lucide-react';
 // 12-day plan flow where delivery is always to the guest's room).
 // For 'current_location', this modal only collects the guest's name — the actual
 // location is captured with a map picker on the order review screen (no second popup).
+// For 'hotel' (incl. implicit 12-day), the guest just types which hotel + room they're
+// in — one shared site/QR now serves guests across many different real hotels, so there's
+// no hotel record to resolve or GPS-verify against; whatever the guest types is used as-is.
 export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, onClose }) {
   const [name, setName] = useState('');
+  const [hotelName, setHotelName] = useState('');
   const [room, setRoom] = useState('');
-  const [geo, setGeo] = useState(null);
-  const [geoStatus, setGeoStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,33 +19,19 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
 
   const isCurrentLocation = deliveryType === 'current_location';
 
-  // Hotel-flow (or implicit hotel for the 12-day plan): optional presence verification only.
-  const handleVerifyLocation = () => {
-    if (!navigator.geolocation) { setGeoStatus(tr.checkinGeoUnsupported); return; }
-    setGeoStatus(tr.checkinGeoDetecting);
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGeoStatus(tr.checkinGeoSuccess);
-      },
-      () => setGeoStatus(tr.checkinGeoFail)
-    );
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) { setError(tr.checkinError); return; }
-    if (!isCurrentLocation && !room.trim()) { setError(tr.checkinError); return; }
+    if (!isCurrentLocation && (!hotelName.trim() || !room.trim())) { setError(tr.checkinError); return; }
 
     setError('');
     setLoading(true);
     try {
       await onSubmit({
         guest_name: name.trim(),
+        hotel_name: isCurrentLocation ? null : hotelName.trim(),
         room_number: isCurrentLocation ? null : room.trim(),
         delivery_address: null,
-        geo_lat: geo?.lat ?? null,
-        geo_lng: geo?.lng ?? null,
       });
     } catch (err) {
       setError(err.message || 'Error');
@@ -158,25 +146,34 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
             </div>
           ) : (
             <>
-              {/* Hotel confirmation card */}
-              {hotel?.name && (
-                <div style={{
-                  background: 'var(--bg-muted)', border: '1px solid var(--border)',
-                  borderRadius: 12, padding: '12px 14px',
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  marginBottom: 16,
-                }}>
-                  <Hotel size={20} color="var(--brand-green-light)" />
-                  <div>
-                    <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700 }}>{tr.guestHotelConfirmTitle}</p>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-dark)' }}>{hotel.name}</p>
-                    {hotel.address && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{hotel.address}</p>}
-                  </div>
+              {/* Hotel name — guest types it freely, nothing to look up or verify */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-body)', marginBottom: 6 }}>
+                  {tr.checkinHotelNameLabel}
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Hotel size={17} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+                  <input
+                    id="checkin-hotel-name"
+                    type="text"
+                    placeholder={tr.checkinHotelNamePlaceholder}
+                    value={hotelName}
+                    onChange={e => setHotelName(e.target.value)}
+                    required
+                    style={{
+                      width: '100%', padding: '12px 14px 12px 42px',
+                      borderRadius: 12, border: '1.5px solid var(--border)',
+                      fontSize: '0.95rem', outline: 'none',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'var(--brand-green-light)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                  />
                 </div>
-              )}
+              </div>
 
               {/* Room */}
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 28 }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-body)', marginBottom: 6 }}>
                   {tr.checkinRoomLabel}
                 </label>
@@ -199,37 +196,6 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
                     onBlur={e => e.target.style.borderColor = 'var(--border)'}
                   />
                 </div>
-              </div>
-
-              {/* Optional geolocation verify */}
-              <div style={{
-                background: 'var(--bg-muted)', border: '1px solid var(--border)',
-                borderRadius: 12, padding: '12px 14px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: 28,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <MapPin size={20} color="var(--brand-green-light)" />
-                  <div>
-                    <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-dark)' }}>
-                      {tr.checkinGeoTitle}
-                    </p>
-                    <p style={{ fontSize: '0.73rem', color: 'var(--text-muted)' }}>
-                      {geoStatus || tr.checkinGeoDesc}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleVerifyLocation}
-                  style={{
-                    padding: '6px 14px', borderRadius: 8,
-                    background: 'var(--bg-card)', border: '1px solid var(--border)',
-                    fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-dark)',
-                  }}
-                >
-                  {tr.checkinGeoBtn}
-                </button>
               </div>
             </>
           )}

@@ -3,7 +3,7 @@ import { AlertTriangle, ChevronLeft, MapPin, User } from 'lucide-react';
 import { LocationPicker } from './LocationPicker';
 
 export function OrderReview({
-  cart, hotel, session, deliveryType,
+  cart, session, deliveryType,
   pendingGuestName, pendingAddress, pendingGeo, onLocationChange,
   agreeTerms, onToggleAgree, onOpenTerms,
   onPay, isSubmitting, onEditDetails, onBack, tr,
@@ -100,7 +100,7 @@ export function OrderReview({
               <span style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>
                 {deliveryType === 'current_location'
                   ? (addressText || tr.locationPickerHint)
-                  : `${hotel?.name || ''}${session?.room_number ? ` — ${tr.room} ${session.room_number}` : ''}`}
+                  : `${session?.hotel_name || ''}${session?.room_number ? ` — ${tr.room} ${session.room_number}` : ''}`}
               </span>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { RefreshCw, Clock, DoorClosed, MapPin, User } from 'lucide-react';
+import { RefreshCw, Clock, DoorClosed, Hotel, MapPin, User } from 'lucide-react';
 
 const STATUS_FLOW = ['pending', 'preparing', 'served', 'paid'];
 const TERMINAL_EXTRA = ['cancelled', 'refunded'];
@@ -46,11 +46,16 @@ function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
             <User size={14} color="var(--brand-green-light)" />
             {order.guest_name || 'Guest'}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
             {order.room_number ? (
-              <><DoorClosed size={13} /> Өрөө {order.room_number}</>
+              <>
+                {order.hotel_name && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Hotel size={13} /> {order.hotel_name}</span>
+                )}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><DoorClosed size={13} /> Өрөө {order.room_number}</span>
+              </>
             ) : order.delivery_address ? (
-              <><MapPin size={13} /> {order.delivery_address}</>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={13} /> {order.delivery_address}</span>
             ) : null}
           </div>
         </div>

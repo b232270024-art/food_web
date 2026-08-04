@@ -213,7 +213,7 @@ export default function App() {
   // Exception: 'current_location' deliveries defer session creation until the guest
   // confirms their location with the map picker on the order review screen — no
   // separate popup is used to capture it.
-  const handleGuestDetailsSubmit = async ({ guest_name, room_number, delivery_address, geo_lat, geo_lng }) => {
+  const handleGuestDetailsSubmit = async ({ guest_name, hotel_name, room_number, delivery_address }) => {
     if (!hotel?.id) throw new Error('Hotel not found');
 
     if (orderType === 'one_time' && deliveryType === 'current_location') {
@@ -233,10 +233,9 @@ export default function App() {
         guest_name,
         order_type: orderType,
         delivery_type: orderType === 'one_time' ? deliveryType : null,
+        hotel_name,
         room_number,
         delivery_address,
-        geo_lat,
-        geo_lng,
       }),
     });
     const data = await res.json();
@@ -396,7 +395,6 @@ export default function App() {
           <div className="container">
             <OrderReview
               cart={cart}
-              hotel={hotel}
               session={session}
               deliveryType={deliveryType}
               pendingGuestName={pendingGuestName}

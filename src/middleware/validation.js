@@ -28,6 +28,7 @@ export const createSessionSchema = z
     order_type: z.enum(['twelve_day', 'one_time'], { message: 'order_type нь twelve_day эсвэл one_time байх ёстой' }),
     delivery_type: z.enum(['hotel', 'current_location']).nullish(),
     room_number: z.string().trim().min(1).max(20).nullish(),
+    hotel_name: z.string().trim().min(1).max(150).nullish(),
     delivery_address: z.string().trim().min(1).max(300).nullish(),
     geo_lat: z.number().min(-90).max(90).nullish(),
     geo_lng: z.number().min(-180).max(180).nullish(),
@@ -43,6 +44,9 @@ export const createSessionSchema = z
 
     if (deliveryType === 'hotel' && !data.room_number) {
       ctx.addIssue({ code: 'custom', path: ['room_number'], message: 'Өрөөний дугаар хоосон байж болохгүй' });
+    }
+    if (deliveryType === 'hotel' && !data.hotel_name) {
+      ctx.addIssue({ code: 'custom', path: ['hotel_name'], message: 'Буудлын нэр хоосон байж болохгүй' });
     }
     if (deliveryType === 'current_location' && !data.delivery_address) {
       ctx.addIssue({ code: 'custom', path: ['delivery_address'], message: 'Хүргэлтийн хаяг хоосон байж болохгүй' });

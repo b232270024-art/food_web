@@ -102,7 +102,9 @@ export function DashboardHome({ hotelId }) {
                     <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>{formatDateTime(o.created_at)}</td>
                     <td style={{ padding: '10px 14px' }}>{o.guest_name || 'Guest'}</td>
                     <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
-                      {o.room_number ? `Өрөө ${o.room_number}` : (o.delivery_address || '—')}
+                      {o.room_number
+                        ? `${o.hotel_name ? `${o.hotel_name}, ` : ''}Өрөө ${o.room_number}`
+                        : (o.delivery_address || '—')}
                     </td>
                     <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 700 }}>${Number(o.total_usd).toFixed(2)}</td>
                     <td style={{ padding: '10px 14px' }}>

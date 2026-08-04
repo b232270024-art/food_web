@@ -58,6 +58,7 @@ CREATE TABLE sessions (
   hotel_id           uuid NOT NULL REFERENCES hotels(id),
   guest_name         text NOT NULL,
   room_number        text,
+  hotel_name         text,   -- зочны чөлөөтэй бичсэн буудлын нэр (баталгаажуулалтгүй)
   order_type         session_order_type NOT NULL,
   delivery_type      session_delivery_type,
   delivery_address   text,

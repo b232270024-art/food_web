@@ -170,7 +170,7 @@ adminRouter.get('/:hotel_id/stats', asyncHandler(async (req, res) => {
     ),
     pool.query(
       `SELECT o.id, o.status, o.total_usd, o.created_at,
-              s.guest_name, s.room_number, s.delivery_address
+              s.guest_name, s.room_number, s.hotel_name, s.delivery_address
        FROM orders o
        JOIN sessions s ON s.id = o.session_id
        WHERE o.hotel_id = $1
@@ -200,7 +200,7 @@ adminRouter.get('/:hotel_id/orders', asyncHandler(async (req, res) => {
 
   const { rows } = await pool.query(
     `SELECT o.id, o.status, o.total_usd, o.created_at,
-            s.guest_name, s.room_number, s.delivery_address, s.delivery_type,
+            s.guest_name, s.room_number, s.hotel_name, s.delivery_address, s.delivery_type,
             (SELECT json_agg(json_build_object(
                'menu_item_id', oi.menu_item_id,
                'quantity', oi.quantity,

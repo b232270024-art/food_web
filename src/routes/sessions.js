@@ -1,51 +1,40 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
-import { distanceMeters } from '../services/geo.js';
 import { validateBody, createSessionSchema } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
 export const sessionsRouter = Router();
 
-const RADIUS = Number(process.env.LOCATION_VERIFY_RADIUS_METERS || 200);
-
 // Зочин нэр + захиалгын төрөл (order_type) + хүргэлтийн мэдээллээ (delivery_type,
-// room_number эсвэл delivery_address) оруулж session үүсгэнэ.
-// delivery_type='hotel' (эсвэл 12 хоногийн план) үед geo_lat/geo_lng ирвэл буудлын
-// координаттай харьцуулж баталгаажуулна. delivery_type='current_location' үед энэ
-// шалгалт хамаарахгүй тул location_verified үргэлж true байна.
+// room_number+hotel_name эсвэл delivery_address) оруулж session үүсгэнэ.
+// Нэг л QR/сайтыг олон өөр буудлын зочид ашигладаг тул delivery_type='hotel' үед
+// буудлын байршлыг GPS-ээр баталгаажуулдаггүй — зочны бичсэн hotel_name-ийг
+// шалгалтгүйгээр шууд хадгална. delivery_type='current_location' үед л
+// location_verified true байна (map дээр бодитоор байршил сонгосон гэсэн үг).
 sessionsRouter.post('/', validateBody(createSessionSchema), asyncHandler(async (req, res) => {
-  const { hotel_id, guest_name, order_type, room_number, geo_lat, geo_lng } = req.body;
+  const { hotel_id, guest_name, order_type, room_number, hotel_name, geo_lat, geo_lng } = req.body;
   const deliveryType = order_type === 'twelve_day' ? 'hotel' : req.body.delivery_type;
   const deliveryAddress = deliveryType === 'current_location' ? req.body.delivery_address : null;
 
-  const hotelResult = await pool.query(
-    'SELECT latitude, longitude FROM hotels WHERE id = $1',
-    [hotel_id]
-  );
+  const hotelResult = await pool.query('SELECT id FROM hotels WHERE id = $1', [hotel_id]);
   if (hotelResult.rows.length === 0) {
     return res.status(404).json({ error: 'Буудал олдсонгүй.' });
-  }
-  const hotel = hotelResult.rows[0];
-
-  let locationVerified = deliveryType === 'current_location';
-  if (deliveryType === 'hotel' && geo_lat != null && geo_lng != null) {
-    const dist = distanceMeters(hotel.latitude, hotel.longitude, geo_lat, geo_lng);
-    locationVerified = dist <= RADIUS;
   }
 
   const { rows } = await pool.query(
     `INSERT INTO sessions
-       (hotel_id, guest_name, order_type, delivery_type, room_number, delivery_address,
-        delivery_lat, delivery_lng, location_verified, geo_lat, geo_lng)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+       (hotel_id, guest_name, order_type, delivery_type, room_number, hotel_name, delivery_address,
+        delivery_lat, delivery_lng, location_verified)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
     [
       hotel_id, guest_name, order_type, deliveryType,
       deliveryType === 'hotel' ? room_number : null,
+      deliveryType === 'hotel' ? hotel_name : null,
       deliveryAddress,
       deliveryType === 'current_location' ? geo_lat ?? null : null,
       deliveryType === 'current_location' ? geo_lng ?? null : null,
-      locationVerified, geo_lat ?? null, geo_lng ?? null,
+      deliveryType === 'current_location',
     ]
   );
 
