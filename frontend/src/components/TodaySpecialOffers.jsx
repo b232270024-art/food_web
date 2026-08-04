@@ -1,6 +1,16 @@
 import React from 'react';
 
 
+const CATEGORY_EMOJI = {
+  'Main Course': '🥩',
+  'Salad & Appetizer': '🥗',
+  'Appetizer': '🥗',
+  'Dessert & Drinks': '🍰',
+  'Beverages': '🍹',
+  default: '🍽',
+};
+
+
 const CARD_COLORS = [
   { bg: '#fff3e8', ring: '#f97316' },
   { bg: '#e8f5e9', ring: '#4caf80' },
@@ -105,6 +115,7 @@ function SpecialCardSkeleton() {
 
 function SpecialCard({ item, index, tr, onGetStarted }) {
   const color = CARD_COLORS[index % CARD_COLORS.length];
+  const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
 
   return (
     <div

@@ -84,6 +84,16 @@ function BackButton({ label, onBack }) {
 // Танигдсан ангиллын нэрсэд зориулсан стиль (emoji/өнгө) — admin шинээр
 // нэмсэн/сольсон ангилалд DIET_CONFIG.standard-ийн стандарт стиль fallback
 // болно (нэрийг нь rename хийсэн ч харагдац эвдрэхгүй).
+
+const CATEGORY_EMOJI = {
+  'Main Course': '🥩',
+  'Salad & Appetizer': '🥗',
+  'Appetizer': '🥗',
+  'Dessert & Drinks': '🍰',
+  'Beverages': '🍹',
+  default: '🍽',
+};
+
 const DIET_CONFIG = {
   halal: { label: 'Halal', emoji: '☪️', color: '#065f46', bg: '#d1fae5' },
   vegetarian: { label: 'Vegetarian', emoji: '🌿', color: '#166534', bg: '#dcfce7' },
@@ -91,6 +101,7 @@ const DIET_CONFIG = {
   gluten_free: { label: 'Gluten Free', emoji: '🌾✕', color: '#78350f', bg: '#fef3c7' },
   standard: { label: 'Standard', emoji: '🍽', color: '#374151', bg: '#f3f4f6' },
 };
+
 
 function dietStyle(name) {
   const key = (name || '').toLowerCase().trim().replace(/\s+/g, '_');
@@ -102,6 +113,7 @@ const CARD_BG = ['#fff3e8', '#e8f5e9', '#fff8e1', '#fce4ec', '#e8f0fe', '#f0fdf4
 
 function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
   const diet = dietStyle(item.diet_type_name);
+  const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
   const bg = CARD_BG[idx % CARD_BG.length];
   const featured = item.is_featured;
 
