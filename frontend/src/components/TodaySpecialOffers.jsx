@@ -21,7 +21,9 @@ const CARD_COLORS = [
 ];
 
 export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
-  const featured = menuItems.slice(0, 4);
+  let featured = menuItems.filter(item => item.is_featured);
+  if (featured.length === 0) featured = menuItems; // Fallback to normal items if none are featured
+  featured = featured.slice(0, 10);
 
   return (
     <section id="today-special-offers" style={{ padding: '80px 0', background: 'var(--bg-cream)' }}>
@@ -38,12 +40,19 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
           </p>
         </div>
 
-        {/* Cards grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: 28,
-        }}>
+        {/* Horizontal scroll container */}
+        <div 
+          className="special-offers-scroll"
+          style={{
+            display: 'flex',
+            overflowX: 'auto',
+            gap: 24,
+            paddingBottom: 24, // for scrollbar
+            paddingLeft: 4, paddingRight: 4, // for box shadow clipping
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {featured.length === 0
             ? Array.from({ length: 4 }).map((_, i) => <SpecialCardSkeleton key={i} />)
             : featured.map((item, i) => (
@@ -57,6 +66,11 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
             ))
           }
         </div>
+        <style>{`
+          .special-offers-scroll::-webkit-scrollbar { height: 8px; }
+          .special-offers-scroll::-webkit-scrollbar-track { background: var(--bg-muted); border-radius: 4px; }
+          .special-offers-scroll::-webkit-scrollbar-thumb { background: var(--brand-green); border-radius: 4px; }
+        `}</style>
       </div>
     </section>
   );
@@ -64,7 +78,7 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
 
 function SpecialCardSkeleton() {
   return (
-    <div className="card anim-fade-in" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+    <div className="card anim-fade-in" style={{ minWidth: 260, flexShrink: 0, scrollSnapAlign: 'start', padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
       <div style={{ width: 120, height: 120, borderRadius: '50%', background: 'var(--bg-muted)' }} />
       <div style={{ width: '70%', height: 16, borderRadius: 4, background: 'var(--bg-muted)' }} />
       <div style={{ width: '100%', height: 34, borderRadius: 8, background: 'var(--bg-muted)' }} />
@@ -80,6 +94,7 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
     <div
       className="anim-fade-up card"
       style={{
+        minWidth: 260, flexShrink: 0, scrollSnapAlign: 'start',
         animationDelay: `${index * 0.08}s`,
         padding: '24px 20px',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
