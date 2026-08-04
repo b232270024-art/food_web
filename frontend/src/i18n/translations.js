@@ -16,14 +16,12 @@ export const t = {
     navPopular: 'Our Popular Food',
 
     // Hero
-    heroTitle1: "We're ",
-    heroTitleGreen: 'Serious',
+    heroTitle1: "Premium Dinning",
+    heroTitleGreen: 'Soliutions',
     heroTitle2: ' For',
-    heroTitle3: 'Food',
-    heroTitle4: ' & ',
-    heroTitleOrange: 'Delivery',
-    heroTitle5: '.',
-    heroDesc: 'Test',
+    heroTitle3: 'COP17',
+    heroTitle4: ' Delegates',
+    heroDesc: 'Certifiad Halal & Vegen and International Cuisines',
     heroBtn: 'Get Started',
 
     // Special Offers
