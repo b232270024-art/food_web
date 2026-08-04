@@ -85,11 +85,11 @@ function BackButton({ label, onBack }) {
 // нэмсэн/сольсон ангилалд DIET_CONFIG.standard-ийн стандарт стиль fallback
 // болно (нэрийг нь rename хийсэн ч харагдац эвдрэхгүй).
 const DIET_CONFIG = {
-  halal:        { label: 'Halal',        emoji: '☪️',  color: '#065f46', bg: '#d1fae5' },
-  vegetarian:   { label: 'Vegetarian',   emoji: '🌿',  color: '#166534', bg: '#dcfce7' },
-  vegan:        { label: 'Vegan',        emoji: '🌱',  color: '#14532d', bg: '#f0fdf4' },
-  gluten_free:  { label: 'Gluten Free',  emoji: '🌾✕', color: '#78350f', bg: '#fef3c7' },
-  standard:     { label: 'Standard',     emoji: '🍽',  color: '#374151', bg: '#f3f4f6' },
+  halal: { label: 'Halal', emoji: '☪️', color: '#065f46', bg: '#d1fae5' },
+  vegetarian: { label: 'Vegetarian', emoji: '🌿', color: '#166534', bg: '#dcfce7' },
+  vegan: { label: 'Vegan', emoji: '🌱', color: '#14532d', bg: '#f0fdf4' },
+  gluten_free: { label: 'Gluten Free', emoji: '🌾✕', color: '#78350f', bg: '#fef3c7' },
+  standard: { label: 'Standard', emoji: '🍽', color: '#374151', bg: '#f3f4f6' },
 };
 
 function dietStyle(name) {
@@ -97,16 +97,11 @@ function dietStyle(name) {
   return DIET_CONFIG[key] || { ...DIET_CONFIG.standard, label: name || DIET_CONFIG.standard.label };
 }
 
-const CATEGORY_EMOJI = {
-  'Main Course': '🥩', 'Salad & Appetizer': '🥗', 'Appetizer': '🥗',
-  'Dessert & Drinks': '🍰', 'Beverages': '🍹', default: '🍽',
-};
 
 const CARD_BG = ['#fff3e8', '#e8f5e9', '#fff8e1', '#fce4ec', '#e8f0fe', '#f0fdf4'];
 
 function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
   const diet = dietStyle(item.diet_type_name);
-  const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
   const bg = CARD_BG[idx % CARD_BG.length];
   const featured = item.is_featured;
 
@@ -187,7 +182,7 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
           </p>
         )}
 
-{item.stock_limit === 0 && (
+        {item.stock_limit === 0 && (
           <div style={{ fontSize: '0.78rem', color: '#dc2626', marginBottom: 14, fontWeight: 700 }}>
             Sold Out
           </div>
@@ -276,10 +271,10 @@ function CardGrid({ items, getQty, onAddToCart, onRemoveFromCart, readOnly }) {
 }
 
 export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCart, onRemoveFromCart, onConfirmPlan, onContinueToDelivery, onBack }) {
-  const [search,      setSearch]      = useState('');
-  const [dietFilter,  setDietFilter]  = useState('all');
-  const [catFilter,   setCatFilter]   = useState('All');
-  const [planItems,   setPlanItems]   = useState(null); // admin-ийн тохируулсан 12 хоногийн хуваарь (12-day preview-д ашиглана)
+  const [search, setSearch] = useState('');
+  const [dietFilter, setDietFilter] = useState('all');
+  const [catFilter, setCatFilter] = useState('All');
+  const [planItems, setPlanItems] = useState(null); // admin-ийн тохируулсан 12 хоногийн хуваарь (12-day preview-д ашиглана)
 
   useEffect(() => {
     if (!hotelId || orderType !== 'twelve_day') return;
@@ -304,8 +299,8 @@ export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCa
 
   const filtered = useMemo(() =>
     menuItems.filter(item => {
-      const matchDiet   = dietFilter === 'all' || item.diet_type_id === dietFilter;
-      const matchCat    = catFilter === 'All'  || item.category === catFilter;
+      const matchDiet = dietFilter === 'all' || item.diet_type_id === dietFilter;
+      const matchCat = catFilter === 'All' || item.category === catFilter;
       const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
       return matchDiet && matchCat && matchSearch;
     }),

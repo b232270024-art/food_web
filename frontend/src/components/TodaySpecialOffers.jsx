@@ -1,17 +1,5 @@
 import React from 'react';
 
-// Category-based emoji avatars to represent dishes visually
-const CATEGORY_EMOJI = {
-  'Гол хоол': '🥩',
-  'Main Course': '🥩',
-  'Зууш & Салат': '🥗',
-  'Appetizer & Salad': '🥗',
-  'Уух зүйлс': '🍹',
-  'Beverages': '🍹',
-  'Дессерт': '🍰',
-  'Dessert': '🍰',
-  default: '🍽',
-};
 
 const CARD_COLORS = [
   { bg: '#fff3e8', ring: '#f97316' },
@@ -117,7 +105,6 @@ function SpecialCardSkeleton() {
 
 function SpecialCard({ item, index, tr, onGetStarted }) {
   const color = CARD_COLORS[index % CARD_COLORS.length];
-  const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
 
   return (
     <div
