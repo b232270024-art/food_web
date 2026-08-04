@@ -12,7 +12,7 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
     <header className="navbar">
       <div className="container">
         <div className="navbar-inner">
-          <div 
+          <div
             onClick={onBackToHome}
             style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, overflow: 'hidden', cursor: 'pointer' }}
           >
@@ -26,7 +26,7 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
             />
             <span style={{
               fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.15rem',
-              color: 'var(--text-dark)', lineHeight: 1, letterSpacing: '-0.01em',
+              color: 'var(--text-white)', lineHeight: 1, letterSpacing: '-0.01em',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               Velofoods
@@ -60,7 +60,7 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
               style={{
                 width: 38, height: 38, borderRadius: 'var(--r-sm)', flexShrink: 0,
-                background: 'var(--bg-muted)', border: '1px solid var(--border)',
+                background: 'var(--bg-white)', border: '1px solid var(--border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'var(--text-dark)',
               }}
@@ -98,7 +98,7 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         width: '100%', padding: '10px 14px',
-                        background: lang.code === language ? 'var(--bg-muted)' : 'transparent',
+                        background: lang.code === language ? 'var(--bg-white)' : 'transparent',
                         fontWeight: lang.code === language ? 700 : 500,
                         fontSize: '0.875rem', color: 'var(--text-dark)',
                         borderBottom: '1px solid var(--border)',
@@ -122,7 +122,7 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
                     className="anim-bump"
                     style={{
                       fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '0.9rem',
-                      color: 'var(--brand-green)', background: 'var(--bg-muted)',
+                      color: 'var(--brand-green)', background: 'var(--bg-white)',
                       padding: '6px 12px', borderRadius: 'var(--r-full)',
                       whiteSpace: 'nowrap',
                     }}

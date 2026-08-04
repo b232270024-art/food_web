@@ -11,7 +11,7 @@
   --accent-pink: #FBCFE8;
 
   /* Backgrounds */
-  --bg-cream: #ffffff;
+  --bg-cream: #f5f3f3;
   --bg-white: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-muted: #F5F0E8;
@@ -97,7 +97,7 @@
     --text-dark: #F3F4F1;
     --text-body: #C7CEC9;
     --text-muted: #8B968E;
-    --text-green: #6FE3A4;
+    --text-green: #7aeeae;
     --text-white: #FFFFFF;
 
     --border: #2A362E;
@@ -237,9 +237,6 @@ img {
   color: var(--accent-orange);
 }
 
-/* =============================
-   BUTTONS
-   ============================= */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -299,8 +296,8 @@ img {
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: rgba(253, 248, 243, 0.92);
+  z-index: 120;
+  background: var(--brand-green);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-card);
@@ -322,9 +319,9 @@ img {
 }
 
 .nav-link {
-  font-size: 0.9rem;
+  font-size: 1.0rem;
   font-weight: 600;
-  color: var(--text-body);
+  color: var(--text-white);
   text-decoration: none;
   transition: color 0.2s;
   cursor: pointer;

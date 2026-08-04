@@ -5,7 +5,7 @@ export function HeroSection({ tr, onGetStarted }) {
   return (
     <section style={{
       background: 'var(--bg-cream)',
-      padding: '60px 0 80px',
+      padding: '80px 0 80px',
       overflow: 'hidden',
     }}>
       <div className="container">
@@ -16,15 +16,14 @@ export function HeroSection({ tr, onGetStarted }) {
           alignItems: 'center',
           minHeight: 480,
         }}>
-          {/* LEFT — Copy */}
           <div className="anim-fade-up">
 
 
-            <h1 className="heading-xl" style={{ marginBottom: 20 }}>
+            <h1 className="heading-xl" style={{ marginBottom: 15 }}>
               {tr.heroTitle1}
               <span style={{ color: 'var(--brand-green-light)' }}>{tr.heroTitleGreen}</span>
               {tr.heroTitle2}<br />
-              <span style={{ color: 'var(--brand-green-light)' }}>{tr.heroTitle3}</span>
+              <span style={{ color: 'var(--accent-orange)' }}>{tr.heroTitle3}</span>
               {tr.heroTitle4}
               <span style={{ color: 'var(--accent-orange)' }}>{tr.heroTitleOrange}</span>
               {tr.heroTitle5}
