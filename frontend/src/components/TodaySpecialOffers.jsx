@@ -39,20 +39,22 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
             {tr.specialDesc}
           </p>
         </div>
+      </div>
 
-        {/* Horizontal scroll container */}
-        <div 
-          className="special-offers-scroll"
-          style={{
-            display: 'flex',
-            overflowX: 'auto',
-            gap: 24,
-            paddingBottom: 24, // for scrollbar
-            paddingLeft: 4, paddingRight: 4, // for box shadow clipping
-            scrollSnapType: 'x mandatory',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
+      {/* Horizontal scroll container - Full width bleed */}
+      <div 
+        className="special-offers-scroll"
+        style={{
+          display: 'flex',
+          overflowX: 'auto',
+          gap: 24,
+          paddingBottom: 40, 
+          paddingLeft: 'max(24px, calc(50vw - 580px))', // Aligns with container (max-width 1160)
+          paddingRight: 'max(24px, calc(50vw - 580px))',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
           {featured.length === 0
             ? Array.from({ length: 4 }).map((_, i) => <SpecialCardSkeleton key={i} />)
             : featured.map((item, i) => (
@@ -66,22 +68,25 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
             ))
           }
         </div>
-        <style>{`
-          .special-offers-scroll::-webkit-scrollbar { height: 8px; }
-          .special-offers-scroll::-webkit-scrollbar-track { background: var(--bg-muted); border-radius: 4px; }
-          .special-offers-scroll::-webkit-scrollbar-thumb { background: var(--brand-green); border-radius: 4px; }
-        `}</style>
       </div>
+      <style>{`
+        .special-offers-scroll::-webkit-scrollbar { height: 0px; display: none; }
+        .special-offers-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .special-card-wrap { cursor: pointer; }
+        .special-card-img-wrap { overflow: hidden; border-radius: 20px; }
+        .special-card-img-wrap img { transition: transform 0.4s ease; }
+        .special-card-wrap:hover .special-card-img-wrap img { transform: scale(1.05); }
+      `}</style>
     </section>
   );
 }
 
 function SpecialCardSkeleton() {
   return (
-    <div className="card anim-fade-in" style={{ minWidth: 260, flexShrink: 0, scrollSnapAlign: 'start', padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-      <div style={{ width: 120, height: 120, borderRadius: '50%', background: 'var(--bg-muted)' }} />
-      <div style={{ width: '70%', height: 16, borderRadius: 4, background: 'var(--bg-muted)' }} />
-      <div style={{ width: '100%', height: 34, borderRadius: 8, background: 'var(--bg-muted)' }} />
+    <div style={{ minWidth: 280, flexShrink: 0, scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: 20, background: 'var(--bg-muted)' }} />
+      <div style={{ width: '70%', height: 24, borderRadius: 6, background: 'var(--bg-muted)' }} />
+      <div style={{ width: '90%', height: 16, borderRadius: 4, background: 'var(--bg-muted)' }} />
     </div>
   );
 }
@@ -92,66 +97,53 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
 
   return (
     <div
-      className="anim-fade-up card"
+      className="anim-fade-up special-card-wrap"
+      onClick={onGetStarted}
       style={{
-        minWidth: 260, flexShrink: 0, scrollSnapAlign: 'start',
+        minWidth: 280, width: 280, flexShrink: 0, scrollSnapAlign: 'start',
         animationDelay: `${index * 0.08}s`,
-        padding: '24px 20px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        textAlign: 'center', gap: 14,
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+        display: 'flex', flexDirection: 'column', gap: 14,
+        textAlign: 'left',
       }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
     >
       {/* Dish avatar */}
-      {item.image_url ? (
-        <img
-          src={item.image_url}
-          alt={item.name}
-          style={{
-            width: 120, height: 120, borderRadius: '50%', objectFit: 'cover',
-            border: `3px solid ${color.ring}`, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-          }}
-        />
-      ) : (
-        <div style={{
-          width: 120, height: 120, borderRadius: '50%',
-          background: color.bg,
-          border: `3px solid ${color.ring}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '3.2rem', boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-        }}>
-          {emoji}
-        </div>
-      )}
-
-      <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-dark)', lineHeight: 1.3 }}>
-        {item.name}
-      </h3>
-
-      {item.description && (
-        <p style={{
-          fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5,
-          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-        }}>
-          {item.description}
-        </p>
-      )}
-
-      {/* Price */}
-      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--brand-green)' }}>
-        ${Number(item.price_usd ?? item.price ?? 0).toFixed(2)}
+      <div className="special-card-img-wrap" style={{ width: '100%', aspectRatio: '1/1', position: 'relative' }}>
+        {item.image_url ? (
+          <img
+            src={item.image_url}
+            alt={item.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <div style={{
+            width: '100%', height: '100%',
+            background: color.bg,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '5rem',
+          }}>
+            {emoji}
+          </div>
+        )}
       </div>
 
-      {/* CTA */}
-      <button
-        className="btn-primary"
-        onClick={onGetStarted}
-        style={{ padding: '9px 22px', fontSize: '0.85rem', borderRadius: 'var(--r-sm)', width: '100%' }}
-      >
-        {tr.specialBtn}
-      </button>
+      <div>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-dark)', lineHeight: 1.2, marginBottom: 4 }}>
+          {item.name}
+        </h3>
+
+        {item.description && (
+          <p style={{
+            fontSize: '0.9rem', color: 'var(--text-body)', lineHeight: 1.4, marginBottom: 8,
+            overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          }}>
+            {item.description}
+          </p>
+        )}
+
+        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+          {item.calories ? `${item.calories} Cal` : '450 Cal'} | 32g Protein | 40g Carbs
+        </div>
+      </div>
     </div>
   );
 }
