@@ -76,11 +76,13 @@ adminRouter.get('/debug/uploads', (req, res) => {
 
 // --- Ресторан нэмэх / нэр солих / ангилал оноох (Settings) -----------------
 adminRouter.post('/restaurants', validateBody(createRestaurantSchema), asyncHandler(async (req, res) => {
-  const { name } = req.body;
+  const { name, daily_order_limit } = req.body;
   try {
+    // daily_order_limit өгөөгүй бол шинэ ресторан 100 захиалгын анхны хамгаалалттай
+    // үүснэ — админ дараа нь Тохиргоо хуудаснаас өөрчилж/арилгаж (хязгааргүй) болно.
     const { rows } = await pool.query(
-      'INSERT INTO restaurants (name) VALUES ($1) RETURNING *',
-      [name]
+      'INSERT INTO restaurants (name, daily_order_limit) VALUES ($1, $2) RETURNING *',
+      [name, daily_order_limit ?? 100]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -90,8 +92,9 @@ adminRouter.post('/restaurants', validateBody(createRestaurantSchema), asyncHand
 }));
 
 adminRouter.patch('/restaurants/:id', validateBody(updateRestaurantSchema), asyncHandler(async (req, res) => {
-  const { name, diet_type_id } = req.body;
+  const { name, diet_type_id, daily_order_limit } = req.body;
   const hasDietTypeField = Object.prototype.hasOwnProperty.call(req.body, 'diet_type_id');
+  const hasLimitField = Object.prototype.hasOwnProperty.call(req.body, 'daily_order_limit');
 
   if (diet_type_id) {
     const dt = await pool.query('SELECT id FROM diet_types WHERE id = $1', [diet_type_id]);
@@ -102,9 +105,10 @@ adminRouter.patch('/restaurants/:id', validateBody(updateRestaurantSchema), asyn
     const { rows } = await pool.query(
       `UPDATE restaurants SET
          name = COALESCE($1, name),
-         diet_type_id = CASE WHEN $2::boolean THEN $3 ELSE diet_type_id END
+         diet_type_id = CASE WHEN $2::boolean THEN $3 ELSE diet_type_id END,
+         daily_order_limit = CASE WHEN $5::boolean THEN $6 ELSE daily_order_limit END
        WHERE id = $4 RETURNING *`,
-      [name ?? null, hasDietTypeField, diet_type_id ?? null, req.params.id]
+      [name ?? null, hasDietTypeField, diet_type_id ?? null, req.params.id, hasLimitField, daily_order_limit ?? null]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Ресторан олдсонгүй.' });
     res.json(rows[0]);

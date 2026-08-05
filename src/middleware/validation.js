@@ -91,10 +91,12 @@ export const updateMenuItemSchema = z.object({
 export const updateRestaurantSchema = z.object({
   name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100).nullish(),
   diet_type_id: uuidSchema('diet_type_id зөв UUID байх ёстой').nullish(),
+  daily_order_limit: z.number().int().nonnegative('Лимит 0-ээс их байх ёстой').nullish(),
 });
 
 export const createRestaurantSchema = z.object({
   name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100),
+  daily_order_limit: z.number().int().nonnegative('Лимит 0-ээс их байх ёстой').nullish(),
 });
 
 export const dietTypeNameSchema = z.object({

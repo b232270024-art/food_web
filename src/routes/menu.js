@@ -18,7 +18,7 @@ menuRouter.get('/diet-types', asyncHandler(async (req, res) => {
 // Settings admin хуудсууд болон зочны ангилал сонгох дэлгэцэд ашиглана).
 menuRouter.get('/restaurants', asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT r.id, r.name, r.diet_type_id, dt.name AS diet_type_name
+    `SELECT r.id, r.name, r.diet_type_id, dt.name AS diet_type_name, r.daily_order_limit
      FROM restaurants r
      LEFT JOIN diet_types dt ON dt.id = r.diet_type_id
      ORDER BY r.name`

@@ -2,10 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, Plus, Minus, ArrowRight, ChevronLeft, Utensils, Sparkles } from 'lucide-react';
 
-const MEAL_TIME_LABEL = { morning: 'Өглөө', lunch: 'Өдөр', evening: 'Орой' };
+// Fetches the admin-configured day-by-day meal plan and shows it per day. Read-only (no cart).
+function getMealTimeLabel(tr) {
+  return {
+    morning: tr.menuMealMorning || 'Morning',
+    lunch:   tr.menuMealLunch   || 'Lunch',
+    evening: tr.menuMealEvening || 'Evening',
+  };
+}
 
-// Admin-ийн PlanManager-с тохируулсан бодит өдөр тус бүрийн хуваарийг
-// татаж, өдрөөр сонгож харуулна. Захиалга биш тул readonly (сагслах товчгүй).
 function DayPlanPreview({ planItems, tr }) {
   const [selectedDay, setSelectedDay] = useState(1);
 
@@ -37,7 +42,7 @@ function DayPlanPreview({ planItems, tr }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-        {Object.entries(MEAL_TIME_LABEL).map(([key, label]) => (
+        {Object.entries(getMealTimeLabel(tr)).map(([key, label]) => (
           <div key={key} className="card" style={{ padding: 16 }}>
             <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-dark)', marginBottom: 10 }}>{label}</div>
             {byMeal[key].length === 0 ? (
@@ -196,7 +201,7 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
               padding: '9px 20px', borderRadius: 10,
               fontWeight: 700, fontSize: '0.875rem',
             }}>
-              Дууссан
+              {tr.menuSoldOut || 'Sold Out'}
             </span>
           ) : qty > 0 ? (
             <div style={{

@@ -79,6 +79,13 @@ export const t = {
     dietTypeSelectTitle: 'Choose your menu',
     dietTypeSelectDesc: 'Each 12-Day Meal Plan is prepared by a dedicated kitchen. Pick the one that matches your dietary needs.',
     dietTypeSelectBtn: 'Continue',
+    dietTypeSelectedMsg: "'s 12-Day Meal Plan is ready to view.",
+
+    // Menu sold out & meal time labels
+    menuSoldOut: 'Sold Out',
+    menuMealMorning: 'Morning',
+    menuMealLunch: 'Lunch',
+    menuMealEvening: 'Evening',
 
     // Checkin
     checkinTitle: 'Enter Your Details',
@@ -258,6 +265,11 @@ export const t = {
     dietTypeSelectTitle: 'اختر قائمة طعامك',
     dietTypeSelectDesc: 'كل خطة وجبات لـ 12 يوماً تُحضَّر في مطبخ مخصص. اختر الخطة التي تناسب احتياجاتك الغذائية.',
     dietTypeSelectBtn: 'متابعة',
+    dietTypeSelectedMsg: 'خطة وجبات 12 يوماً جاهزة للعرض.',
+    menuSoldOut: 'نفذت الكمية',
+    menuMealMorning: 'الصباح',
+    menuMealLunch: 'الغداء',
+    menuMealEvening: 'المساء',
     checkinTitle: 'أدخل بياناتك',
     checkinSubtitle: 'هل أنت مستعد للطلب إلى غرفتك؟',
     checkinNameLabel: 'اسم الضيف',
@@ -419,6 +431,11 @@ export const t = {
     dietTypeSelectTitle: 'अपना मेनू चुनें',
     dietTypeSelectDesc: 'प्रत्येक 12-दिन की मील प्लान एक समर्पित रसोई में तैयार की जाती है। अपनी आहार संबंधी आवश्यकताओं के अनुरूप योजना चुनें।',
     dietTypeSelectBtn: 'जारी रखें',
+    dietTypeSelectedMsg: 'की 12-दिन की मील प्लान देखने के लिए तैयार है।',
+    menuSoldOut: 'स्टॉक खत्म',
+    menuMealMorning: 'सुबह',
+    menuMealLunch: 'दोपहर',
+    menuMealEvening: 'शाम',
     checkinTitle: 'अपना विवरण दर्ज करें',
     checkinSubtitle: 'अपने कमरे में ऑर्डर करने के लिए तैयार हैं?',
     checkinNameLabel: 'अतिथि का नाम',

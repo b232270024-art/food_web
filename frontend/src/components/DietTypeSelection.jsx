@@ -161,7 +161,7 @@ export function DietTypeSelection({ tr, onBack, onContinue }) {
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <span style={{ color: '#059669', fontWeight: 800 }}>✓</span>
-            <span><strong>{selectedRestaurant.name}</strong>-ийн 12 хоногийн цэсийг харахаар бэлэн байна.</span>
+            <span><strong>{selectedRestaurant.name}</strong>{tr.dietTypeSelectedMsg || "'s 12-Day Meal Plan is ready to view."}</span>
           </div>
         )}
       </div>
@@ -193,7 +193,7 @@ export function DietTypeSelection({ tr, onBack, onContinue }) {
               border: 'none',
             }}
           >
-            <span>{tr.dietTypeSelectBtn || 'Цэсийг харах'}</span>
+            <span>{tr.dietTypeSelectBtn || 'Continue'}</span>
             {canContinue ? <ArrowRight size={20} /> : <ArrowUp size={20} />}
           </button>
         </div>

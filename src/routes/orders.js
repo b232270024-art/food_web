@@ -22,19 +22,21 @@ ordersRouter.post('/', requireSession, validateBody(createOrderSchema), async (r
     const orderId = order.rows[0].id;
 
     let total = 0;
+    const restaurantIds = new Set();
     for (const item of items) {
       // FOR UPDATE энэ menu_item мөрийг захиалга дуустал түгжинэ — зэрэгцээ
       // ирсэн захиалгууд ижил item дээр дараалан биелэх тул stock_limit
       // хэтэрч overselling болохоос сэргийлнэ.
       const menuItem = await client.query(
-        'SELECT name, price_usd, stock_limit FROM menu_items WHERE id = $1 FOR UPDATE',
+        'SELECT name, price_usd, stock_limit, restaurant_id FROM menu_items WHERE id = $1 FOR UPDATE',
         [item.menu_item_id]
       );
       if (menuItem.rows.length === 0) {
         throw new Error(`Menu item олдсонгүй: ${item.menu_item_id}`);
       }
 
-      const { name, price_usd, stock_limit } = menuItem.rows[0];
+      const { name, price_usd, stock_limit, restaurant_id } = menuItem.rows[0];
+      restaurantIds.add(restaurant_id);
 
       if (stock_limit !== null) {
         // stock_limit нь өдөр бүр 0-ээс дахин эхэлдэг лимит — тул зогсоохгүйгээр
@@ -63,6 +65,35 @@ ordersRouter.post('/', requireSession, validateBody(createOrderSchema), async (r
          VALUES ($1, $2, $3, $4, $5)`,
         [orderId, item.menu_item_id, item.guest_name || 'Guest', item.quantity, unitPrice]
       );
+    }
+
+    // Ресторан тус бүрийн ӨДРИЙН ЗАХИАЛГЫН ЛИМИТ — menu item-ийн stock_limit-ээс
+    // ялгаатай нь тухайн рестораны нийт хэдэн ЗАХИАЛГА (order) авахыг хязгаарлана.
+    // FOR UPDATE-ээр restaurants мөрийг түгжиж, ижил рестораны зэрэгцээ
+    // захиалгуудыг дараалуулснаар лимит хэтэрч overselling болохоос сэргийлнэ.
+    for (const restaurantId of restaurantIds) {
+      const restaurant = await client.query(
+        'SELECT name, daily_order_limit FROM restaurants WHERE id = $1 FOR UPDATE',
+        [restaurantId]
+      );
+      const { name: restaurantName, daily_order_limit } = restaurant.rows[0];
+
+      if (daily_order_limit !== null) {
+        const ordersToday = await client.query(
+          `SELECT COUNT(DISTINCT o.id)::int AS n
+           FROM orders o
+           JOIN order_items oi ON oi.order_id = o.id
+           JOIN menu_items mi ON mi.id = oi.menu_item_id
+           WHERE mi.restaurant_id = $1
+             AND o.id != $2
+             AND o.status != 'cancelled'
+             AND (o.created_at AT TIME ZONE 'Asia/Ulaanbaatar')::date = (now() AT TIME ZONE 'Asia/Ulaanbaatar')::date`,
+          [restaurantId, orderId]
+        );
+        if (ordersToday.rows[0].n >= daily_order_limit) {
+          throw new Error(`"${restaurantName}"-ийн өнөөдрийн авах захиалга дүүрсэн байна. Та маргааш захиалга өгнө үү.`);
+        }
+      }
     }
 
     await client.query('UPDATE orders SET total_usd = $1 WHERE id = $2', [total, orderId]);

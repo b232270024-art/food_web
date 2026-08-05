@@ -138,6 +138,27 @@ export function SettingsPage() {
     }
   };
 
+  // Тухайн рестораны өдрийн ЗАХИАЛГЫН лимит (menu item stock биш — нийт
+  // "хэдэн захиалга" авахыг хязгаарлана). Хоосон = хязгааргүй.
+  const saveRestaurantLimit = async (id, rawValue) => {
+    const daily_order_limit = rawValue === '' ? null : Number(rawValue);
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/restaurants/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ daily_order_limit }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Хадгалахад алдаа гарлаа.');
+      setRestaurants(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // --- Ангилал (diet type) ---
   const addDietType = async (e) => {
     e.preventDefault();
@@ -207,7 +228,7 @@ export function SettingsPage() {
           Ресторанууд
         </h3>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 14 }}>
-          Menu болон Захиалгууд хуудсанд ашиглагдах dining outlet-уудыг эндээс нэмэх/нэр солих боломжтой. Ресторан бүр яг нэг ангилалд харьяалагдана — ангилал оноосны дараа тухайн рестораны бүх хоол зөвхөн энэ ангилалд захиалагдана.
+          Menu болон Захиалгууд хуудсанд ашиглагдах dining outlet-уудыг эндээс нэмэх/нэр солих боломжтой. Ресторан бүр яг нэг ангилалд харьяалагдана — ангилал оноосны дараа тухайн рестораны бүх хоол зөвхөн энэ ангилалд захиалагдана. "Өдрийн лимит" талбар нь тухайн ресторан өдөрт хэдэн ЗАХИАЛГА (order) авахыг хязгаарлана — лимит хүрмэгц зочид "Өнөөдрийн авах захиалга дүүрсэн, маргааш захиалга өгнө үү" гэсэн алдаа харагдана. Хоосон = хязгааргүй.
         </p>
 
         {loading ? (
@@ -238,6 +259,21 @@ export function SettingsPage() {
                     <option value="">Ангилал сонгоогүй</option>
                     {dietTypes.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
+                  <input
+                    key={`${r.id}-${r.daily_order_limit ?? 'null'}`}
+                    type="number"
+                    min="0"
+                    defaultValue={r.daily_order_limit ?? ''}
+                    placeholder="Өдрийн лимит"
+                    title="Өдөрт хэдэн захиалга авахыг хязгаарлана. Хоосон = хязгааргүй."
+                    disabled={saving}
+                    onBlur={e => {
+                      const raw = e.target.value.trim();
+                      if (raw === String(r.daily_order_limit ?? '')) return;
+                      saveRestaurantLimit(r.id, raw);
+                    }}
+                    style={{ width: 100, padding: '9px 10px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.82rem', flexShrink: 0 }}
+                  />
                 </div>
               ))}
             </div>
