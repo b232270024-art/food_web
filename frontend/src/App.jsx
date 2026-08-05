@@ -8,6 +8,7 @@ import { HowItWorks } from './components/HowItWorks';
 import { AboutSection } from './components/AboutSection';
 import { Footer } from './components/Footer';
 import { OrderTypeSelection } from './components/OrderTypeSelection';
+import { DietTypeSelection } from './components/DietTypeSelection';
 import { DeliveryTypeSelection } from './components/DeliveryTypeSelection';
 import { GuestDetailsModal } from './components/GuestDetailsModal';
 import { MenuSection } from './components/MenuSection';
@@ -19,19 +20,19 @@ import { AboutPage } from './components/AboutPage';
 import { LANGUAGES, useTranslation } from './i18n/translations';
 
 // ── Flow steps ────────────────────────────────────────────────────────────────
-// 'hero'          → landing page (Hero + Special Offers + How it works + About)
-// 'order_type'    → Select an order type screen (12-day plan / one-time)
-// 'plan_preview'  → (12-day) real menu preview + Confirm → guest details → confirmation
-// 'menu'          → (one-time) full menu, cart, "Continue" once cart has items
-// 'delivery_type' → (one-time) hotel room vs current location
-// 'confirmation'  → order/plan confirmed (payment collected on delivery, no gateway yet)
+// 'hero'            → landing page (Hero + Special Offers + How it works + About)
+// 'order_type'      → Select an order type screen (12-day plan / one-time)
+// 'diet_type_select'→ (12-day) pick which restaurant/diet-type's plan to preview
+// 'plan_preview'    → (12-day) real menu preview + Confirm → guest details → confirmation
+// 'menu'            → (one-time) full menu, cart, "Continue" once cart has items
+// 'delivery_type'   → (one-time) hotel room vs current location
+// 'confirmation'    → order/plan confirmed (payment collected on delivery, no gateway yet)
 // ─────────────────────────────────────────────────────────────────────────────
-const FLOW_STEPS = ['hero', 'about_us', 'order_type', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation'];
+const FLOW_STEPS = ['hero', 'about_us', 'order_type', 'diet_type_select', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation'];
 const pathForStep = (step) => (step === 'hero' ? '/' : `/${step}`) + window.location.search;
 
 export default function App() {
   // ─── Core state ─────────────────────────────────────────────────────────────
-  const [hotel, setHotel] = useState(null);
   const [session, setSession] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [cart, setCart] = useState([]);
@@ -42,6 +43,7 @@ export default function App() {
   const [flowStep, setFlowStep] = useState('hero');
   const [orderType, setOrderType] = useState(null);   // 'twelve_day' | 'one_time'
   const [deliveryType, setDeliveryType] = useState(null);   // 'hotel' | 'current_location'
+  const [selectedDietTypeId, setSelectedDietTypeId] = useState(null);
   const [guestDetailsOpen, setGuestDetailsOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -53,6 +55,9 @@ export default function App() {
   const [pendingGuestName, setPendingGuestName] = useState('');
   const [pendingAddress, setPendingAddress] = useState('');
   const [pendingGeo, setPendingGeo] = useState(null);
+  // ─── Deferred allergy info — stashed here until the session is actually created ─
+  const [pendingAllergyTags, setPendingAllergyTags] = useState([]);
+  const [pendingAllergyOther, setPendingAllergyOther] = useState('');
 
   const tr = useTranslation(language);
 
@@ -96,24 +101,15 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // ─── Initial load: resolve hotel from QR token + restore language ─────────────
+  // ─── Initial load: menu items + restore language ──────────────────────────────
   useEffect(() => {
     try {
       const savedLanguage = localStorage.getItem('guest_language');
       if (savedLanguage) setLanguage(savedLanguage);
     } catch { /* ignore */ }
 
-    const params = new URLSearchParams(window.location.search);
-    const qrToken = params.get('qr') || 'test-qr-token-001';
-
-    fetch(`/api/hotels/${qrToken}/resolve`)
+    fetch('/api/menu')
       .then(r => r.json())
-      .then(data => {
-        if (data.id) {
-          setHotel(data);
-          return fetch(`/api/menu/${data.id}`).then(r => r.json());
-        }
-      })
       .then(items => {
         if (Array.isArray(items)) setMenuItems(items);
       })
@@ -167,13 +163,20 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ─── Order type selected: 12-day → plan preview, one-time → full menu ─────────
+  // ─── Order type selected: 12-day → diet-type picker, one-time → full menu ─────
   // OrderTypeSelection emits its own internal values ('12-day' | 'one-time');
   // map them to the order_type vocabulary used by the rest of the app + API.
   const handleOrderTypeContinue = (selected) => {
     const type = selected === '12-day' ? 'twelve_day' : 'one_time';
     setOrderType(type);
-    goToStep(type === 'twelve_day' ? 'plan_preview' : 'menu');
+    goToStep(type === 'twelve_day' ? 'diet_type_select' : 'menu');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ─── 12-day: diet type chosen (or null if no restaurant is reconciled yet) ────
+  const handleDietTypeContinue = (dietTypeId) => {
+    setSelectedDietTypeId(dietTypeId);
+    goToStep('plan_preview');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -199,6 +202,7 @@ export default function App() {
   const handleBackToHome = () => {
     setOrderType(null);
     setDeliveryType(null);
+    setSelectedDietTypeId(null);
     setSession(null);
     setActiveOrder(null);
     setCart([]);
@@ -206,6 +210,8 @@ export default function App() {
     setPendingGuestName('');
     setPendingAddress('');
     setPendingGeo(null);
+    setPendingAllergyTags([]);
+    setPendingAllergyOther('');
     goToStep('hero');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -214,11 +220,11 @@ export default function App() {
   // Exception: 'current_location' deliveries defer session creation until the guest
   // confirms their location with the map picker on the order review screen — no
   // separate popup is used to capture it.
-  const handleGuestDetailsSubmit = async ({ guest_name, hotel_name, room_number, delivery_address }) => {
-    if (!hotel?.id) throw new Error('Hotel not found');
-
+  const handleGuestDetailsSubmit = async ({ guest_name, hotel_name, room_number, delivery_address, allergy_tags, allergy_other }) => {
     if (orderType === 'one_time' && deliveryType === 'current_location') {
       setPendingGuestName(guest_name);
+      setPendingAllergyTags(allergy_tags);
+      setPendingAllergyOther(allergy_other);
       setGuestDetailsOpen(false);
       goToStep('order_review');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -230,13 +236,15 @@ export default function App() {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        hotel_id: hotel.id,
         guest_name,
         order_type: orderType,
         delivery_type: orderType === 'one_time' ? deliveryType : null,
         hotel_name,
         room_number,
         delivery_address,
+        diet_type_id: orderType === 'twelve_day' ? selectedDietTypeId : null,
+        allergy_tags,
+        allergy_other,
       }),
     });
     const data = await res.json();
@@ -274,7 +282,6 @@ export default function App() {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            hotel_id: hotel.id,
             guest_name: pendingGuestName,
             order_type: orderType,
             delivery_type: 'current_location',
@@ -282,6 +289,8 @@ export default function App() {
             delivery_address: pendingAddress.trim(),
             geo_lat: pendingGeo?.lat ?? null,
             geo_lng: pendingGeo?.lng ?? null,
+            allergy_tags: pendingAllergyTags,
+            allergy_other: pendingAllergyOther,
           }),
         });
         const sessData = await sessRes.json();
@@ -359,6 +368,15 @@ export default function App() {
           />
         )}
 
+        {/* ── 12-DAY: DIET TYPE SELECTION ─────────────────────────────────────── */}
+        {flowStep === 'diet_type_select' && (
+          <DietTypeSelection
+            tr={tr}
+            onBack={() => goToStep('order_type')}
+            onContinue={handleDietTypeContinue}
+          />
+        )}
+
         {/* ── 12-DAY PLAN PREVIEW ────────────────────────────────────────────── */}
         {flowStep === 'plan_preview' && (
           <div className="container" style={{ paddingTop: 8, paddingBottom: 60 }}>
@@ -366,10 +384,10 @@ export default function App() {
               menuItems={menuItems}
               cart={cart}
               orderType={orderType}
-              hotelId={hotel?.id}
+              dietTypeId={selectedDietTypeId}
               tr={tr}
               onConfirmPlan={handleConfirmPlan}
-              onBack={() => goToStep('order_type')}
+              onBack={() => goToStep('diet_type_select')}
             />
           </div>
         )}
@@ -450,7 +468,6 @@ export default function App() {
       {/* Guest Details Modal */}
       <GuestDetailsModal
         isOpen={guestDetailsOpen}
-        hotel={hotel}
         tr={tr}
         deliveryType={orderType === 'one_time' ? deliveryType : null}
         onSubmit={handleGuestDetailsSubmit}

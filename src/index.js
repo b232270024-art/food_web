@@ -8,7 +8,6 @@ import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
-import { hotelsRouter } from './routes/hotels.js';
 import { sessionsRouter } from './routes/sessions.js';
 import { menuRouter } from './routes/menu.js';
 import { ordersRouter } from './routes/orders.js';
@@ -43,7 +42,6 @@ app.use(generalLimiter);
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 const publicPath = path.join(__dirname, '../public');
 
-// public/ (uploads гэх мэт) болон frontend/dist (React build) хоёулаа served
 // байх ёстой — өмнө нь frontend/dist байгаа үед (production дээр үргэлж тийм)
 // public/-г огт serve хийдэггүй байсан тул /uploads/* хэзээ ч ажилладаггүй баг
 // байсан (express.static тохирохгүй үед next()-рүү дамждаг тул SPA catch-all
@@ -60,17 +58,17 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: '*' } });
 app.set('io', io);
 
-// Admin dashboard клиент буудлын өрөө рүүгээ subscribe хийнэ
+// Admin dashboard клиент нэг л 'admin' өрөөнд subscribe хийнэ (нэг л hotel-тэй
+// ажилладаг тул hotel_id-аар тусгаарлах шаардлагагүй болсон).
 io.on('connection', (socket) => {
-  socket.on('admin:join', (hotel_id) => {
-    socket.join(`hotel:${hotel_id}`);
+  socket.on('admin:join', () => {
+    socket.join('admin');
   });
   socket.on('join:room', (roomNumber) => {
     socket.join(`room:${roomNumber}`);
   });
 });
 
-app.use('/api/hotels', hotelsRouter);
 // Session болон захиалга үүсгэх зэрэг "бичих" endpoint-д илүү хатуу rate limit
 app.use('/api/sessions', writeLimiter, sessionsRouter);
 app.use('/api/menu', menuRouter);

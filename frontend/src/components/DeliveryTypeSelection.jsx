@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, ArrowRight, ArrowUp, Check } from 'lucide-react';
 
 export function DeliveryTypeSelection({ tr, onBack, onContinue }) {
-  const [selected, setSelected] = useState(null); // 'hotel' | 'current_location'
+  const [selected, setSelected] = useState(null);
 
   const canContinue = !!selected;
 
@@ -57,7 +57,6 @@ export function DeliveryTypeSelection({ tr, onBack, onContinue }) {
           {tr.deliveryTypeClick}
         </p>
 
-        {/* Side-by-side layout */}
         <div style={{
           border: '2px solid var(--border)',
           borderRadius: 'var(--r-lg)',
@@ -91,7 +90,6 @@ export function DeliveryTypeSelection({ tr, onBack, onContinue }) {
           ))}
         </div>
 
-        {/* Info bubble */}
         {selected && (
           <div className="anim-fade-up" style={{ position: 'relative', marginBottom: 24 }}>
             <div style={{
@@ -125,8 +123,6 @@ export function DeliveryTypeSelection({ tr, onBack, onContinue }) {
           </div>
         )}
       </div>
-
-      {/* Bottom action bar */}
       <div style={{
         background: 'var(--bg-green-dark)',
         padding: '28px 24px',

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { MapPin, User, DoorClosed, AlertCircle, Hotel, X } from 'lucide-react';
 
+const ALLERGEN_OPTIONS = ['gluten', 'dairy', 'nuts', 'eggs', 'fish', 'sesame'];
+
 // deliveryType: 'hotel' | 'current_location' | null (null => implicit hotel, used by the
 // 12-day plan flow where delivery is always to the guest's room).
 // For 'current_location', this modal only collects the guest's name — the actual
@@ -8,16 +10,22 @@ import { MapPin, User, DoorClosed, AlertCircle, Hotel, X } from 'lucide-react';
 // For 'hotel' (incl. implicit 12-day), the guest just types which hotel + room they're
 // in — one shared site/QR now serves guests across many different real hotels, so there's
 // no hotel record to resolve or GPS-verify against; whatever the guest types is used as-is.
-export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, onClose }) {
+export function GuestDetailsModal({ isOpen, tr, deliveryType, onSubmit, onClose }) {
   const [name, setName] = useState('');
   const [hotelName, setHotelName] = useState('');
   const [room, setRoom] = useState('');
+  const [allergyTags, setAllergyTags] = useState([]);
+  const [allergyOther, setAllergyOther] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
   const isCurrentLocation = deliveryType === 'current_location';
+
+  const toggleAllergen = (tag) => {
+    setAllergyTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +40,8 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
         hotel_name: isCurrentLocation ? null : hotelName.trim(),
         room_number: isCurrentLocation ? null : room.trim(),
         delivery_address: null,
+        allergy_tags: allergyTags,
+        allergy_other: allergyOther.trim() || null,
       });
     } catch (err) {
       setError(err.message || 'Error');
@@ -55,6 +65,7 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
         padding: '36px 32px',
         boxShadow: 'var(--shadow-lg)',
         position: 'relative',
+        maxHeight: '90vh', overflowY: 'auto',
       }}>
         {onClose && (
           <button
@@ -90,7 +101,7 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
           {tr.checkinTitle}
         </h2>
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: 28 }}>
-          {hotel?.name || 'Grand Hotel'} — {tr.checkinSubtitle}
+          {tr.checkinSubtitle}
         </p>
 
         {error && (
@@ -199,6 +210,49 @@ export function GuestDetailsModal({ isOpen, hotel, tr, deliveryType, onSubmit, o
               </div>
             </>
           )}
+
+          {/* Allergens — optional, never blocks submit */}
+          <div style={{ marginBottom: 28 }}>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-body)', marginBottom: 2 }}>
+              {tr.allergySectionTitle}
+            </label>
+            <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: 10 }}>
+              {tr.allergySectionHint}
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+              {ALLERGEN_OPTIONS.map(tag => {
+                const active = allergyTags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleAllergen(tag)}
+                    style={{
+                      padding: '7px 14px', borderRadius: 'var(--r-full)',
+                      fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                      border: `1.5px solid ${active ? 'var(--brand-green-light)' : 'var(--border)'}`,
+                      background: active ? 'var(--bg-muted)' : 'var(--bg-card)',
+                      color: active ? 'var(--brand-green)' : 'var(--text-body)',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {tr[`allergyOption${tag.charAt(0).toUpperCase()}${tag.slice(1)}`]}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              type="text"
+              placeholder={tr.allergyOtherPlaceholder}
+              value={allergyOther}
+              onChange={e => setAllergyOther(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 14px',
+                borderRadius: 12, border: '1.5px solid var(--border)',
+                fontSize: '0.88rem', outline: 'none',
+              }}
+            />
+          </div>
 
           <button
             id="checkin-submit"

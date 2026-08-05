@@ -35,7 +35,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
   background-attachment: fixed;
@@ -48,7 +48,7 @@ body {
   min-height: 100vh;
   background: rgba(11, 15, 25, 0.95);
   position: relative;
-  box-shadow: 0 0 50px rgba(0,0,0,0.5);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
 }
@@ -120,8 +120,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Welcome Card */
@@ -169,7 +176,8 @@ body {
   position: relative;
 }
 
-.input-wrapper input, .input-wrapper select {
+.input-wrapper input,
+.input-wrapper select {
   width: 100%;
   padding: 14px 16px;
   background: rgba(15, 23, 42, 0.6);
@@ -487,8 +495,13 @@ body {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -538,10 +551,15 @@ body {
   margin-bottom: 12px;
 }
 
-.status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-.status-preparing { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-.status-served { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-.status-paid { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+.status-pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.status-paid {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
 
 /* Toast */
 .toast {

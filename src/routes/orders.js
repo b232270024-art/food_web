@@ -8,16 +8,16 @@ export const ordersRouter = Router();
 // items: [{ menu_item_id, quantity, guest_name }]
 ordersRouter.post('/', requireSession, validateBody(createOrderSchema), async (req, res) => {
   const { items } = req.body;
-  const { session_id, hotel_id } = req.session;
+  const { session_id } = req.session;
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     const order = await client.query(
-      `INSERT INTO orders (session_id, hotel_id, status, total_usd)
-       VALUES ($1, $2, 'pending', 0) RETURNING *`,
-      [session_id, hotel_id]
+      `INSERT INTO orders (session_id, status, total_usd)
+       VALUES ($1, 'pending', 0) RETURNING *`,
+      [session_id]
     );
     const orderId = order.rows[0].id;
 
@@ -27,8 +27,8 @@ ordersRouter.post('/', requireSession, validateBody(createOrderSchema), async (r
       // ирсэн захиалгууд ижил item дээр дараалан биелэх тул stock_limit
       // хэтэрч overselling болохоос сэргийлнэ.
       const menuItem = await client.query(
-        'SELECT name, price_usd, stock_limit FROM menu_items WHERE id = $1 AND hotel_id = $2 FOR UPDATE',
-        [item.menu_item_id, hotel_id]
+        'SELECT name, price_usd, stock_limit FROM menu_items WHERE id = $1 FOR UPDATE',
+        [item.menu_item_id]
       );
       if (menuItem.rows.length === 0) {
         throw new Error(`Menu item олдсонгүй: ${item.menu_item_id}`);
@@ -72,7 +72,7 @@ ordersRouter.post('/', requireSession, validateBody(createOrderSchema), async (r
 
     // Admin дашбоард руу realtime мэдэгдэл
     const io = req.app.get('io');
-    io.to(`hotel:${hotel_id}`).emit('order:new', fullOrder.rows[0]);
+    io.to('admin').emit('order:new', fullOrder.rows[0]);
 
     res.status(201).json(fullOrder.rows[0]);
   } catch (err) {

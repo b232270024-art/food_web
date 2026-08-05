@@ -1,5 +1,9 @@
 // ======================================================
 //  i18n Translations — EN (default) / AR (Arabic) / HI (Hindi)
+//
+//  New EN keys get their ar/hi text auto-filled by
+//  `node scripts/translate-i18n.mjs` (run from repo root) — except keys
+//  listed in ./manualKeys.js, which must be translated by hand.
 // ======================================================
 
 export const LANGUAGES = [
@@ -71,6 +75,11 @@ export const t = {
     orderTypeFooter: 'Skip, pause or cancel anytime. You can review everything before you pay',
     back: 'Back',
 
+    // Diet Type Selection (12-day plan)
+    dietTypeSelectTitle: 'Choose your menu',
+    dietTypeSelectDesc: 'Each 12-Day Meal Plan is prepared by a dedicated kitchen. Pick the one that matches your dietary needs.',
+    dietTypeSelectBtn: 'Continue',
+
     // Checkin
     checkinTitle: 'Enter Your Details',
     checkinSubtitle: 'Ready to order to your room?',
@@ -83,6 +92,17 @@ export const t = {
     checkinSubmit: 'Continue to Menu →',
     checkinLoading: 'Please wait...',
     checkinError: 'Please enter your name, hotel name and room number.',
+
+    // Allergens (optional, part of the check-in step)
+    allergySectionTitle: 'Any allergies or foods you avoid? (optional)',
+    allergySectionHint: 'We\'ll flag your order to the kitchen if any dish contains one of these.',
+    allergyOptionGluten: 'Gluten',
+    allergyOptionDairy: 'Dairy',
+    allergyOptionNuts: 'Nuts',
+    allergyOptionEggs: 'Eggs',
+    allergyOptionFish: 'Fish',
+    allergyOptionSesame: 'Sesame',
+    allergyOtherPlaceholder: 'Other (optional)',
 
     // Menu
     menuTitle: 'Our ',
@@ -115,7 +135,7 @@ export const t = {
     room: 'Room',
 
     // Order status
-    orderPlaced: '🎉 Order placed successfully!',
+    orderPlaced: 'Order placed successfully!',
     orderStatus: 'Order Status',
 
     // Footer
@@ -235,6 +255,9 @@ export const t = {
     orderTypeContinueOne: 'المتابعة مرة واحدة',
     orderTypeFooter: 'يمكنك التخطي أو الإيقاف أو الإلغاء في أي وقت. يمكنك مراجعة كل شيء قبل الدفع',
     back: 'رجوع',
+    dietTypeSelectTitle: 'اختر قائمة طعامك',
+    dietTypeSelectDesc: 'كل خطة وجبات لـ 12 يوماً تُحضَّر في مطبخ مخصص. اختر الخطة التي تناسب احتياجاتك الغذائية.',
+    dietTypeSelectBtn: 'متابعة',
     checkinTitle: 'أدخل بياناتك',
     checkinSubtitle: 'هل أنت مستعد للطلب إلى غرفتك؟',
     checkinNameLabel: 'اسم الضيف',
@@ -246,6 +269,15 @@ export const t = {
     checkinSubmit: 'المتابعة إلى القائمة ←',
     checkinLoading: 'يرجى الانتظار...',
     checkinError: 'يرجى إدخال اسمك واسم الفندق ورقم غرفتك.',
+    allergySectionTitle: 'هل لديك أي حساسية أو أطعمة تتجنبها؟ (اختياري)',
+    allergySectionHint: 'إذا احتوى أي طبق على أحد هذه المكونات، سننبه المطبخ بشأن طلبك.',
+    allergyOptionGluten: 'الغلوتين',
+    allergyOptionDairy: 'منتجات الألبان',
+    allergyOptionNuts: 'المكسرات',
+    allergyOptionEggs: 'البيض',
+    allergyOptionFish: 'السمك',
+    allergyOptionSesame: 'السمسم',
+    allergyOtherPlaceholder: 'أخرى (اختياري)',
     menuTitle: 'قائمة ',
     menuTitleAccent: 'طعامنا',
     menuDesc: 'أطباق مُعدَّة بعناية طازجة لغرفتك',
@@ -384,6 +416,9 @@ export const t = {
     orderTypeContinueOne: 'एक बार के साथ जारी रखें',
     orderTypeFooter: 'कभी भी स्किप, पॉज या कैंसिल करें। भुगतान से पहले सब कुछ देखें',
     back: 'वापस',
+    dietTypeSelectTitle: 'अपना मेनू चुनें',
+    dietTypeSelectDesc: 'प्रत्येक 12-दिन की मील प्लान एक समर्पित रसोई में तैयार की जाती है। अपनी आहार संबंधी आवश्यकताओं के अनुरूप योजना चुनें।',
+    dietTypeSelectBtn: 'जारी रखें',
     checkinTitle: 'अपना विवरण दर्ज करें',
     checkinSubtitle: 'अपने कमरे में ऑर्डर करने के लिए तैयार हैं?',
     checkinNameLabel: 'अतिथि का नाम',
@@ -395,6 +430,15 @@ export const t = {
     checkinSubmit: 'मेनू पर जारी रखें →',
     checkinLoading: 'कृपया प्रतीक्षा करें...',
     checkinError: 'कृपया अपना नाम, होटल का नाम और कमरा नंबर दर्ज करें।',
+    allergySectionTitle: 'क्या आपको कोई एलर्जी है या ऐसा भोजन है जिससे आप बचते हैं? (वैकल्पिक)',
+    allergySectionHint: 'यदि किसी व्यंजन में इनमें से कोई भी शामिल है, तो हम आपके ऑर्डर के बारे में रसोई को सूचित करेंगे।',
+    allergyOptionGluten: 'ग्लूटेन',
+    allergyOptionDairy: 'डेयरी',
+    allergyOptionNuts: 'मेवे',
+    allergyOptionEggs: 'अंडे',
+    allergyOptionFish: 'मछली',
+    allergyOptionSesame: 'तिल',
+    allergyOtherPlaceholder: 'अन्य (वैकल्पिक)',
     menuTitle: 'हमारा ',
     menuTitleAccent: 'मेनू',
     menuDesc: 'आपके कमरे के लिए ताजा तैयार शेफ क्राफ्टेड व्यंजन',

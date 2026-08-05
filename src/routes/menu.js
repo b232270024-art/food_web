@@ -6,23 +6,58 @@ import { requireAdmin } from '../middleware/adminAuth.js';
 
 export const menuRouter = Router();
 
-// GET /api/menu/diet-types — бүх ангиллын жагсаалт (бүх буудал дундаа нэг,
-// hotel-аар тусгаарлагдаагүй). Auth хэрэггүй — зочны filter pills-д ашиглана.
-// Анхаар: энэ route заавал /:hotel_id-ээс ӨМНӨ бичигдсэн байх ёстой —
-// эс бөгөөс Express "diet-types"-г hotel_id гэж андуурна.
+// GET /api/menu/diet-types — бүх ангиллын жагсаалт.
+// Анхаар: энэ route заавал бусад /:xxx маягийн route-ээс ӨМНӨ бичигдсэн байх
+// ёстой — эс бөгөөс Express "diet-types"-г буруу параметр гэж андуурна.
 menuRouter.get('/diet-types', asyncHandler(async (req, res) => {
   const { rows } = await pool.query(`SELECT id, name FROM diet_types ORDER BY name`);
   res.json(rows);
 }));
 
-// GET /api/menu/:hotel_id — fetch menu items for a hotel
+// GET /api/menu/restaurants — dining outlet-уудын жагсаалт (Menu/Plan/Orders/
+// Settings admin хуудсууд болон зочны ангилал сонгох дэлгэцэд ашиглана).
+menuRouter.get('/restaurants', asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT r.id, r.name, r.diet_type_id, dt.name AS diet_type_name
+     FROM restaurants r
+     LEFT JOIN diet_types dt ON dt.id = r.diet_type_id
+     ORDER BY r.name`
+  );
+  res.json(rows);
+}));
+
+// GET /api/menu/plan — "12 хоногийн цэс" (admin-ийн тохируулсан өдөр тус
+// бүрийн өглөө/өдөр/оройн хоол). Auth шаардахгүй — зочин 12-day план
+// сонгохоосоо өмнө урьдчилан харах ёстой тул public.
+// Optional query params: ?diet_type_id=...&restaurant_id=... — зочин сонгосон
+// ангиллынхаа рестораны цэсийг л харахад ашиглана.
+menuRouter.get('/plan', asyncHandler(async (req, res) => {
+  const { diet_type_id, restaurant_id } = req.query;
+  const params = [];
+  let filter = '';
+  if (diet_type_id) { params.push(diet_type_id); filter += ` AND mi.diet_type_id = $${params.length}`; }
+  if (restaurant_id) { params.push(restaurant_id); filter += ` AND mi.restaurant_id = $${params.length}`; }
+
+  const { rows } = await pool.query(
+    `SELECT pi.id, pi.day_number, pi.meal_time, pi.menu_item_id,
+            mi.name, mi.price_usd, mi.image_url, mi.allergens, mi.diet_type_id, r.name AS restaurant_name
+     FROM twelve_day_plan_items pi
+     JOIN menu_items mi ON mi.id = pi.menu_item_id
+     JOIN restaurants r ON r.id = mi.restaurant_id
+     WHERE true ${filter}
+     ORDER BY pi.day_number, pi.meal_time`,
+    params
+  );
+  res.json(rows);
+}));
+
+// GET /api/menu — fetch menu items.
 // Optional query params: ?diet_type_id=...&category=Main+Course&restaurant_id=...
 // ?all=true includes items marked unavailable (used by the admin dashboard) —
 // soft-deleted items are still excluded either way. In admin (?all=true) mode we
 // also attach sold_today — Ази/Улаанбаатарын өнөөдрийн (00:00-оос хойших)
 // зарагдсан тоо — stock_limit-тэй хамт "X/Y өнөөдөр" харуулахад ашиглана.
-menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
-  const { hotel_id } = req.params;
+menuRouter.get('/', asyncHandler(async (req, res) => {
   const { diet_type_id, category, restaurant_id, all } = req.query;
 
   const soldTodayExpr = all === 'true'
@@ -45,10 +80,9 @@ menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
     FROM menu_items mi
     JOIN restaurants r ON r.id = mi.restaurant_id
     JOIN diet_types dt ON dt.id = mi.diet_type_id
-    WHERE mi.hotel_id = $1
-      AND mi.is_deleted = false
+    WHERE mi.is_deleted = false
   `;
-  const params = [hotel_id];
+  const params = [];
 
   if (all !== 'true') {
     query += ` AND mi.available = true`;
@@ -75,35 +109,6 @@ menuRouter.get('/:hotel_id', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
-// GET /api/menu/:hotel_id/restaurants — тухайн буудлын dining outlet-уудын жагсаалт
-// (Menu/Orders admin dropdown-уудад ашиглана).
-menuRouter.get('/:hotel_id/restaurants', asyncHandler(async (req, res) => {
-  const { rows } = await pool.query(
-    `SELECT id, name FROM restaurants WHERE hotel_id = $1 ORDER BY name`,
-    [req.params.hotel_id]
-  );
-  res.json(rows);
-}));
-
-// GET /api/menu/:hotel_id/plan — тухайн буудлын "12 хоногийн цэс" (admin-ийн
-// тохируулсан өдөр тус бүрийн өглөө/өдөр/оройн хоол). Auth шаардахгүй —
-// зочин нэвтрээгүй байхдаа ч (12-day план сонгохоосоо өмнө) урьдчилан харах
-// ёстой тул public. Admin-ийн ижил query-той (src/routes/admin.js), гэхдээ
-// энд requireAdmin байхгүй тул тусдаа бичигдсэн.
-menuRouter.get('/:hotel_id/plan', asyncHandler(async (req, res) => {
-  const { rows } = await pool.query(
-    `SELECT pi.id, pi.day_number, pi.meal_time, pi.menu_item_id,
-            mi.name, mi.price_usd, mi.image_url, r.name AS restaurant_name
-     FROM twelve_day_plan_items pi
-     JOIN menu_items mi ON mi.id = pi.menu_item_id
-     JOIN restaurants r ON r.id = mi.restaurant_id
-     WHERE pi.hotel_id = $1
-     ORDER BY pi.day_number, pi.meal_time`,
-    [req.params.hotel_id]
-  );
-  res.json(rows);
-}));
-
 // DELETE /api/menu/item/:id — soft delete
 menuRouter.delete('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
@@ -114,16 +119,20 @@ menuRouter.delete('/item/:id', requireAdmin, asyncHandler(async (req, res) => {
   res.json({ deleted: true, id: rows[0].id });
 }));
 
-// POST /api/menu/:hotel_id — add a new menu item (admin)
-menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), asyncHandler(async (req, res) => {
+// POST /api/menu — add a new menu item (admin)
+menuRouter.post('/', requireAdmin, validateBody(createMenuItemSchema), asyncHandler(async (req, res) => {
   const { name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_id, stock_limit } = req.body;
 
   const restaurant = await pool.query(
-    'SELECT id FROM restaurants WHERE id = $1 AND hotel_id = $2',
-    [restaurant_id, req.params.hotel_id]
+    'SELECT id, diet_type_id FROM restaurants WHERE id = $1',
+    [restaurant_id]
   );
   if (restaurant.rows.length === 0) {
-    return res.status(400).json({ error: 'Сонгосон ресторан энэ буудалд харьяалагдахгүй байна.' });
+    return res.status(400).json({ error: 'Сонгосон ресторан олдсонгүй.' });
+  }
+  const restaurantDietTypeId = restaurant.rows[0].diet_type_id;
+  if (restaurantDietTypeId && restaurantDietTypeId !== diet_type_id) {
+    return res.status(400).json({ error: 'Сонгосон ресторан зөвхөн өөрийн ангиллын хоол хадгалж болно.' });
   }
 
   const dietType = await pool.query('SELECT id FROM diet_types WHERE id = $1', [diet_type_id]);
@@ -133,11 +142,10 @@ menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), 
 
   const { rows } = await pool.query(
     `INSERT INTO menu_items
-       (hotel_id, name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_id, stock_limit)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       (name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, restaurant_id, stock_limit)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
      RETURNING *`,
     [
-      req.params.hotel_id,
       name,
       description ?? null,
       category ?? null,
@@ -159,15 +167,29 @@ menuRouter.post('/:hotel_id', requireAdmin, validateBody(createMenuItemSchema), 
 menuRouter.patch('/item/:id', requireAdmin, validateBody(updateMenuItemSchema), asyncHandler(async (req, res) => {
   const { name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, restaurant_id, stock_limit } = req.body;
 
-  if (restaurant_id) {
-    const current = await pool.query('SELECT hotel_id FROM menu_items WHERE id = $1', [req.params.id]);
+  // Ресторан/ангилал 1:1 lock-ийг зөвхөн эдгээр 2 талбарын аль нэгийг нь
+  // бодитоор өөрчлөх гэж байгаа үед л шалгана — жишээ нь зөвхөн `available`-г
+  // солих (PATCH { available }) хуучин зөрчилтэй item дээр ч гэсэн ажиллах ёстой.
+  if (Object.prototype.hasOwnProperty.call(req.body, 'restaurant_id') ||
+      Object.prototype.hasOwnProperty.call(req.body, 'diet_type_id')) {
+    const current = await pool.query(
+      'SELECT restaurant_id, diet_type_id FROM menu_items WHERE id = $1',
+      [req.params.id]
+    );
     if (current.rows.length === 0) return res.status(404).json({ error: 'Menu item not found.' });
+
+    const effectiveRestaurantId = restaurant_id ?? current.rows[0].restaurant_id;
+    const effectiveDietTypeId = diet_type_id ?? current.rows[0].diet_type_id;
+
     const restaurant = await pool.query(
-      'SELECT id FROM restaurants WHERE id = $1 AND hotel_id = $2',
-      [restaurant_id, current.rows[0].hotel_id]
+      'SELECT id, diet_type_id FROM restaurants WHERE id = $1',
+      [effectiveRestaurantId]
     );
     if (restaurant.rows.length === 0) {
-      return res.status(400).json({ error: 'Сонгосон ресторан энэ буудалд харьяалагдахгүй байна.' });
+      return res.status(400).json({ error: 'Сонгосон ресторан олдсонгүй.' });
+    }
+    if (restaurant.rows[0].diet_type_id && restaurant.rows[0].diet_type_id !== effectiveDietTypeId) {
+      return res.status(400).json({ error: 'Сонгосон ресторан зөвхөн өөрийн ангиллын хоол хадгалж болно.' });
     }
   }
 

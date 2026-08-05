@@ -294,7 +294,7 @@ function renderMenu() {
 el.menuSearch.addEventListener('input', renderMenu);
 
 // 5. Cart Logic
-window.updateCart = function(itemId, delta) {
+window.updateCart = function (itemId, delta) {
   const item = appState.menuItems.find(i => i.id === itemId);
   if (!item) return;
 
@@ -410,9 +410,7 @@ function renderOrderTracking(order) {
 
   const statusMap = {
     pending: { text: 'Хүлээгдэж байна', class: 'status-pending', title: 'Захиалга хүлээн авлаа', desc: 'Гал тогоо захиалгыг бэлтгэж эхлэхийг хүлээж байна.' },
-    preparing: { text: 'Бэлтгэж байна', class: 'status-preparing', title: 'Хоолыг хийж байна 🍳', desc: 'Манай ахлах залуус таны хоолыг хийж бэлтгэж байна.' },
-    served: { text: 'Өрөөнд хүргэгдсэн', class: 'status-served', title: 'Хоол хүргэгдлээ 🍷', desc: 'Таны өрөөнд хоолыг хүргэж өгсөн. Сайхан хооллоорой!' },
-    paid: { text: 'Төлбөр төлөгдсөн', class: 'status-paid', title: 'Гүйлгээ амжилттай 💳', desc: 'Захиалгын төлбөр амжилттай хийгдсэн. Баярлалаа!' }
+    paid: { text: 'Төлбөр төлөгдсөн', class: 'status-paid', title: 'Гүйлгээ амжилттай', desc: 'Захиалгын төлбөр амжилттай хийгдсэн. Баярлалаа!' }
   };
 
   const current = statusMap[order.status] || statusMap.pending;

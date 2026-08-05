@@ -10,7 +10,6 @@ DROP TABLE IF EXISTS menu_items CASCADE;
 DROP TABLE IF EXISTS restaurants CASCADE;
 DROP TABLE IF EXISTS diet_types CASCADE;
 DROP TABLE IF EXISTS sessions CASCADE;
-DROP TABLE IF EXISTS hotels CASCADE;
 
 DROP TYPE IF EXISTS order_status CASCADE;
 DROP TYPE IF EXISTS session_status CASCADE;
@@ -18,44 +17,38 @@ DROP TYPE IF EXISTS session_order_type CASCADE;
 DROP TYPE IF EXISTS session_delivery_type CASCADE;
 DROP TYPE IF EXISTS meal_time CASCADE;
 
-CREATE TYPE order_status AS ENUM ('pending', 'preparing', 'served', 'paid', 'cancelled', 'refunded');
+CREATE TYPE order_status AS ENUM ('pending', 'paid', 'cancelled', 'refunded');
 CREATE TYPE session_status AS ENUM ('active', 'expired');
 CREATE TYPE session_order_type AS ENUM ('twelve_day', 'one_time');
 CREATE TYPE session_delivery_type AS ENUM ('hotel', 'current_location');
 CREATE TYPE meal_time AS ENUM ('morning', 'lunch', 'evening');
 
-CREATE TABLE hotels (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        text NOT NULL,
-  address     text,
-  latitude    double precision NOT NULL,
-  longitude   double precision NOT NULL,
-  qr_token    text NOT NULL UNIQUE,
-  is_deleted  boolean NOT NULL DEFAULT false,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- Нэг hotel дотор 2-3 өөр гал тогооны нэгж (dining outlet) ажилладаг тохиолдолд
--- зориулав — admin dashboard-ийн Menu/Orders хуудсуудын гол filter нь энэ.
+-- 2-3 өөр гал тогооны нэгж (dining outlet) ажилладаг — admin dashboard-ийн
+-- Menu/Orders хуудсуудын гол filter нь энэ. Ресторан бүр яг нэг diet_type-д
+-- (Halal/Vegan/...) харьяалагдана (diet_type_id, доор тодорхойлно).
 CREATE TABLE restaurants (
-  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  hotel_id   uuid NOT NULL REFERENCES hotels(id),
-  name       text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (hotel_id, name)
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          text NOT NULL UNIQUE,
+  diet_type_id  uuid,
+  created_at    timestamptz NOT NULL DEFAULT now()
 );
 
--- Хоолны ангилал (Halal/Vegan/...) — бүх буудал дундаа нэг ерөнхий жагсаалт,
--- admin Тохиргоо хуудаснаас нэмэх/нэрийг солих/устгах боломжтой.
+-- Хоолны ангилал (Halal/Vegan/...) — нэг ерөнхий жагсаалт, admin Тохиргоо
+-- хуудаснаас нэмэх/нэрийг солих/устгах боломжтой.
 CREATE TABLE diet_types (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name       text NOT NULL UNIQUE,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+ALTER TABLE restaurants ADD CONSTRAINT restaurants_diet_type_id_fkey
+  FOREIGN KEY (diet_type_id) REFERENCES diet_types(id);
+-- Нэг ангиллыг зөвхөн НЭГ ресторан эзэмшинэ (NULL-үүд хоорондоо мөргөлдөхгүй).
+CREATE UNIQUE INDEX idx_restaurants_diet_type_unique
+  ON restaurants(diet_type_id) WHERE diet_type_id IS NOT NULL;
+
 CREATE TABLE sessions (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  hotel_id           uuid NOT NULL REFERENCES hotels(id),
   guest_name         text NOT NULL,
   room_number        text,
   hotel_name         text,   -- зочны чөлөөтэй бичсэн буудлын нэр (баталгаажуулалтгүй)
@@ -68,14 +61,19 @@ CREATE TABLE sessions (
   geo_lat            double precision,
   geo_lng            double precision,
   status             session_status NOT NULL DEFAULT 'active',
+  -- 12 хоногийн план дээр сонгосон ангилал (зөвхөн order_type='twelve_day').
+  diet_type_id       uuid REFERENCES diet_types(id),
+  -- Зочны мэдэгдсэн харшил/иддэггүй зүйлс — menu_items.allergens-тай ижил tag
+  -- vocabulary ашиглана, admin-ийн Захиалгууд/12 хоногийн зочид хуудсанд
+  -- automатаар зөрчил илрүүлэхэд ашиглагдана.
+  allergy_tags       text[] DEFAULT '{}',
+  allergy_other      text,
   created_at         timestamptz NOT NULL DEFAULT now(),
   expires_at         timestamptz NOT NULL DEFAULT (now() + interval '24 hours')
 );
-CREATE INDEX idx_sessions_hotel ON sessions(hotel_id);
 
 CREATE TABLE menu_items (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  hotel_id      uuid NOT NULL REFERENCES hotels(id),
   name          text NOT NULL,
   description   text,
   category      text,
@@ -91,19 +89,16 @@ CREATE TABLE menu_items (
   restaurant_id uuid NOT NULL REFERENCES restaurants(id),
   stock_limit   integer -- Өдөр тутам 0-ээс дахин эхэлдэг лимит (NULL = хязгааргүй)
 );
-CREATE INDEX idx_menu_items_hotel ON menu_items(hotel_id);
 CREATE INDEX idx_menu_items_diet  ON menu_items(diet_type_id);
 CREATE INDEX idx_menu_items_restaurant ON menu_items(restaurant_id);
 
 CREATE TABLE orders (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id   uuid NOT NULL REFERENCES sessions(id),
-  hotel_id     uuid NOT NULL REFERENCES hotels(id),
   status       order_status NOT NULL DEFAULT 'pending',
   total_usd    numeric(10,2) NOT NULL DEFAULT 0,
   created_at   timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_orders_hotel ON orders(hotel_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_session ON orders(session_id);
 
@@ -119,16 +114,16 @@ CREATE INDEX idx_order_items_order ON order_items(order_id);
 
 -- Admin-ийн удирддаг "12 хоногийн цэс" — өдөр (1-12) тус бүрийн
 -- өглөө/өдөр/оройн хоолонд ямар menu item(ууд) орохыг тодорхойлно.
+-- Ресторан/ангилал нь menu_item_id-ээр дамжуулан аль хэдийн тодорхойлогддог.
 CREATE TABLE twelve_day_plan_items (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  hotel_id      uuid NOT NULL REFERENCES hotels(id),
   day_number    integer NOT NULL CHECK (day_number BETWEEN 1 AND 12),
   meal_time     meal_time NOT NULL,
   menu_item_id  uuid NOT NULL REFERENCES menu_items(id),
   created_at    timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (hotel_id, day_number, meal_time, menu_item_id)
+  UNIQUE (day_number, meal_time, menu_item_id)
 );
-CREATE INDEX idx_plan_items_hotel_day ON twelve_day_plan_items(hotel_id, day_number);
+CREATE INDEX idx_plan_items_day ON twelve_day_plan_items(day_number);
 
 CREATE TABLE payments (
   id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -145,14 +140,10 @@ CREATE TABLE payments (
 CREATE INDEX idx_payments_order ON payments(order_id);
 
 -- Initial Seed Data
-INSERT INTO hotels (id, name, address, latitude, longitude, qr_token) VALUES
-('11111111-1111-1111-1111-111111111111', 'Grand Shangri-La Hotel', 'Ulaanbaatar, Sukhbaatar District', 47.9184, 106.9177, 'test-qr-token-001')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO restaurants (id, hotel_id, name) VALUES
-('c1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Ресторан 1'),
-('c2222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'Ресторан 2'),
-('c3333333-3333-3333-3333-333333333333', '11111111-1111-1111-1111-111111111111', 'Ресторан 3')
+INSERT INTO restaurants (id, name) VALUES
+('c1111111-1111-1111-1111-111111111111', 'Ресторан 1'),
+('c2222222-2222-2222-2222-222222222222', 'Ресторан 2'),
+('c3333333-3333-3333-3333-333333333333', 'Ресторан 3')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO diet_types (id, name) VALUES
@@ -163,57 +154,57 @@ INSERT INTO diet_types (id, name) VALUES
 ('d5555555-5555-5555-5555-555555555555', 'gluten_free')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO menu_items (id, hotel_id, name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, restaurant_id, stock_limit) VALUES
+INSERT INTO menu_items (id, name, description, category, diet_type_id, price_usd, image_url, calories, allergens, prep_time_min, is_featured, available, restaurant_id, stock_limit) VALUES
 -- Halal dishes
-('a1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
+('a1111111-1111-1111-1111-111111111111',
  'Halal Ribeye Steak 300g',
  'Tender halal-certified ribeye grilled to perfection, served with seasonal vegetables and herb sauce.',
  'Main Course', 'd4444444-4444-4444-4444-444444444444', 28.00, NULL, 620, '{gluten}', 25, true, true, 'c1111111-1111-1111-1111-111111111111', NULL),
 
-('a2222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111',
+('a2222222-2222-2222-2222-222222222222',
  'Halal Chicken Tikka',
  'Juicy halal chicken marinated in yogurt and spices, grilled on skewers.',
  'Main Course', 'd4444444-4444-4444-4444-444444444444', 18.00, NULL, 430, '{}', 20, true, true, 'c1111111-1111-1111-1111-111111111111', 20),
 
 -- Vegetarian dishes
-('a3333333-3333-3333-3333-333333333333', '11111111-1111-1111-1111-111111111111',
+('a3333333-3333-3333-3333-333333333333',
  'Caesar Salad',
  'Crisp romaine lettuce, parmesan, croutons and house Caesar dressing. Vegetarian-friendly.',
  'Salad & Appetizer', 'd2222222-2222-2222-2222-222222222222', 12.50, NULL, 280, '{gluten,dairy}', 10, false, true, 'c2222222-2222-2222-2222-222222222222', NULL),
 
-('a4444444-4444-4444-4444-444444444444', '11111111-1111-1111-1111-111111111111',
+('a4444444-4444-4444-4444-444444444444',
  'Garden Buddha Bowl',
  'Quinoa, roasted chickpeas, avocado, sweet potato and tahini drizzle.',
  'Main Course', 'd3333333-3333-3333-3333-333333333333', 16.00, NULL, 480, '{sesame}', 15, true, true, 'c2222222-2222-2222-2222-222222222222', NULL),
 
-('a5555555-5555-5555-5555-555555555555', '11111111-1111-1111-1111-111111111111',
+('a5555555-5555-5555-5555-555555555555',
  'Grilled Veggie Platter',
  'Seasonal grilled vegetables with hummus and warm pita bread.',
  'Appetizer', 'd2222222-2222-2222-2222-222222222222', 13.50, NULL, 320, '{gluten}', 12, false, true, 'c2222222-2222-2222-2222-222222222222', NULL),
 
 -- Vegan dishes
-('a6666666-6666-6666-6666-666666666666', '11111111-1111-1111-1111-111111111111',
+('a6666666-6666-6666-6666-666666666666',
  'Vegan Mushroom Risotto',
  'Creamy arborio rice with wild mushrooms, truffle oil and fresh herbs. 100% plant-based.',
  'Main Course', 'd3333333-3333-3333-3333-333333333333', 17.50, NULL, 390, '{}', 20, true, true, 'c2222222-2222-2222-2222-222222222222', NULL),
 
 -- Gluten-free dishes
-('a7777777-7777-7777-7777-777777777777', '11111111-1111-1111-1111-111111111111',
+('a7777777-7777-7777-7777-777777777777',
  'Grilled Salmon Fillet',
  'Atlantic salmon with lemon butter, capers and steamed vegetables. Naturally gluten-free.',
  'Main Course', 'd5555555-5555-5555-5555-555555555555', 24.00, NULL, 520, '{fish}', 18, true, true, 'c3333333-3333-3333-3333-333333333333', NULL),
 
-('a8888888-8888-8888-8888-888888888888', '11111111-1111-1111-1111-111111111111',
+('a8888888-8888-8888-8888-888888888888',
  'Fresh Fruit Smoothie Bowl',
  'Blended açaí, banana and mixed berries topped with granola and fresh fruits.',
  'Dessert & Drinks', 'd3333333-3333-3333-3333-333333333333', 9.00, NULL, 290, '{nuts}', 5, false, true, 'c3333333-3333-3333-3333-333333333333', NULL),
 
-('a9999999-9999-9999-9999-999999999999', '11111111-1111-1111-1111-111111111111',
+('a9999999-9999-9999-9999-999999999999',
  'New York Cheesecake',
  'Classic creamy cheesecake on a graham cracker crust with berry compote.',
  'Dessert & Drinks', 'd2222222-2222-2222-2222-222222222222', 8.50, NULL, 380, '{gluten,dairy,eggs}', 5, false, true, 'c3333333-3333-3333-3333-333333333333', NULL),
 
-('b1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
+('b1111111-1111-1111-1111-111111111111',
  'Freshly Squeezed Orange Juice',
  'Chilled fresh orange juice. Vegan, gluten-free.',
  'Dessert & Drinks', 'd3333333-3333-3333-3333-333333333333', 6.00, NULL, 110, '{}', 3, false, true, 'c3333333-3333-3333-3333-333333333333', NULL)

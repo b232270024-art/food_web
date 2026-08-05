@@ -3,8 +3,6 @@ import { UtensilsCrossed, ClipboardList, CheckCircle2, DollarSign } from 'lucide
 
 const STATUS_LABEL = {
   pending: 'Хүлээгдэж буй',
-  preparing: 'Бэлтгэж буй',
-  served: 'Хүргэгдсэн',
   paid: 'Төлөгдсөн',
   cancelled: 'Цуцлагдсан',
   refunded: 'Буцаагдсан',
@@ -12,8 +10,6 @@ const STATUS_LABEL = {
 
 const STATUS_COLOR = {
   pending: { bg: '#fef3c7', text: '#92400e' },
-  preparing: { bg: '#dbeafe', text: '#1e40af' },
-  served: { bg: '#e0e7ff', text: '#3730a3' },
   paid: { bg: '#dcfce7', text: '#166534' },
   cancelled: { bg: '#f3f4f6', text: '#6b7280' },
   refunded: { bg: '#fee2e2', text: '#991b1b' },
@@ -45,15 +41,14 @@ function formatDateTime(dateStr) {
   });
 }
 
-export function DashboardHome({ hotelId }) {
+export function DashboardHome() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!hotelId) return;
     setLoading(true);
-    fetch(`/api/admin/${hotelId}/stats`)
+    fetch('/api/admin/stats')
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok) throw new Error(data.error || 'Мэдээлэл татахад алдаа гарлаа.');
@@ -62,7 +57,7 @@ export function DashboardHome({ hotelId }) {
       })
       .catch((err) => setError(err.message || 'Мэдээлэл татахад алдаа гарлаа.'))
       .finally(() => setLoading(false));
-  }, [hotelId]);
+  }, []);
 
   if (loading) return <p style={{ color: 'var(--text-muted)' }}>Ачааллаж байна...</p>;
   if (error) return <div style={{ background: '#fef2f2', color: '#991b1b', padding: '10px 14px', borderRadius: 10, fontSize: '0.85rem' }}>{error}</div>;

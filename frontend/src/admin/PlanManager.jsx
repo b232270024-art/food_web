@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, X, Search, Check } from 'lucide-react';
 import { ItemForm, emptyItemForm } from './MenuManager';
+import { dietStyle } from '../components/MenuSection';
 
 const MEAL_TIMES = [
   { key: 'morning', label: 'Өглөө' },
@@ -44,7 +45,7 @@ function ExistingItemPicker({ menuItems, onPick }) {
   );
 }
 
-function AddItemModal({ restaurants, menuItems, onPickExisting, onCreateNew, saving, onClose }) {
+function AddItemModal({ activeRestaurant, dietTypes, menuItems, onPickExisting, onCreateNew, saving, onClose }) {
   const [mode, setMode] = useState('existing');
 
   return (
@@ -84,8 +85,9 @@ function AddItemModal({ restaurants, menuItems, onPickExisting, onCreateNew, sav
           <ExistingItemPicker menuItems={menuItems} onPick={onPickExisting} />
         ) : (
           <ItemForm
-            initial={emptyItemForm(restaurants)}
-            restaurants={restaurants}
+            initial={emptyItemForm([activeRestaurant], dietTypes)}
+            restaurants={[activeRestaurant]}
+            dietTypes={dietTypes}
             onCancel={onClose}
             onSave={onCreateNew}
             saving={saving}
@@ -96,8 +98,10 @@ function AddItemModal({ restaurants, menuItems, onPickExisting, onCreateNew, sav
   );
 }
 
-export function PlanManager({ hotelId }) {
+export function PlanManager() {
   const [restaurants, setRestaurants] = useState([]);
+  const [dietTypes, setDietTypes] = useState([]);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [planItems, setPlanItems] = useState([]);
   const [selectedDay, setSelectedDay] = useState(1);
@@ -107,15 +111,28 @@ export function PlanManager({ hotelId }) {
   const [saving, setSaving] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
 
-  const fetchAll = useCallback(async () => {
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/menu/restaurants').then(r => r.json()),
+      fetch('/api/menu/diet-types').then(r => r.json()),
+    ]).then(([r, d]) => {
+      if (Array.isArray(r)) {
+        setRestaurants(r);
+        setSelectedRestaurantId(prev => prev ?? r[0]?.id ?? null);
+      }
+      if (Array.isArray(d)) setDietTypes(d);
+    }).catch(() => setError('Мэдээлэл татахад алдаа гарлаа.'));
+  }, []);
+
+  const fetchPlanData = useCallback(async () => {
+    if (!selectedRestaurantId) return;
+    setLoading(true);
     try {
-      const [rRes, mRes, pRes] = await Promise.all([
-        fetch(`/api/menu/${hotelId}/restaurants`),
-        fetch(`/api/menu/${hotelId}?all=true`),
-        fetch(`/api/admin/${hotelId}/plan`),
+      const [mRes, pRes] = await Promise.all([
+        fetch(`/api/menu?all=true&restaurant_id=${selectedRestaurantId}`),
+        fetch(`/api/admin/plan?restaurant_id=${selectedRestaurantId}`),
       ]);
-      const [r, m, p] = await Promise.all([rRes.json(), mRes.json(), pRes.json()]);
-      if (Array.isArray(r)) setRestaurants(r);
+      const [m, p] = await Promise.all([mRes.json(), pRes.json()]);
       if (Array.isArray(m)) setMenuItems(m);
       if (Array.isArray(p)) setPlanItems(p);
       setError('');
@@ -124,9 +141,11 @@ export function PlanManager({ hotelId }) {
     } finally {
       setLoading(false);
     }
-  }, [hotelId]);
+  }, [selectedRestaurantId]);
 
-  useEffect(() => { if (hotelId) fetchAll(); }, [hotelId, fetchAll]);
+  useEffect(() => { fetchPlanData(); }, [fetchPlanData]);
+
+  const activeRestaurant = restaurants.find(r => r.id === selectedRestaurantId);
 
   const dayItemsByMeal = useMemo(() => {
     const map = { morning: [], lunch: [], evening: [] };
@@ -140,12 +159,12 @@ export function PlanManager({ hotelId }) {
       const res = await fetch('/api/admin/plan-items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hotel_id: hotelId, day_number: selectedDay, meal_time: addingSlot, menu_item_id: menuItemId }),
+        body: JSON.stringify({ day_number: selectedDay, meal_time: addingSlot, menu_item_id: menuItemId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Нэмэхэд алдаа гарлаа.');
       setAddingSlot(null);
-      fetchAll();
+      fetchPlanData();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -156,7 +175,7 @@ export function PlanManager({ hotelId }) {
   const createAndAssign = async (payload) => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/menu/${hotelId}`, {
+      const res = await fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -184,17 +203,17 @@ export function PlanManager({ hotelId }) {
       if (!res.ok) throw new Error();
     } catch {
       setError('Хасахад алдаа гарлаа.');
-      fetchAll();
+      fetchPlanData();
     }
   };
 
-  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Ачааллаж байна...</p>;
+  if (loading && restaurants.length === 0) return <p style={{ color: 'var(--text-muted)' }}>Ачааллаж байна...</p>;
 
   return (
     <div>
       <h2 className="heading-md" style={{ marginBottom: 6 }}>12 хоногийн цэс</h2>
       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 20 }}>
-        Өдөр тус бүрийн өглөө/өдөр/оройн хоолыг эндээс тохируулна.
+        Ресторан тус бүр өөрийн 12 хоногийн цэстэй — доороос ресторанаа сонгоод өдөр тус бүрийн өглөө/өдөр/оройн хоолыг тохируулна.
       </p>
 
       {error && (
@@ -202,6 +221,32 @@ export function PlanManager({ hotelId }) {
           {error}
         </div>
       )}
+
+      {/* Restaurant tabs */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+        {restaurants.map(r => {
+          const active = r.id === selectedRestaurantId;
+          const cfg = r.diet_type_name ? dietStyle(r.diet_type_name) : null;
+          return (
+            <button
+              key={r.id}
+              onClick={() => setSelectedRestaurantId(r.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 16px', borderRadius: 'var(--r-full)',
+                fontWeight: 700, fontSize: '0.85rem',
+                border: `2px solid ${active ? (cfg?.color || 'var(--brand-green)') : 'var(--border)'}`,
+                background: active ? (cfg?.bg || 'var(--bg-muted)') : 'var(--bg-card)',
+                color: active ? (cfg?.color || 'var(--brand-green)') : 'var(--text-body)',
+              }}
+            >
+              {cfg && <span>{cfg.emoji}</span>}
+              {r.name}
+              {!r.diet_type_name && <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>(ангилал сонгоогүй)</span>}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Day selector */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
@@ -277,9 +322,10 @@ export function PlanManager({ hotelId }) {
         </div>
       )}
 
-      {addingSlot && (
+      {addingSlot && activeRestaurant && (
         <AddItemModal
-          restaurants={restaurants}
+          activeRestaurant={activeRestaurant}
+          dietTypes={dietTypes}
           menuItems={menuItems}
           saving={saving}
           onPickExisting={assign}

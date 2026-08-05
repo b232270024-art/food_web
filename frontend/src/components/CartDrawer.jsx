@@ -6,7 +6,6 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
 
   return (
     <>
-      {/* Backdrop */}
       {isOpen && (
         <div
           onClick={onClose}
@@ -19,7 +18,6 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
         />
       )}
 
-      {/* Drawer panel */}
       <div
         className={isOpen ? 'anim-slide-right' : ''}
         style={{
@@ -82,7 +80,6 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
           </div>
         </div>
 
-        {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
           {cart.length === 0 ? (
             <div style={{
@@ -105,17 +102,6 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
                     border: '1px solid var(--border)', background: 'var(--bg-cream)',
                   }}
                 >
-                  {/* Emoji */}
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 12,
-                    background: 'var(--bg-muted)', fontSize: '1.6rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
-                    🍽
-                  </div>
-
-                  {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {item.name}
@@ -154,15 +140,12 @@ export function CartDrawer({ isOpen, onClose, cart, onAddToCart, onRemoveFromCar
             </div>
           )}
         </div>
-
-        {/* Footer */}
         {cart.length > 0 && (
           <div style={{
             padding: '20px 24px',
             borderTop: '1px solid var(--border)',
             background: 'var(--bg-card)',
           }}>
-            {/* Subtotal */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
               <span style={{ color: 'var(--text-body)', fontWeight: 600 }}>{tr.cartSubtotal}</span>
               <span style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-dark)' }}>

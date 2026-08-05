@@ -80,7 +80,7 @@ ORDERS
   id           uuid PK
   session_id   uuid FK
   hotel_id     uuid FK
-  status       enum   -- pending, preparing, served, paid, cancelled
+  status       enum   -- pending, paid, cancelled
   total_usd    decimal
   created_at   timestamp
 

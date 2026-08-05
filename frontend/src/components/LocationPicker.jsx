@@ -20,11 +20,11 @@ const pinIcon = L.divIcon({
 });
 
 export function LocationPicker({ geo, address, onLocationChange, tr }) {
-  const mapElRef   = useRef(null);
-  const mapRef     = useRef(null);
-  const markerRef  = useRef(null);
+  const mapElRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
   const [detecting, setDetecting] = useState(false);
-  const [status,    setStatus]    = useState('');
+  const [status, setStatus] = useState('');
 
   // ── Init map once ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -60,10 +60,8 @@ export function LocationPicker({ geo, address, onLocationChange, tr }) {
       map.remove();
       mapRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Keep marker/map in sync if geo changes from outside (e.g. detect) ──────
   useEffect(() => {
     if (!mapRef.current || !markerRef.current || !geo) return;
     markerRef.current.setLatLng([geo.lat, geo.lng]);

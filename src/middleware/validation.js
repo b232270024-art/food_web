@@ -23,7 +23,6 @@ export function validateBody(schema) {
 
 export const createSessionSchema = z
   .object({
-    hotel_id: uuidSchema('hotel_id зөв UUID байх ёстой'),
     guest_name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100),
     order_type: z.enum(['twelve_day', 'one_time'], { message: 'order_type нь twelve_day эсвэл one_time байх ёстой' }),
     delivery_type: z.enum(['hotel', 'current_location']).nullish(),
@@ -32,6 +31,11 @@ export const createSessionSchema = z
     delivery_address: z.string().trim().min(1).max(300).nullish(),
     geo_lat: z.number().min(-90).max(90).nullish(),
     geo_lng: z.number().min(-180).max(180).nullish(),
+    // 12 хоногийн план дээр сонгосон ангилал (зөвхөн order_type='twelve_day'
+    // үед route-ийн түвшинд ашиглагдана — one_time дээр route нь NULL болгоно).
+    diet_type_id: uuidSchema('diet_type_id зөв UUID байх ёстой').nullish(),
+    allergy_tags: z.array(z.string().trim().max(30)).max(20).nullish(),
+    allergy_other: z.string().trim().max(300).nullish(),
   })
   .superRefine((data, ctx) => {
     // 12 хоногийн план бол хүргэлт нь буудлын өрөө руу далд тогтмол
@@ -84,12 +88,12 @@ export const updateMenuItemSchema = z.object({
   stock_limit: z.number().int().nonnegative('Лимит 0-ээс их байх ёстой').nullish(),
 });
 
-export const renameRestaurantSchema = z.object({
-  name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100),
+export const updateRestaurantSchema = z.object({
+  name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100).nullish(),
+  diet_type_id: uuidSchema('diet_type_id зөв UUID байх ёстой').nullish(),
 });
 
 export const createRestaurantSchema = z.object({
-  hotel_id: uuidSchema('hotel_id зөв UUID байх ёстой'),
   name: z.string().trim().min(1, 'Нэр хоосон байж болохгүй').max(100),
 });
 
@@ -110,11 +114,10 @@ export const createOrderSchema = z.object({
 });
 
 export const updateOrderStatusSchema = z.object({
-  status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['pending', 'preparing', 'served', 'paid', 'cancelled', 'refunded'])),
+  status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['pending', 'paid', 'cancelled', 'refunded'])),
 });
 
 export const createPlanItemSchema = z.object({
-  hotel_id: uuidSchema('hotel_id зөв UUID байх ёстой'),
   day_number: z.number().int().min(1, 'Өдөр 1-12 хооронд байх ёстой').max(12, 'Өдөр 1-12 хооронд байх ёстой'),
   meal_time: z.enum(['morning', 'lunch', 'evening'], { message: 'meal_time нь morning/lunch/evening байх ёстой' }),
   menu_item_id: uuidSchema('menu_item_id зөв UUID байх ёстой'),

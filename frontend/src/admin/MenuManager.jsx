@@ -14,6 +14,22 @@ export function ItemForm({ initial, restaurants, dietTypes, onCancel, onSave, sa
   const [uploading, setUploading] = useState(false);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
+  // Сонгосон ресторан аль хэдийн нэг ангилалд түгжигдсэн бол (Settings-с
+  // оноосон diet_type_id) шинэ/засварлаж буй хоолны ангиллыг үүнд автоматаар
+  // тааруулж, dropdown-г идэвхгүй болгоно. useEffect ашигласны шалтгаан:
+  // PlanManager-ийн "Шинэ хоол нэмэх" (ganц ресторантайгаар нээгддэг) үед ч
+  // энэ lock анх ачаалахад л (onChange хүлээхгүйгээр) хэрэгжих ёстой.
+  useEffect(() => {
+    const restaurant = restaurants.find(r => r.id === form.restaurant_id);
+    if (restaurant?.diet_type_id && form.diet_type_id !== restaurant.diet_type_id) {
+      setForm(f => ({ ...f, diet_type_id: restaurant.diet_type_id }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.restaurant_id, restaurants]);
+
+  const lockedRestaurant = restaurants.find(r => r.id === form.restaurant_id);
+  const dietLocked = Boolean(lockedRestaurant?.diet_type_id);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.price_usd || !form.restaurant_id || !form.diet_type_id) return;
@@ -58,11 +74,18 @@ export function ItemForm({ initial, restaurants, dietTypes, onCancel, onSave, sa
       <input placeholder="Үнэ (USD) *" type="number" step="0.01" min="0" value={form.price_usd} onChange={set('price_usd')} required
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
 
-      <select value={form.diet_type_id} onChange={set('diet_type_id')} required
-        style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }}>
-        <option value="" disabled>Ангилал сонгох *</option>
-        {dietTypes.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-      </select>
+      <div>
+        <select value={form.diet_type_id} onChange={set('diet_type_id')} required disabled={dietLocked}
+          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem', opacity: dietLocked ? 0.7 : 1 }}>
+          <option value="" disabled>Ангилал сонгох *</option>
+          {dietTypes.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+        {dietLocked && (
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 4 }}>
+            🔒 {lockedRestaurant.name} зөвхөн {lockedRestaurant.diet_type_name} ангилалд харьяалагдана
+          </div>
+        )}
+      </div>
 
       <select value={form.restaurant_id} onChange={set('restaurant_id')} required
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }}>
@@ -112,10 +135,12 @@ export function ItemForm({ initial, restaurants, dietTypes, onCancel, onSave, sa
   );
 }
 
-function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
+function ItemRow({ item, restaurants, onEdit, onDelete, onToggleAvailable }) {
   const limitLabel = item.stock_limit !== null
     ? `${item.sold_today ?? 0}/${item.stock_limit} өнөөдөр`
     : null;
+  const restaurant = restaurants.find(r => r.id === item.restaurant_id);
+  const mismatched = Boolean(restaurant?.diet_type_id && restaurant.diet_type_id !== item.diet_type_id);
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
@@ -129,6 +154,14 @@ function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-dark)' }}>{item.name}</span>
           {item.is_featured && <span style={{ fontSize: '0.7rem' }}>⭐</span>}
+          {mismatched && (
+            <span
+              title={`${restaurant.name} нь ${restaurant.diet_type_name} ангилалд харьяалагддаг ч энэ хоол ${item.diet_type_name}-д бүртгэгдсэн байна`}
+              style={{ fontSize: '0.68rem', fontWeight: 700, color: '#92400e', background: '#fef3c7', padding: '2px 8px', borderRadius: 999 }}
+            >
+              ⚠ Зөрүүтэй ангилал
+            </span>
+          )}
         </div>
         <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>
           {item.category || '—'} · {item.diet_type_name} · {item.restaurant_name}
@@ -154,7 +187,7 @@ function ItemRow({ item, onEdit, onDelete, onToggleAvailable }) {
   );
 }
 
-export function MenuManager({ hotelId }) {
+export function MenuManager() {
   const [items, setItems] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [dietTypes, setDietTypes] = useState([]);
@@ -168,8 +201,8 @@ export function MenuManager({ hotelId }) {
   const fetchAll = useCallback(async () => {
     try {
       const [itemsRes, restaurantsRes, dietTypesRes] = await Promise.all([
-        fetch(`/api/menu/${hotelId}?all=true`),
-        fetch(`/api/menu/${hotelId}/restaurants`),
+        fetch('/api/menu?all=true'),
+        fetch('/api/menu/restaurants'),
         fetch('/api/menu/diet-types'),
       ]);
       const itemsData = await itemsRes.json();
@@ -184,14 +217,14 @@ export function MenuManager({ hotelId }) {
     } finally {
       setLoading(false);
     }
-  }, [hotelId]);
+  }, []);
 
-  useEffect(() => { if (hotelId) fetchAll(); }, [hotelId, fetchAll]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const handleCreate = async (payload) => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/menu/${hotelId}`, {
+      const res = await fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -324,7 +357,7 @@ export function MenuManager({ hotelId }) {
               {cat} <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>({catItems.length})</span>
             </div>
             {catItems.map(item => (
-              <ItemRow key={item.id} item={item} onEdit={setEditingItem} onDelete={handleDelete} onToggleAvailable={handleToggleAvailable} />
+              <ItemRow key={item.id} item={item} restaurants={restaurants} onEdit={setEditingItem} onDelete={handleDelete} onToggleAvailable={handleToggleAvailable} />
             ))}
           </div>
         ))

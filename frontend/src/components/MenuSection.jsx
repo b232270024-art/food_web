@@ -81,29 +81,16 @@ function BackButton({ label, onBack }) {
   );
 }
 
-// Танигдсан ангиллын нэрсэд зориулсан стиль (emoji/өнгө) — admin шинээр
-// нэмсэн/сольсон ангилалд DIET_CONFIG.standard-ийн стандарт стиль fallback
-// болно (нэрийг нь rename хийсэн ч харагдац эвдрэхгүй).
-
-const CATEGORY_EMOJI = {
-  'Main Course': '🥩',
-  'Salad & Appetizer': '🥗',
-  'Appetizer': '🥗',
-  'Dessert & Drinks': '🍰',
-  'Beverages': '🍹',
-  default: '🍽',
-};
-
 const DIET_CONFIG = {
-  halal: { label: 'Halal', emoji: '☪️', color: '#065f46', bg: '#d1fae5' },
-  vegetarian: { label: 'Vegetarian', emoji: '🌿', color: '#166534', bg: '#dcfce7' },
-  vegan: { label: 'Vegan', emoji: '🌱', color: '#14532d', bg: '#f0fdf4' },
-  gluten_free: { label: 'Gluten Free', emoji: '🌾✕', color: '#78350f', bg: '#fef3c7' },
-  standard: { label: 'Standard', emoji: '🍽', color: '#374151', bg: '#f3f4f6' },
+  halal: { label: 'Halal', color: '#065f46', bg: '#d1fae5' },
+  vegetarian: { label: 'Vegetarian', color: '#166534', bg: '#dcfce7' },
+  vegan: { label: 'Vegan', color: '#14532d', bg: '#f0fdf4' },
+  gluten_free: { label: 'Gluten Free', color: '#78350f', bg: '#fef3c7' },
+  standard: { label: 'Standard', color: '#374151', bg: '#f3f4f6' },
 };
 
 
-function dietStyle(name) {
+export function dietStyle(name) {
   const key = (name || '').toLowerCase().trim().replace(/\s+/g, '_');
   return DIET_CONFIG[key] || { ...DIET_CONFIG.standard, label: name || DIET_CONFIG.standard.label };
 }
@@ -113,7 +100,6 @@ const CARD_BG = ['#fff3e8', '#e8f5e9', '#fff8e1', '#fce4ec', '#e8f0fe', '#f0fdf4
 
 function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
   const diet = dietStyle(item.diet_type_name);
-  const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
   const bg = CARD_BG[idx % CARD_BG.length];
   const featured = item.is_featured;
 
@@ -155,11 +141,11 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => {
               e.target.style.display = 'none';
-              e.target.parentElement.innerHTML = `<span style="font-size:3.5rem">${emoji}</span>`;
+              e.target.parentElement.innerHTML = '<span style="font-size:3.5rem">🍽</span>';
             }}
           />
         ) : (
-          <span>{emoji}</span>
+          <span></span>
         )}
       </div>
 
@@ -282,19 +268,20 @@ function CardGrid({ items, getQty, onAddToCart, onRemoveFromCart, readOnly }) {
   );
 }
 
-export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCart, onRemoveFromCart, onConfirmPlan, onContinueToDelivery, onBack }) {
+export function MenuSection({ menuItems, cart, orderType, dietTypeId, tr, onAddToCart, onRemoveFromCart, onConfirmPlan, onContinueToDelivery, onBack }) {
   const [search, setSearch] = useState('');
   const [dietFilter, setDietFilter] = useState('all');
   const [catFilter, setCatFilter] = useState('All');
   const [planItems, setPlanItems] = useState(null); // admin-ийн тохируулсан 12 хоногийн хуваарь (12-day preview-д ашиглана)
 
   useEffect(() => {
-    if (!hotelId || orderType !== 'twelve_day') return;
-    fetch(`/api/menu/${hotelId}/plan`)
+    if (orderType !== 'twelve_day') return;
+    const qs = dietTypeId ? `?diet_type_id=${dietTypeId}` : '';
+    fetch(`/api/menu/plan${qs}`)
       .then(r => r.json())
       .then(data => setPlanItems(Array.isArray(data) ? data : []))
       .catch(() => setPlanItems([]));
-  }, [hotelId, orderType]);
+  }, [orderType, dietTypeId]);
 
   const categories = useMemo(() => {
     const cats = [...new Set(menuItems.map(i => i.category).filter(Boolean))];
@@ -327,6 +314,9 @@ export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCa
 
   // ── 12-Day Plan Preview ────────────────────────────────────────────────────────
   if (orderType === 'twelve_day') {
+    // Admin-ийн 12-day plan хараахан бөглөгдөөгүй үед сонгосон ангиллын хоолыг л
+    // харуулна — эс бөгөөс "Halal" сонгосон зочинд бусад ангиллын хоол ч харагдана.
+    const fallbackItems = dietTypeId ? menuItems.filter(i => i.diet_type_id === dietTypeId) : menuItems;
     return (
       <div className="anim-fade-up" style={{ maxWidth: 900, margin: '0 auto', padding: '40px 0 100px' }}>
         <BackButton label={tr.back} onBack={onBack} />
@@ -350,12 +340,12 @@ export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCa
 
         {planItems && planItems.length > 0 ? (
           <DayPlanPreview planItems={planItems} tr={tr} />
-        ) : menuItems.length > 0 && (
+        ) : fallbackItems.length > 0 && (
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-dark)', marginBottom: 16 }}>
               {tr.menuPlanPreviewTitle}
             </h3>
-            <CardGrid items={menuItems} getQty={getQty} readOnly />
+            <CardGrid items={fallbackItems} getQty={getQty} readOnly />
           </div>
         )}
 
@@ -440,7 +430,6 @@ export function MenuSection({ menuItems, cart, orderType, hotelId, tr, onAddToCa
                 transition: 'all 0.2s',
               }}
             >
-              <span>{cfg.emoji}</span> {cfg.label}
             </button>
           );
         })}

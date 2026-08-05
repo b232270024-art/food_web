@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { RefreshCw, Clock, DoorClosed, Hotel, MapPin, User } from 'lucide-react';
+import { RefreshCw, Clock, DoorClosed, Hotel, MapPin, User, AlertTriangle } from 'lucide-react';
 
-const STATUS_FLOW = ['pending', 'preparing', 'served', 'paid'];
+const STATUS_FLOW = ['pending', 'paid'];
 const TERMINAL_EXTRA = ['cancelled', 'refunded'];
 
 const STATUS_LABEL = {
   pending: 'Хүлээгдэж буй',
-  preparing: 'Бэлтгэж буй',
-  served: 'Хүргэгдсэн',
   paid: 'Төлбөр төлөгдсөн',
   cancelled: 'Цуцлагдсан',
   refunded: 'Буцаагдсан',
@@ -16,8 +14,6 @@ const STATUS_LABEL = {
 
 const STATUS_COLOR = {
   pending: { bg: '#fef3c7', text: '#92400e', dot: '#f59e0b' },
-  preparing: { bg: '#dbeafe', text: '#1e40af', dot: '#3b82f6' },
-  served: { bg: '#e0e7ff', text: '#3730a3', dot: '#6366f1' },
   paid: { bg: '#dcfce7', text: '#166534', dot: '#22c55e' },
   cancelled: { bg: '#f3f4f6', text: '#6b7280', dot: '#9ca3af' },
   refunded: { bg: '#fee2e2', text: '#991b1b', dot: '#ef4444' },
@@ -41,8 +37,40 @@ function OrderCard({ order, onChangeStatus, updating, selectedRestaurant }) {
 
   if (selectedRestaurant !== 'All' && displayItems.length === 0) return null;
 
+  // Зочны мэдэгдсэн харшил тухайн захиалгын аль ч хоолны allergens-тай давхцаж
+  // байгаа эсэхийг шалгана — давхцвал гал тогооны ажилтанд шууд харагдана.
+  const allergyTags = order.allergy_tags || [];
+  const hasAllergyInfo = allergyTags.length > 0 || Boolean(order.allergy_other);
+  const conflicts = displayItems
+    .map(item => ({ item, hit: (item.allergens || []).filter(a => allergyTags.includes(a)) }))
+    .filter(c => c.hit.length > 0);
+
   return (
     <div className="card" style={{ padding: '16px 18px', marginBottom: 12 }}>
+      {conflicts.length > 0 ? (
+        <div style={{
+          background: '#fef2f2', border: '1.5px solid #fecaca', color: '#991b1b',
+          borderRadius: 8, padding: '10px 12px', marginBottom: 12,
+          fontSize: '0.8rem', fontWeight: 700, display: 'flex', flexDirection: 'column', gap: 4,
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <AlertTriangle size={15} /> ХАРШИЛТАЙ ЗӨРЧИЛДЛОО — АНХААРАХ!
+          </span>
+          {conflicts.map(({ item, hit }, idx) => (
+            <span key={idx} style={{ fontWeight: 600 }}>
+              "{item.name}" агуулна: {hit.join(', ')}
+            </span>
+          ))}
+        </div>
+      ) : hasAllergyInfo && (
+        <div style={{
+          background: '#fffbeb', border: '1.5px solid #fde68a', color: '#92400e',
+          borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: '0.78rem', fontWeight: 600,
+        }}>
+          ⚠️ Зочны мэдэгдсэн харшил: {[...allergyTags, order.allergy_other].filter(Boolean).join(', ')}
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-dark)' }}>
@@ -152,7 +180,7 @@ function Column({ status, orders, onChangeStatus, updatingId, selectedRestaurant
   );
 }
 
-export function OrdersBoard({ hotelId }) {
+export function OrdersBoard() {
   const [orders, setOrders] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -164,7 +192,7 @@ export function OrdersBoard({ hotelId }) {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/${hotelId}/orders`);
+      const res = await fetch('/api/admin/orders');
       const data = await res.json();
       if (Array.isArray(data)) setOrders(data);
       setError('');
@@ -173,22 +201,20 @@ export function OrdersBoard({ hotelId }) {
     } finally {
       setLoading(false);
     }
-  }, [hotelId]);
+  }, []);
 
   useEffect(() => {
-    if (!hotelId) return;
-    fetch(`/api/menu/${hotelId}/restaurants`)
+    fetch('/api/menu/restaurants')
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setRestaurants(data); })
-      .catch(() => {});
-  }, [hotelId]);
+      .catch(() => { });
+  }, []);
 
   useEffect(() => {
-    if (!hotelId) return;
     fetchOrders();
 
     const socket = io(window.location.origin);
-    socket.emit('admin:join', hotelId);
+    socket.emit('admin:join');
     socket.on('order:new', fetchOrders);
     socket.on('order:updated', fetchOrders);
     socketRef.current = socket;
@@ -200,7 +226,7 @@ export function OrdersBoard({ hotelId }) {
       socket.disconnect();
       clearInterval(poll);
     };
-  }, [hotelId, fetchOrders]);
+  }, [fetchOrders]);
 
   const handleChangeStatus = async (orderId, status) => {
     setUpdatingId(orderId);

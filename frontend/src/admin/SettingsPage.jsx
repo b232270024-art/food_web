@@ -44,7 +44,7 @@ function EditableRow({ item, editingId, draftName, onStartEdit, onDraftChange, o
   );
 }
 
-export function SettingsPage({ hotelId }) {
+export function SettingsPage() {
   const [restaurants, setRestaurants] = useState([]);
   const [dietTypes, setDietTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +62,7 @@ export function SettingsPage({ hotelId }) {
   const fetchAll = useCallback(async () => {
     try {
       const [rRes, dRes] = await Promise.all([
-        fetch(`/api/menu/${hotelId}/restaurants`),
+        fetch('/api/menu/restaurants'),
         fetch('/api/menu/diet-types'),
       ]);
       const [r, d] = await Promise.all([rRes.json(), dRes.json()]);
@@ -74,9 +74,9 @@ export function SettingsPage({ hotelId }) {
     } finally {
       setLoading(false);
     }
-  }, [hotelId]);
+  }, []);
 
-  useEffect(() => { if (hotelId) fetchAll(); }, [hotelId, fetchAll]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   // --- Ресторан ---
   const addRestaurant = async (e) => {
@@ -87,7 +87,7 @@ export function SettingsPage({ hotelId }) {
       const res = await fetch('/api/admin/restaurants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hotel_id: hotelId, name: newRestName.trim() }),
+        body: JSON.stringify({ name: newRestName.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Нэмэхэд алдаа гарлаа.');
@@ -111,8 +111,26 @@ export function SettingsPage({ hotelId }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Хадгалахад алдаа гарлаа.');
-      setRestaurants(prev => prev.map(r => r.id === id ? data : r));
+      setRestaurants(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
       setEditingRestId(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const assignRestaurantDietType = async (id, dietTypeId) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/restaurants/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ diet_type_id: dietTypeId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Хадгалахад алдаа гарлаа.');
+      setRestaurants(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -189,7 +207,7 @@ export function SettingsPage({ hotelId }) {
           Ресторанууд
         </h3>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 14 }}>
-          Menu болон Захиалгууд хуудсанд ашиглагдах dining outlet-уудыг эндээс нэмэх/нэр солих боломжтой.
+          Menu болон Захиалгууд хуудсанд ашиглагдах dining outlet-уудыг эндээс нэмэх/нэр солих боломжтой. Ресторан бүр яг нэг ангилалд харьяалагдана — ангилал оноосны дараа тухайн рестораны бүх хоол зөвхөн энэ ангилалд захиалагдана.
         </p>
 
         {loading ? (
@@ -198,17 +216,29 @@ export function SettingsPage({ hotelId }) {
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
               {restaurants.map(r => (
-                <EditableRow
-                  key={r.id}
-                  item={r}
-                  editingId={editingRestId}
-                  draftName={restDraft}
-                  onStartEdit={(item) => { setEditingRestId(item.id); setRestDraft(item.name); }}
-                  onDraftChange={setRestDraft}
-                  onSave={saveRestaurant}
-                  onCancel={() => setEditingRestId(null)}
-                  saving={saving}
-                />
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <EditableRow
+                      item={r}
+                      editingId={editingRestId}
+                      draftName={restDraft}
+                      onStartEdit={(item) => { setEditingRestId(item.id); setRestDraft(item.name); }}
+                      onDraftChange={setRestDraft}
+                      onSave={saveRestaurant}
+                      onCancel={() => setEditingRestId(null)}
+                      saving={saving}
+                    />
+                  </div>
+                  <select
+                    value={r.diet_type_id || ''}
+                    onChange={e => assignRestaurantDietType(r.id, e.target.value || null)}
+                    disabled={saving}
+                    style={{ padding: '9px 10px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.82rem', flexShrink: 0 }}
+                  >
+                    <option value="">Ангилал сонгоогүй</option>
+                    {dietTypes.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
+                </div>
               ))}
             </div>
             <form onSubmit={addRestaurant} style={{ display: 'flex', gap: 8 }}>

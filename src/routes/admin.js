@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../db/pool.js';
-import { validateBody, updateOrderStatusSchema, adminLoginSchema, renameRestaurantSchema, createRestaurantSchema, dietTypeNameSchema, createPlanItemSchema } from '../middleware/validation.js';
+import { validateBody, updateOrderStatusSchema, adminLoginSchema, updateRestaurantSchema, createRestaurantSchema, dietTypeNameSchema, createPlanItemSchema } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
@@ -74,25 +74,13 @@ adminRouter.get('/debug/uploads', (req, res) => {
   res.json({ cwd: process.cwd(), uploadsDir, files, error });
 });
 
-// --- Буудал сонгох (Dashboard/Menu/Orders толгой хэсгийн dropdown) -------
-adminRouter.get('/hotels', asyncHandler(async (req, res) => {
-  const { rows } = await pool.query(
-    `SELECT id, name FROM hotels WHERE is_deleted = false ORDER BY name`
-  );
-  res.json(rows);
-}));
-
-// --- Ресторан нэмэх / нэр солих (Settings) ---------------------------------
+// --- Ресторан нэмэх / нэр солих / ангилал оноох (Settings) -----------------
 adminRouter.post('/restaurants', validateBody(createRestaurantSchema), asyncHandler(async (req, res) => {
-  const { hotel_id, name } = req.body;
-  const hotel = await pool.query('SELECT id FROM hotels WHERE id = $1 AND is_deleted = false', [hotel_id]);
-  if (hotel.rows.length === 0) {
-    return res.status(400).json({ error: 'Буудал олдсонгүй.' });
-  }
+  const { name } = req.body;
   try {
     const { rows } = await pool.query(
-      'INSERT INTO restaurants (hotel_id, name) VALUES ($1, $2) RETURNING *',
-      [hotel_id, name]
+      'INSERT INTO restaurants (name) VALUES ($1) RETURNING *',
+      [name]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -101,16 +89,29 @@ adminRouter.post('/restaurants', validateBody(createRestaurantSchema), asyncHand
   }
 }));
 
-adminRouter.patch('/restaurants/:id', validateBody(renameRestaurantSchema), asyncHandler(async (req, res) => {
+adminRouter.patch('/restaurants/:id', validateBody(updateRestaurantSchema), asyncHandler(async (req, res) => {
+  const { name, diet_type_id } = req.body;
+  const hasDietTypeField = Object.prototype.hasOwnProperty.call(req.body, 'diet_type_id');
+
+  if (diet_type_id) {
+    const dt = await pool.query('SELECT id FROM diet_types WHERE id = $1', [diet_type_id]);
+    if (dt.rows.length === 0) return res.status(400).json({ error: 'Сонгосон ангилал олдсонгүй.' });
+  }
+
   try {
     const { rows } = await pool.query(
-      'UPDATE restaurants SET name = $1 WHERE id = $2 RETURNING *',
-      [req.body.name, req.params.id]
+      `UPDATE restaurants SET
+         name = COALESCE($1, name),
+         diet_type_id = CASE WHEN $2::boolean THEN $3 ELSE diet_type_id END
+       WHERE id = $4 RETURNING *`,
+      [name ?? null, hasDietTypeField, diet_type_id ?? null, req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Ресторан олдсонгүй.' });
     res.json(rows[0]);
   } catch (err) {
-    if (err.code === '23505') return res.status(400).json({ error: 'Энэ нэртэй ресторан аль хэдийн байна.' });
+    if (err.code === '23505') {
+      return res.status(400).json({ error: 'Энэ ангиллыг өөр ресторан аль хэдийн ашиглаж байна (эсвэл энэ нэртэй ресторан аль хэдийн бий).' });
+    }
     throw err;
   }
 }));
@@ -154,28 +155,21 @@ adminRouter.delete('/diet-types/:id', asyncHandler(async (req, res) => {
 }));
 
 // --- Dashboard-ийн үзүүлэлт (нийт хоол, захиалга, орлого, сүүлийн захиалгууд) ---
-adminRouter.get('/:hotel_id/stats', asyncHandler(async (req, res) => {
-  const { hotel_id } = req.params;
+adminRouter.get('/stats', asyncHandler(async (req, res) => {
   const [menuCount, orderStats, recent] = await Promise.all([
-    pool.query(
-      `SELECT count(*)::int AS n FROM menu_items WHERE hotel_id = $1 AND is_deleted = false`,
-      [hotel_id]
-    ),
+    pool.query(`SELECT count(*)::int AS n FROM menu_items WHERE is_deleted = false`),
     pool.query(
       `SELECT count(*)::int AS total,
               count(*) FILTER (WHERE status = 'paid')::int AS paid,
               COALESCE(SUM(total_usd) FILTER (WHERE status = 'paid'), 0) AS revenue
-       FROM orders WHERE hotel_id = $1`,
-      [hotel_id]
+       FROM orders`
     ),
     pool.query(
       `SELECT o.id, o.status, o.total_usd, o.created_at,
               s.guest_name, s.room_number, s.hotel_name, s.delivery_address
        FROM orders o
        JOIN sessions s ON s.id = o.session_id
-       WHERE o.hotel_id = $1
-       ORDER BY o.created_at DESC LIMIT 8`,
-      [hotel_id]
+       ORDER BY o.created_at DESC LIMIT 8`
     ),
   ]);
 
@@ -188,10 +182,10 @@ adminRouter.get('/:hotel_id/stats', asyncHandler(async (req, res) => {
   });
 }));
 
-// --- Тухайн буудлын захиалгууд (бүх статус, item/ресторан/хүргэлтийн дэлгэрэнгүйтэй) ---
+// --- Захиалгууд (бүх статус, item/ресторан/хүргэлт/харшлын дэлгэрэнгүйтэй) ---
 // ?status=paid гэх мэт filter дэмжинэ. Хамгийн сүүлийн 200-г буцаана.
-adminRouter.get('/:hotel_id/orders', asyncHandler(async (req, res) => {
-  const params = [req.params.hotel_id];
+adminRouter.get('/orders', asyncHandler(async (req, res) => {
+  const params = [];
   let statusFilter = '';
   if (req.query.status) {
     params.push(req.query.status);
@@ -201,11 +195,13 @@ adminRouter.get('/:hotel_id/orders', asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
     `SELECT o.id, o.status, o.total_usd, o.created_at,
             s.guest_name, s.room_number, s.hotel_name, s.delivery_address, s.delivery_type,
+            s.allergy_tags, s.allergy_other,
             (SELECT json_agg(json_build_object(
                'menu_item_id', oi.menu_item_id,
                'quantity', oi.quantity,
                'name', mi.name,
-               'restaurant_name', r.name
+               'restaurant_name', r.name,
+               'allergens', mi.allergens
              ))
              FROM order_items oi
              JOIN menu_items mi ON mi.id = oi.menu_item_id
@@ -215,7 +211,7 @@ adminRouter.get('/:hotel_id/orders', asyncHandler(async (req, res) => {
             (SELECT p.paid_at FROM payments p WHERE p.order_id = o.id ORDER BY p.paid_at DESC NULLS LAST LIMIT 1) AS paid_at
      FROM orders o
      JOIN sessions s ON s.id = o.session_id
-     WHERE o.hotel_id = $1 ${statusFilter}
+     WHERE true ${statusFilter}
      ORDER BY o.created_at DESC
      LIMIT 200`,
     params
@@ -223,18 +219,42 @@ adminRouter.get('/:hotel_id/orders', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
+// --- 12 хоногийн зочид (order_type='twelve_day' session-үүд, харшлын
+// мэдээлэлтэй) — эдгээр зочид orders мөр огт үүсгэдэггүй тул дээрх
+// /orders endpoint-д хэзээ ч харагдахгүй, тиймээс тусдаа route хэрэгтэй.
+adminRouter.get('/sessions', asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT s.id, s.guest_name, s.room_number, s.hotel_name, s.diet_type_id, dt.name AS diet_type_name,
+            s.allergy_tags, s.allergy_other, s.created_at
+     FROM sessions s
+     LEFT JOIN diet_types dt ON dt.id = s.diet_type_id
+     WHERE s.order_type = 'twelve_day'
+     ORDER BY s.created_at DESC
+     LIMIT 200`
+  );
+  res.json(rows);
+}));
+
 // --- 12 хоногийн цэс (admin-ийн удирддаг өдөр тус бүрийн хоол) -----------
 // Flat list буцаана — frontend талдаа өдөр/цагаар нь ангилна.
-adminRouter.get('/:hotel_id/plan', asyncHandler(async (req, res) => {
+// Optional query params: ?diet_type_id=...&restaurant_id=... — PlanManager
+// сонгосон рестораныхаа цэсийг л татахад ашиглана.
+adminRouter.get('/plan', asyncHandler(async (req, res) => {
+  const { diet_type_id, restaurant_id } = req.query;
+  const params = [];
+  let filter = '';
+  if (diet_type_id) { params.push(diet_type_id); filter += ` AND mi.diet_type_id = $${params.length}`; }
+  if (restaurant_id) { params.push(restaurant_id); filter += ` AND mi.restaurant_id = $${params.length}`; }
+
   const { rows } = await pool.query(
     `SELECT pi.id, pi.day_number, pi.meal_time, pi.menu_item_id,
-            mi.name, mi.price_usd, mi.image_url, r.name AS restaurant_name
+            mi.name, mi.price_usd, mi.image_url, mi.allergens, mi.diet_type_id, r.name AS restaurant_name
      FROM twelve_day_plan_items pi
      JOIN menu_items mi ON mi.id = pi.menu_item_id
      JOIN restaurants r ON r.id = mi.restaurant_id
-     WHERE pi.hotel_id = $1
+     WHERE true ${filter}
      ORDER BY pi.day_number, pi.meal_time`,
-    [req.params.hotel_id]
+    params
   );
   res.json(rows);
 }));
@@ -242,22 +262,22 @@ adminRouter.get('/:hotel_id/plan', asyncHandler(async (req, res) => {
 // Тухайн (өдөр, цаг)-т menu item нэмнэ. Аль хэдийн нэмэгдсэн бол дахин
 // давхардуулахгүй (UNIQUE constraint + ON CONFLICT DO NOTHING).
 adminRouter.post('/plan-items', validateBody(createPlanItemSchema), asyncHandler(async (req, res) => {
-  const { hotel_id, day_number, meal_time, menu_item_id } = req.body;
+  const { day_number, meal_time, menu_item_id } = req.body;
 
   const menuItem = await pool.query(
-    'SELECT id FROM menu_items WHERE id = $1 AND hotel_id = $2 AND is_deleted = false',
-    [menu_item_id, hotel_id]
+    'SELECT id FROM menu_items WHERE id = $1 AND is_deleted = false',
+    [menu_item_id]
   );
   if (menuItem.rows.length === 0) {
-    return res.status(400).json({ error: 'Сонгосон хоол энэ буудалд харьяалагдахгүй байна.' });
+    return res.status(400).json({ error: 'Сонгосон хоол олдсонгүй.' });
   }
 
   const { rows } = await pool.query(
-    `INSERT INTO twelve_day_plan_items (hotel_id, day_number, meal_time, menu_item_id)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (hotel_id, day_number, meal_time, menu_item_id) DO NOTHING
+    `INSERT INTO twelve_day_plan_items (day_number, meal_time, menu_item_id)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (day_number, meal_time, menu_item_id) DO NOTHING
      RETURNING *`,
-    [hotel_id, day_number, meal_time, menu_item_id]
+    [day_number, meal_time, menu_item_id]
   );
   res.status(201).json(rows[0] ?? { alreadyExists: true });
 }));
@@ -282,7 +302,7 @@ adminRouter.patch('/orders/:id/status', validateBody(updateOrderStatusSchema), a
   if (rows.length === 0) return res.status(404).json({ error: 'Захиалга олдсонгүй.' });
 
   const io = req.app.get('io');
-  io.to(`hotel:${rows[0].hotel_id}`).emit('order:updated', rows[0]);
+  io.to('admin').emit('order:updated', rows[0]);
 
   res.json(rows[0]);
 }));

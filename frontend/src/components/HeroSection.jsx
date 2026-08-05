@@ -83,7 +83,6 @@ export function HeroSection({ tr, onGetStarted }) {
                 boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: 10,
                 fontWeight: 700, fontSize: '0.82rem',
               }}>
-                <span style={{ fontSize: '1.3rem' }}>🔥</span>
                 <div>
                   <div style={{ color: 'var(--text-dark)' }}>Hot & Fresh</div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 500 }}>Express Room Delivery</div>

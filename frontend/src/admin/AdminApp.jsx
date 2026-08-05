@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { DashboardHome } from './DashboardHome';
 import { OrdersBoard } from './OrdersBoard';
+import { TwelveDayGuests } from './TwelveDayGuests';
 import { MenuManager } from './MenuManager';
 import { PlanManager } from './PlanManager';
 import { SettingsPage } from './SettingsPage';
@@ -66,29 +67,22 @@ function LoginForm({ onLoggedIn }) {
   );
 }
 
+const TAB_LABEL = {
+  dashboard: 'Dashboard',
+  menu: 'Цэс',
+  plan: '12 хоногийн цэс',
+  orders: 'Захиалгууд',
+  twelve_day_guests: '12 хоногийн зочид',
+  settings: 'Тохиргоо',
+};
+
 function Dashboard({ onLoggedOut }) {
   const [tab, setTab] = useState('dashboard');
-  const [hotels, setHotels] = useState([]);
-  const [hotelId, setHotelId] = useState(null);
-
-  useEffect(() => {
-    fetch('/api/admin/hotels', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setHotels(data);
-          if (data.length > 0) setHotelId(data[0].id);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
     onLoggedOut();
   };
-
-  const TAB_LABEL = { dashboard: 'Dashboard', menu: 'Цэс', plan: '12 хоногийн цэс', orders: 'Захиалгууд', settings: 'Тохиргоо' };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-muted)', display: 'flex' }}>
@@ -100,30 +94,21 @@ function Dashboard({ onLoggedOut }) {
           padding: '16px 24px', background: '#fff', borderBottom: '1px solid var(--border)',
         }}>
           <h1 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1rem' }}>{TAB_LABEL[tab]}</h1>
-          {hotels.length > 1 && (
-            <select
-              value={hotelId || ''}
-              onChange={(e) => setHotelId(e.target.value)}
-              style={{ padding: '7px 10px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.82rem' }}
-            >
-              {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
-            </select>
-          )}
         </header>
 
         <main style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 20px' }}>
-          {!hotelId ? (
-            <p style={{ color: 'var(--text-muted)' }}>Буудал алга.</p>
-          ) : tab === 'dashboard' ? (
-            <DashboardHome hotelId={hotelId} />
+          {tab === 'dashboard' ? (
+            <DashboardHome />
           ) : tab === 'plan' ? (
-            <PlanManager hotelId={hotelId} />
+            <PlanManager />
           ) : tab === 'orders' ? (
-            <OrdersBoard hotelId={hotelId} />
+            <OrdersBoard />
+          ) : tab === 'twelve_day_guests' ? (
+            <TwelveDayGuests />
           ) : tab === 'settings' ? (
-            <SettingsPage hotelId={hotelId} />
+            <SettingsPage />
           ) : (
-            <MenuManager hotelId={hotelId} />
+            <MenuManager />
           )}
         </main>
       </div>

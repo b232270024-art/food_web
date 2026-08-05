@@ -31,7 +31,6 @@ export function Footer({ tr }) {
             </p>
           </div>
 
-          {/* Links */}
           <div>
             <h4 style={{ color: 'white', fontWeight: 700, marginBottom: 16, fontSize: '0.95rem' }}>Quick Links</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -56,7 +55,6 @@ export function Footer({ tr }) {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <h4 style={{ color: 'white', fontWeight: 700, marginBottom: 16, fontSize: '0.95rem' }}>Contact</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.85rem' }}>
@@ -66,10 +64,7 @@ export function Footer({ tr }) {
           </div>
         </div>
 
-        {/* Divider */}
         <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', marginBottom: 24 }} />
-
-        {/* Bottom row */}
         <div className="footer-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', flexWrap: 'wrap', gap: 12 }}>
           <span style={{ color: 'rgba(255,255,255,0.5)' }}>
             © {new Date().getFullYear()} Velofoods. {tr.footerRights}
