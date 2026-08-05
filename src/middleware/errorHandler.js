@@ -5,6 +5,7 @@ export function errorHandler(err, req, res, next) {
   const logger = req.app.get('logger');
   logger.error('Барьж амжаагүй алдаа', {
     error: err.message,
+    code: err.code,
     stack: err.stack,
     path: req.path,
     method: req.method,
@@ -16,6 +17,18 @@ export function errorHandler(err, req, res, next) {
   if (err.code === '22P02') {
     return res.status(400).json({
       error: 'Ирсэн ID эсвэл параметр буруу форматтай байна (UUID).',
+    });
+  }
+
+  // DB холболтын алдаа — 503 Service Unavailable
+  const isConnErr = err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET' ||
+                    err.code === 'ETIMEDOUT' || err.code === 'EPIPE' ||
+                    (err.message && (err.message.includes('SSL') ||
+                                     err.message.includes('connect ECONNREFUSED') ||
+                                     err.message.includes('Connection terminated')));
+  if (isConnErr) {
+    return res.status(503).json({
+      error: 'Өгөгдлийн санд холбогдоход алдаа гарлаа. Дахин оролдоно уу.',
     });
   }
 

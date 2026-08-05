@@ -7,10 +7,15 @@ dotenv.config();
 let isPgConnected = false;
 let realPool = null;
 
+// Railway болон бусад cloud platform дээр DATABASE_URL нь SSL шаардах тул
+// sslmode=require эсвэл tls option-г автоматаар олж тогтооно.
 if (process.env.DATABASE_URL) {
+  const isLocalhost = process.env.DATABASE_URL.includes('localhost') ||
+                      process.env.DATABASE_URL.includes('127.0.0.1');
   realPool = new pg.Pool({
     connectionString: process.env.DATABASE_URL,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 5000,
+    ssl: isLocalhost ? false : { rejectUnauthorized: false },
   });
 }
 
@@ -35,15 +40,25 @@ const inMemoryDb = {
   payments: []
 };
 
-// Check PostgreSQL connection
-if (realPool) {
-  realPool.query('SELECT 1').then(() => {
+// Check PostgreSQL connection with retry
+async function tryConnect(attempt = 1) {
+  if (!realPool) return;
+  try {
+    await realPool.query('SELECT 1');
     isPgConnected = true;
     console.log('✅ PostgreSQL өгөгдлийн сантай амжилттай холбогдлоо.');
-  }).catch(() => {
-    console.log('⚠️ PostgreSQL холболт амжилтгүй болсон тул санах ойн (In-Memory) туршилтын сан руу шилжлээ.');
-  });
+  } catch (err) {
+    const maxAttempts = 5;
+    if (attempt < maxAttempts) {
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+      console.log(`⚠️ PostgreSQL холболт амжилтгүй (${attempt}/${maxAttempts}). ${delay}ms-д дахин оролдоно... [${err.message}]`);
+      setTimeout(() => tryConnect(attempt + 1), delay);
+    } else {
+      console.log(`❌ PostgreSQL ${maxAttempts} удаа оролдсоны дараа холбогдож чадсангүй. In-Memory сан руу шилжлээ. Алдаа: ${err.message}`);
+    }
+  }
 }
+tryConnect();
 
 async function handleInMemoryQuery(text, params = []) {
   const sql = text.trim().replace(/\s+/g, ' ');
@@ -183,6 +198,19 @@ async function handleInMemoryQuery(text, params = []) {
   return { rows: [] };
 }
 
+// Холболтын алдааны кодууд — эдгээр гарвал дахин холбогдоно
+const CONNECTION_ERROR_CODES = new Set([
+  'ECONNREFUSED', 'ECONNRESET', 'EPIPE', 'ETIMEDOUT',
+  '57P01', // admin_shutdown
+  '57P02', // crash_shutdown
+  '57P03', // cannot_connect_now
+  '08000', // connection_exception
+  '08003', // connection_does_not_exist
+  '08006', // connection_failure
+  '08001', // sqlclient_unable_to_establish_sqlconnection
+  '08004', // sqlserver_rejected_establishment_of_sqlconnection
+]);
+
 export const pool = {
   query: async (text, params) => {
     if (realPool) {
@@ -194,15 +222,21 @@ export const pool = {
         }
         return res;
       } catch (err) {
-        // If connection failed, fallback to in-memory DB
-        if (!isPgConnected || err.code === 'ECONNREFUSED' || err.code === '28P01' || err.code === '3D000') {
+        const isConnErr = CONNECTION_ERROR_CODES.has(err.code) ||
+                         (err.message && (err.message.includes('connect ECONNREFUSED') ||
+                                          err.message.includes('terminating connection') ||
+                                          err.message.includes('Connection terminated')));
+        // Холбогдоогүй үед буюу connection алдаа гарвал in-memory fallback
+        if (!isPgConnected || isConnErr) {
           if (isPgConnected) {
-            console.log('⚠️ PostgreSQL холболт тасарсан тул санах ойн сан руу шилжлээ.');
+            console.log('⚠️ PostgreSQL холболт тасарсан тул санах ойн сан руу шилжлээ. Дахин холбогдоно...');
             isPgConnected = false;
+            // Background-д дахин холбогдоно
+            setTimeout(() => tryConnect(), 2000);
           }
           return handleInMemoryQuery(text, params);
         }
-        // Query error while connected - throw it
+        // Query алдаа (syntax, constraint гэх мэт) — шидэж гаргана
         throw err;
       }
     }
