@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, Plus, Minus, ArrowRight, ChevronLeft } from 'lucide-react';
+import { Search, Plus, Minus, ArrowRight, ChevronLeft, Utensils, Sparkles } from 'lucide-react';
 
 const MEAL_TIME_LABEL = { morning: 'Өглөө', lunch: 'Өдөр', evening: 'Орой' };
 
@@ -122,9 +122,9 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
           background: 'var(--accent-yellow)', color: '#111',
           fontSize: '0.7rem', fontWeight: 800,
           padding: '3px 10px', borderRadius: 'var(--r-full)',
-          zIndex: 1,
+          zIndex: 1, display: 'flex', alignItems: 'center', gap: 4,
         }}>
-          ⭐ Featured
+          <Sparkles size={12} /> Featured
         </div>
       )}
 
@@ -132,7 +132,7 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
         width: '100%', aspectRatio: '16/9',
         background: bg,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '4rem', position: 'relative', overflow: 'hidden',
+        position: 'relative', overflow: 'hidden',
       }}>
         {item.image_url ? (
           <img
@@ -141,11 +141,10 @@ function ItemCard({ item, idx, qty, onAddToCart, onRemoveFromCart, readOnly }) {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => {
               e.target.style.display = 'none';
-              e.target.parentElement.innerHTML = '<span style="font-size:3.5rem">🍽</span>';
             }}
           />
         ) : (
-          <span></span>
+          <Utensils size={40} color="var(--text-muted)" />
         )}
       </div>
 
@@ -411,7 +410,7 @@ export function MenuSection({ menuItems, cart, orderType, dietTypeId, tr, onAddT
             transition: 'all 0.2s',
           }}
         >
-          <span>🍽</span> {tr.menuAllCat}
+          <Utensils size={15} /> {tr.menuAllCat}
         </button>
         {dietFilters.map(f => {
           const active = dietFilter === f.id;
@@ -430,6 +429,7 @@ export function MenuSection({ menuItems, cart, orderType, dietTypeId, tr, onAddT
                 transition: 'all 0.2s',
               }}
             >
+              {f.name}
             </button>
           );
         })}
@@ -454,8 +454,9 @@ export function MenuSection({ menuItems, cart, orderType, dietTypeId, tr, onAddT
           <div style={{
             textAlign: 'center', padding: '80px 20px',
             background: 'var(--bg-card)', borderRadius: 'var(--r-xl)', color: 'var(--text-muted)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{ fontSize: '4rem', marginBottom: 16 }}>🔍</div>
+            <Search size={48} strokeWidth={1.5} color="var(--text-muted)" style={{ marginBottom: 16 }} />
             <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>{tr.menuEmpty}</p>
             <p style={{ fontSize: '0.875rem' }}>{tr.menuEmptySub}</p>
           </div>
@@ -472,8 +473,8 @@ export function MenuSection({ menuItems, cart, orderType, dietTypeId, tr, onAddT
         <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
           {featuredItems.length > 0 && (
             <section>
-              <h3 style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--text-dark)', marginBottom: 18 }}>
-                ⭐ {tr.menuSpecialOffers}
+              <h3 style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--text-dark)', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Sparkles size={20} color="var(--accent-orange)" /> {tr.menuSpecialOffers}
               </h3>
               <CardGrid items={featuredItems} getQty={getQty} onAddToCart={onAddToCart} onRemoveFromCart={onRemoveFromCart} />
             </section>

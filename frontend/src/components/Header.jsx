@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Globe, Sun, Moon } from 'lucide-react';
+import { ShoppingBag, Globe, Sun, Moon, User } from 'lucide-react';
 import { LANGUAGES } from '../i18n/translations';
 import { useTheme } from '../lib/useTheme';
 
@@ -45,7 +45,7 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
                 display: 'flex', alignItems: 'center', gap: 6, minWidth: 0,
                 color: '#047857', fontWeight: 600, fontSize: '0.85rem',
               }}>
-                <span>👤</span>
+                <User size={14} />
                 <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.guest_name}</span>
                 {session.room_number && (
                   <span style={{ background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.75rem' }}>

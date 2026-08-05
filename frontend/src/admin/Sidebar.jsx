@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { key: 'menu', label: 'Цэс', icon: UtensilsCrossed },
   { key: 'plan', label: '12 хоногийн цэс', icon: CalendarDays },
   { key: 'orders', label: 'Захиалгууд', icon: ClipboardList },
-  { key: 'twelve_day_guests', label: '12 хоногийн зочид', icon: Users },
+  { key: 'twelve_day_guests', label: '12 хоногийн захиалгууд', icon: Users },
   { key: 'settings', label: 'Тохиргоо', icon: Settings },
 ];
 

@@ -1,15 +1,5 @@
 import React from 'react';
-
-
-const CATEGORY_EMOJI = {
-  'Main Course': '🥩',
-  'Salad & Appetizer': '🥗',
-  'Appetizer': '🥗',
-  'Dessert & Drinks': '🍰',
-  'Beverages': '🍹',
-  default: '🍽',
-};
-
+import { Utensils } from 'lucide-react';
 
 const CARD_COLORS = [
   { bg: '#fff3e8', ring: '#f97316' },
@@ -115,7 +105,6 @@ function SpecialCardSkeleton() {
 
 function SpecialCard({ item, index, tr, onGetStarted }) {
   const color = CARD_COLORS[index % CARD_COLORS.length];
-  const emoji = CATEGORY_EMOJI[item.category] || CATEGORY_EMOJI.default;
 
   return (
     <div
@@ -141,9 +130,8 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
             width: '100%', height: '100%',
             background: color.bg,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '5rem',
           }}>
-            {emoji}
+            <Utensils size={56} color="var(--text-muted)" />
           </div>
         )}
       </div>

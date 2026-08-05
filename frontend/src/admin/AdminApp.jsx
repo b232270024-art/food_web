@@ -72,7 +72,7 @@ const TAB_LABEL = {
   menu: 'Цэс',
   plan: '12 хоногийн цэс',
   orders: 'Захиалгууд',
-  twelve_day_guests: '12 хоногийн зочид',
+  twelve_day_guests: '12 хоногийн захиалгууд',
   settings: 'Тохиргоо',
 };
 

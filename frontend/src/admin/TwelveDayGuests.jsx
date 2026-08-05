@@ -78,7 +78,7 @@ function GuestRow({ session, planItems, restaurantByDiet }) {
               background: dietCfg.bg, color: dietCfg.color,
               fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap',
             }}>
-              {dietCfg.emoji} {dietCfg.label}
+              {dietCfg.label}
             </span>
           ) : '—'}
         </td>
@@ -101,7 +101,7 @@ function GuestRow({ session, planItems, restaurantByDiet }) {
               background: '#fffbeb', color: '#92400e',
               fontSize: '0.73rem', fontWeight: 700,
             }}>
-              ⚠️ Мэдэгдсэн
+              <AlertTriangle size={12} /> Мэдэгдсэн
             </span>
           ) : (
             <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>—</span>
@@ -146,8 +146,10 @@ function GuestRow({ session, planItems, restaurantByDiet }) {
               <div style={{
                 background: '#fffbeb', border: '1.5px solid #fde68a', color: '#92400e',
                 borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: '0.75rem', fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 6,
               }}>
-                ⚠️ Зочны мэдэгдсэн харшил: {[...allergyTags, session.allergy_other].filter(Boolean).join(', ')}
+                <AlertTriangle size={14} />
+                <span>Зочны мэдэгдсэн харшил: {[...allergyTags, session.allergy_other].filter(Boolean).join(', ')}</span>
               </div>
             )}
 
@@ -183,11 +185,11 @@ function GuestRow({ session, planItems, restaurantByDiet }) {
                               {item.day_number}-р өдөр
                             </td>
                             <td style={{ padding: '5px 10px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-                              {{ morning: '🌅 Өглөө', lunch: '☀️ Өдөр', evening: '🌙 Орой' }[item.meal_time] || item.meal_time}
+                              {{ morning: 'Өглөө', lunch: 'Өдөр', evening: 'Орой' }[item.meal_time] || item.meal_time}
                             </td>
                             <td style={{ padding: '5px 10px', color: 'var(--text-body)' }}>{item.name}</td>
                             <td style={{ padding: '5px 10px', color: hit.length > 0 ? '#991b1b' : 'var(--text-muted)', fontWeight: hit.length > 0 ? 700 : 400 }}>
-                              {hit.length > 0 ? `⚠️ ${hit.join(', ')}` : '—'}
+                              {hit.length > 0 ? hit.join(', ') : '—'}
                             </td>
                           </tr>
                         );
@@ -312,8 +314,8 @@ export function TwelveDayGuests() {
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>Нийт зочин</div>
             {totalConflicts > 0 && (
-              <div style={{ fontSize: '0.72rem', color: '#991b1b', fontWeight: 700, marginTop: 4 }}>
-                ⚠️ {totalConflicts} харшлын зөрчил
+              <div style={{ fontSize: '0.72rem', color: '#991b1b', fontWeight: 700, marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <AlertTriangle size={11} /> {totalConflicts} харшлын зөрчил
               </div>
             )}
           </div>
@@ -336,7 +338,6 @@ export function TwelveDayGuests() {
               >
                 {/* Ресторан нэр + diet badge */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <span style={{ fontSize: '1.2rem' }}>{cfg.emoji}</span>
                   <div>
                     <div style={{ fontWeight: 800, fontSize: '0.82rem', color: active ? cfg.color : 'var(--text-dark)' }}>
                       {r.name}

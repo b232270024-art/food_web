@@ -88,9 +88,9 @@ export function GuestDetailsModal({ isOpen, tr, deliveryType, onSubmit, onClose 
           width: 56, height: 56, borderRadius: 16,
           background: 'linear-gradient(135deg, #3D7A5A, #1A3C34)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 16px', fontSize: '1.6rem',
+          margin: '0 auto 16px',
         }}>
-          🏨
+          <Hotel size={26} color="white" />
         </div>
 
         <h2 style={{

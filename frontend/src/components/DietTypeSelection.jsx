@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ArrowRight, ArrowUp } from 'lucide-react';
+import { ChevronLeft, ArrowRight, ArrowUp, Utensils } from 'lucide-react';
 import { dietStyle } from './MenuSection';
 
 // 12 хоногийн планд зочин аль ресторантай (diet type) ажиллахаа сонгоно.
@@ -31,41 +31,47 @@ export function DietTypeSelection({ tr, onBack, onContinue }) {
   return (
     <div className="anim-fade-up" style={{
       minHeight: '100vh',
-      background: 'var(--bg-cream)',
+      background: '#f8faf9',
       display: 'flex',
       flexDirection: 'column',
     }}>
-      <div style={{ flex: 1, padding: '24px', maxWidth: 680, width: '100%', margin: '0 auto' }}>
+      <div style={{ flex: 1, padding: '32px 24px', maxWidth: 640, width: '100%', margin: '0 auto' }}>
         {/* Back */}
         <button
           onClick={onBack}
           style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '1.1rem',
-            color: 'var(--text-dark)', background: 'none', cursor: 'pointer',
-            padding: '10px 0', marginBottom: 20,
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '1rem',
+            color: '#374151', background: 'none', border: 'none', cursor: 'pointer',
+            padding: '6px 0', marginBottom: 20,
           }}
         >
-          <ChevronLeft size={24} strokeWidth={3} />
+          <ChevronLeft size={20} strokeWidth={2.5} />
           {tr.back}
         </button>
 
         {/* Title */}
         <h1 style={{
           fontFamily: 'Outfit, sans-serif', fontWeight: 800,
-          fontSize: '2rem', color: 'var(--brand-green)',
+          fontSize: '2.1rem', color: '#064e3b',
           textAlign: 'center', marginBottom: 10, lineHeight: 1.2,
+          letterSpacing: '-0.02em',
         }}>
-          {tr.dietTypeSelectTitle || 'Хоолны газраа сонгоно уу'}
+          {tr.dietTypeSelectTitle || 'Choose your menu'}
         </h1>
-        <p style={{ color: 'var(--text-body)', fontSize: '0.95rem', lineHeight: 1.7, marginBottom: 28, textAlign: 'center' }}>
-          {tr.dietTypeSelectDesc || 'Тус бүрийн хоолны онцлогоороо ялгарсан ресторануудаас сонгоно уу'}
+        <p style={{
+          color: '#6b7280', fontSize: '0.95rem', lineHeight: 1.6,
+          marginBottom: 24, textAlign: 'center', maxWidth: 520, margin: '0 auto 24px',
+        }}>
+          {tr.dietTypeSelectDesc || 'Each 12-Day Meal Plan is prepared by a dedicated kitchen. Pick the one that matches your dietary needs.'}
         </p>
 
+        {/* Minimal accent line */}
         <div style={{
-          width: 160, height: 3, borderRadius: 3,
-          background: 'linear-gradient(90deg, var(--accent-yellow), transparent)',
+          width: 120, height: 3, borderRadius: 3,
+          background: 'linear-gradient(90deg, transparent, #f59e0b, transparent)',
           margin: '0 auto 32px',
+          opacity: 0.75,
         }} />
 
         {/* Restaurant cards */}
@@ -79,111 +85,112 @@ export function DietTypeSelection({ tr, onBack, onContinue }) {
                 onClick={() => setSelected(r.id)}
                 style={{
                   width: '100%',
-                  padding: '20px 24px',
-                  borderRadius: 'var(--r-lg)',
-                  border: `2.5px solid ${active ? cfg.color : 'var(--border)'}`,
-                  background: active ? cfg.bg : 'var(--bg-card)',
+                  padding: '18px 24px',
+                  borderRadius: 22,
+                  border: active ? '2px solid #059669' : '1.5px solid #e5e7eb',
+                  background: active ? '#e6f7ef' : '#ffffff',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 18,
-                  boxShadow: active ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-                  transition: 'all 0.2s',
+                  boxShadow: active ? '0 2px 8px rgba(0, 0, 0, 0.04)' : '0 1px 3px rgba(0, 0, 0, 0.02)',
+                  transition: 'all 0.18s ease',
                   textAlign: 'left',
+                  outline: 'none',
                 }}
               >
-                {/* Diet icon */}
-                <span style={{
-                  fontSize: '2.4rem',
-                  flexShrink: 0,
-                  width: 56, height: 56,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                {/* Avatar Circle with Lucide Utensils Icon */}
+                <div style={{
+                  width: 52, height: 52,
                   borderRadius: '50%',
-                  background: active ? `${cfg.color}22` : 'var(--bg-muted)',
+                  background: active ? '#c6f6d5' : '#f3f4f6',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                  transition: 'all 0.18s ease',
                 }}>
-                  {cfg.emoji}
-                </span>
+                  <Utensils size={22} color={active ? '#059669' : '#6b7280'} />
+                </div>
 
-                {/* Info */}
+                {/* Info: Diet Type Name on TOP, Restaurant Name on BOTTOM (No box/badge) */}
                 <div style={{ flex: 1 }}>
-                  {/* Restaurant name */}
+                  {/* Diet Type Name (Halal, Vegetarian, Gluten Free, etc.) */}
                   <div style={{
                     fontFamily: 'Outfit, sans-serif',
                     fontWeight: 800,
-                    fontSize: '1.1rem',
-                    color: active ? cfg.color : 'var(--text-dark)',
-                    marginBottom: 4,
+                    fontSize: '1.15rem',
+                    color: '#111827',
+                    lineHeight: 1.3,
+                  }}>
+                    {cfg.label || r.diet_type_name}
+                  </div>
+                  {/* Restaurant Name (Besmabark, Bosco Verde, etc.) - Plain text, NO box */}
+                  <div style={{
+                    fontSize: '0.88rem',
+                    color: '#6b7280',
+                    fontWeight: 500,
+                    marginTop: 3,
                   }}>
                     {r.name}
                   </div>
-                  {/* Diet type badge */}
-                  <span style={{
-                    display: 'inline-block',
-                    padding: '3px 12px',
-                    borderRadius: 999,
-                    background: cfg.color + '22',
-                    color: cfg.color,
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                  }}>
-                    {cfg.emoji} {cfg.label}
-                  </span>
                 </div>
 
-                {/* Selected check */}
+                {/* Selected Checkmark */}
                 {active && (
-                  <span style={{
-                    width: 24, height: 24, borderRadius: '50%',
-                    background: cfg.color, color: '#fff',
+                  <div style={{
+                    width: 26, height: 26, borderRadius: '50%',
+                    background: '#059669', color: '#ffffff',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontWeight: 900, fontSize: '0.85rem', flexShrink: 0,
                   }}>
                     ✓
-                  </span>
+                  </div>
                 )}
               </button>
             );
           })}
         </div>
 
-        {/* Selected info */}
+        {/* Selected Notice Bar */}
         {selectedRestaurant && (
           <div style={{
-            padding: '12px 16px', borderRadius: 10,
-            background: dietStyle(selectedRestaurant.diet_type_name).bg,
-            border: `1px solid ${dietStyle(selectedRestaurant.diet_type_name).color}44`,
-            fontSize: '0.85rem', color: 'var(--text-body)',
-            marginBottom: 12,
+            padding: '12px 18px', borderRadius: 14,
+            background: '#ffffff',
+            border: '1px solid #e5e7eb',
+            fontSize: '0.88rem', color: '#374151',
+            marginBottom: 20,
+            display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            <strong>{selectedRestaurant.name}</strong>-ийн 12 хоногийн цэсийг харахаар бэлэн байна.
+            <span style={{ color: '#059669', fontWeight: 800 }}>✓</span>
+            <span><strong>{selectedRestaurant.name}</strong>-ийн 12 хоногийн цэсийг харахаар бэлэн байна.</span>
           </div>
         )}
       </div>
 
-      {/* Continue button */}
+      {/* Sticky Bottom Action Bar */}
       <div style={{
-        background: 'var(--bg-green-dark)',
-        padding: '28px 24px',
+        padding: '18px 24px',
         position: 'sticky',
         bottom: 0,
+        background: '#f8faf9',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
       }}>
-        <div style={{ maxWidth: 680, margin: '0 auto' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <button
             id="continue-diet-btn"
             onClick={() => {
               if (!canContinue) return;
-              // diet_type_id-г дамжуулна
               onContinue(selectedRestaurant.diet_type_id);
             }}
             style={{
               width: '100%',
-              background: canContinue ? 'var(--accent-yellow)' : 'rgba(245,158,11,0.45)',
-              color: canContinue ? '#111' : '#555',
-              padding: '17px 20px',
-              borderRadius: 12, fontWeight: 800, fontSize: '1rem',
+              background: canContinue ? '#059669' : '#d1d5db',
+              color: canContinue ? '#ffffff' : '#9ca3af',
+              padding: '16px 20px',
+              borderRadius: 14, fontWeight: 800, fontSize: '1rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 12, cursor: canContinue ? 'pointer' : 'not-allowed',
-              transition: 'all 0.2s',
+              gap: 10, cursor: canContinue ? 'pointer' : 'not-allowed',
+              transition: 'all 0.18s ease',
+              border: 'none',
             }}
           >
             <span>{tr.dietTypeSelectBtn || 'Цэсийг харах'}</span>
@@ -194,3 +201,4 @@ export function DietTypeSelection({ tr, onBack, onContinue }) {
     </div>
   );
 }
+

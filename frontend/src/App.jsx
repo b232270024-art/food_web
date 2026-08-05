@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
+import { CheckCircle2 } from 'lucide-react';
 
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
@@ -256,7 +257,7 @@ export default function App() {
 
     if (orderType === 'twelve_day') {
       goToStep('confirmation');
-      showToast(`Welcome, ${guest_name}! 🎉`);
+      showToast(`Welcome, ${guest_name}!`);
       return;
     }
 
@@ -446,7 +447,9 @@ export default function App() {
         {/* ── CONFIRMATION ─────────────────────────────────────────────────────── */}
         {flowStep === 'confirmation' && (
           <div className="container" style={{ maxWidth: 560, margin: '0 auto', padding: '60px 24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '4rem', marginBottom: 16 }}>🎉</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+              <CheckCircle2 size={64} color="var(--brand-green)" />
+            </div>
             <h1 className="heading-lg" style={{ marginBottom: 12 }}>{tr.orderConfirmedTitle}</h1>
             <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{tr.orderConfirmedDesc}</p>
             {activeOrder && (

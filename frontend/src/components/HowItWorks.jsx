@@ -1,19 +1,23 @@
 import React from 'react';
+import { ShoppingBag, Bike, Utensils } from 'lucide-react';
 
 const STEPS = [
   {
-    emoji: '🛒',
+    icon: ShoppingBag,
     bg: '#e8f5e9',
+    color: '#166534',
     num: 1,
   },
   {
-    emoji: '🛵',
+    icon: Bike,
     bg: '#fff3e8',
+    color: '#c2410c',
     num: 2,
   },
   {
-    emoji: '🍽',
+    icon: Utensils,
     bg: '#e8f0fe',
+    color: '#1d4ed8',
     num: 3,
   },
 ];
@@ -42,6 +46,7 @@ export function HowItWorks({ tr }) {
           {STEPS.map((step, i) => {
             const titles = [tr.step1Title, tr.step2Title, tr.step3Title];
             const descs = [tr.step1Desc, tr.step2Desc, tr.step3Desc];
+            const IconComponent = step.icon;
             return (
               <div
                 key={i}
@@ -50,14 +55,13 @@ export function HowItWorks({ tr }) {
               >
                 {/* Icon circle */}
                 <div style={{
-                  width: 120, height: 120, borderRadius: '50%',
+                  width: 100, height: 100, borderRadius: '50%',
                   background: step.bg,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto 20px',
-                  fontSize: '3rem',
                   boxShadow: 'var(--shadow-sm)',
                 }}>
-                  {step.emoji}
+                  <IconComponent size={44} color={step.color} />
                 </div>
 
                 {/* Step title */}

@@ -1,6 +1,14 @@
 import React from 'react';
+import { Utensils, ChefHat, Salad, Coffee } from 'lucide-react';
 
 export function AboutSection({ tr, onAboutClick }) {
+  const GRID_ICONS = [
+    { icon: Utensils, bg: '#fff3e8', color: '#c2410c' },
+    { icon: ChefHat, bg: '#e8f5e9', color: '#166534' },
+    { icon: Salad, bg: '#e8f0fe', color: '#1d4ed8' },
+    { icon: Coffee, bg: '#fce4ec', color: '#be185d' },
+  ];
+
   return (
     <section style={{ padding: '80px 0', background: 'var(--bg-cream)' }}>
       <div className="container">
@@ -19,20 +27,22 @@ export function AboutSection({ tr, onAboutClick }) {
               borderRadius: 'var(--r-xl)',
               overflow: 'hidden',
             }}>
-              {['🥩', '🍜', '🥗', '🍰'].map((emoji, i) => (
-                <div
-                  key={i}
-                  style={{
-                    aspectRatio: '1/1',
-                    background: ['#fff3e8', '#e8f5e9', '#e8f0fe', '#fce4ec'][i],
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '4rem',
-                    borderRadius: 20,
-                  }}
-                >
-                  {emoji}
-                </div>
-              ))}
+              {GRID_ICONS.map((item, i) => {
+                const IconComp = item.icon;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      aspectRatio: '1/1',
+                      background: item.bg,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: 20,
+                    }}
+                  >
+                    <IconComp size={48} color={item.color} />
+                  </div>
+                );
+              })}
             </div>
 
             {/* Floating circular decoration */}

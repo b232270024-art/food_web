@@ -149,8 +149,10 @@ function OrderRow({ order, onChangeStatus, updating, selectedRestaurant }) {
               <div style={{
                 background: '#fffbeb', border: '1.5px solid #fde68a', color: '#92400e',
                 borderRadius: 8, padding: '7px 12px', marginBottom: 10, fontSize: '0.75rem', fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 6,
               }}>
-                ⚠️ Зочны мэдэгдсэн харшил: {[...allergyTags, order.allergy_other].filter(Boolean).join(', ')}
+                <AlertTriangle size={14} />
+                <span>Зочны мэдэгдсэн харшил: {[...allergyTags, order.allergy_other].filter(Boolean).join(', ')}</span>
               </div>
             )}
 

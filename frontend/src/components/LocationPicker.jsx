@@ -14,7 +14,7 @@ const pinIcon = L.divIcon({
     background:#3D7A5A;transform:rotate(-45deg);
     display:flex;align-items:center;justify-content:center;
     box-shadow:0 4px 10px rgba(0,0,0,0.35);border:2px solid white;
-  "><span style="transform:rotate(45deg);font-size:16px;">📍</span></div>`,
+  "><div style="width:12px;height:12px;border-radius:50%;background:white"></div></div>`,
   iconSize: [38, 38],
   iconAnchor: [19, 36],
 });
@@ -135,8 +135,8 @@ export function LocationPicker({ geo, address, onLocationChange, tr }) {
       />
 
       {status && (
-        <p style={{ fontSize: '0.78rem', color: 'var(--brand-green-btn)', fontWeight: 600, marginBottom: 10 }}>
-          📍 {status}
+        <p style={{ fontSize: '0.78rem', color: 'var(--brand-green-btn)', fontWeight: 600, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <MapPin size={13} /> {status}
         </p>
       )}
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, Star, Utensils } from 'lucide-react';
 
 export function HeroSection({ tr, onGetStarted }) {
   return (
@@ -73,7 +73,6 @@ export function HeroSection({ tr, onGetStarted }) {
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.parentElement.style.background = 'radial-gradient(circle, #f5f0e8 40%, #ecfdf5 100%)';
-                  e.target.parentElement.innerHTML = '<div style="font-size:8rem;opacity:0.3">🍽</div>';
                 }}
               />
               <div className="hero-badge" style={{
@@ -96,7 +95,7 @@ export function HeroSection({ tr, onGetStarted }) {
                 boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: 10,
                 fontWeight: 700, fontSize: '0.82rem',
               }}>
-                <span style={{ fontSize: '1.3rem' }}>⭐</span>
+                <Star size={18} fill="var(--accent-yellow)" color="var(--accent-yellow)" />
                 <div>
                   <div style={{ color: 'var(--text-dark)' }}>5.0 Rating</div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 500 }}>Executive Chefs</div>
