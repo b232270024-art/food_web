@@ -308,7 +308,7 @@ export function HeroSection({ tr, onGetStarted }) {
   return (
     <section style={{
       background: 'var(--bg-cream)',
-      padding: '30px 0 70px',
+      padding: '50px 0 70px',
       overflow: 'hidden',
     }}>
       <div className="container">

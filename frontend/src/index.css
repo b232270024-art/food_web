@@ -308,8 +308,8 @@ img {
   align-items: center;
   justify-content: space-between;
   min-height: 68px;
-  padding: 10px 0;
-  gap: 12px;
+  padding: 20px 0;
+  gap: 15px;
 }
 
 .nav-links {
