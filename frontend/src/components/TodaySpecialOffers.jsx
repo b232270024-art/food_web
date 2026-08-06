@@ -11,12 +11,7 @@ const CARD_COLORS = [
 export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
   const scrollRef = React.useRef(null);
 
-  let featured = menuItems.filter(item => item.is_featured);
-  if (featured.length < 10) {
-    const nonFeatured = menuItems.filter(item => !item.is_featured);
-    featured = [...featured, ...nonFeatured];
-  }
-  featured = featured.slice(0, 10);
+  const featured = menuItems.filter(item => item.is_featured).slice(0, 10);
 
   const setWidth = featured.length * (280 + 24); // width of one set of cards (card + gap)
 

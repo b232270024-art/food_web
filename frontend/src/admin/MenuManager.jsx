@@ -5,7 +5,7 @@ export function emptyItemForm(restaurants, dietTypes) {
   return {
     name: '', category: '', diet_type_id: dietTypes?.[0]?.id || '',
     price_usd: '', description: '', prep_time_min: '', is_featured: false,
-    restaurant_id: restaurants[0]?.id || '', stock_limit: '', image_url: '',
+    restaurant_id: restaurants[0]?.id || '', image_url: '',
   };
 }
 
@@ -42,7 +42,6 @@ export function ItemForm({ initial, restaurants, dietTypes, onCancel, onSave, sa
       prep_time_min: form.prep_time_min ? Number(form.prep_time_min) : null,
       is_featured: !!form.is_featured,
       restaurant_id: form.restaurant_id,
-      stock_limit: form.stock_limit === '' ? null : Number(form.stock_limit),
       image_url: form.image_url.trim() || null,
     });
   };
@@ -93,13 +92,10 @@ export function ItemForm({ initial, restaurants, dietTypes, onCancel, onSave, sa
         {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
       </select>
 
-      <input placeholder="Өдрийн лимит (хоосон = хязгааргүй)" type="number" min="0" value={form.stock_limit} onChange={set('stock_limit')}
-        style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
-
       <input placeholder="Бэлтгэх хугацаа (мин)" type="number" min="0" value={form.prep_time_min} onChange={set('prep_time_min')}
         style={{ padding: '9px 12px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: '0.88rem' }} />
 
-      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-body)' }}>
+      <label style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-body)' }}>
         <input type="checkbox" checked={form.is_featured} onChange={set('is_featured')} /> Онцлох
       </label>
 
@@ -337,7 +333,6 @@ export function MenuManager() {
             prep_time_min: editingItem.prep_time_min || '',
             is_featured: editingItem.is_featured || false,
             restaurant_id: editingItem.restaurant_id,
-            stock_limit: editingItem.stock_limit !== null ? editingItem.stock_limit : '',
             image_url: editingItem.image_url || '',
           }}
           onCancel={() => setEditingItem(null)}
