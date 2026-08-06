@@ -144,10 +144,6 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
             {item.description}
           </p>
         )}
-
-        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-          {item.calories ? `${item.calories} Cal` : '450 Cal'} | 32g Protein | 40g Carbs
-        </div>
       </div>
     </div>
   );

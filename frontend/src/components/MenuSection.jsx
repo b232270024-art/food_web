@@ -41,22 +41,39 @@ function DayPlanPreview({ planItems, tr }) {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {Object.entries(getMealTimeLabel(tr)).map(([key, label]) => (
-          <div key={key} className="card" style={{ padding: 16 }}>
-            <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-dark)', marginBottom: 10 }}>{label}</div>
+          <div key={key} className="card" style={{ padding: 20 }}>
+            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-dark)', marginBottom: 14 }}>{label}</div>
             {byMeal[key].length === 0 ? (
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>—</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                {tr.menuPlanEmptyMeal || 'Sorry, no dish planned for this time yet.'}
+              </p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {byMeal[key].map(item => (
-                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     {item.image_url
-                      ? <img src={item.image_url} alt="" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                      : <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--bg-muted)', flexShrink: 0 }} />}
+                      ? <img src={item.image_url} alt="" style={{ width: 76, height: 76, borderRadius: 16, objectFit: 'cover', flexShrink: 0 }} />
+                      : (
+                        <div style={{
+                          width: 76, height: 76, borderRadius: 16, background: 'var(--bg-muted)', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <Utensils size={28} color="var(--text-muted)" />
+                        </div>
+                      )}
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.restaurant_name}</div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>{item.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>{item.restaurant_name}</div>
+                      {item.description && (
+                        <div style={{
+                          fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5,
+                          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                        }}>
+                          {item.description}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

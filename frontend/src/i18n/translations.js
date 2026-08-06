@@ -179,6 +179,7 @@ export const t = {
     menuContinueBtn: 'Continue',
     menuPlanPreviewTitle: 'Dishes included in your plan',
     menuPlanScheduleTitle: 'Your day-by-day meal schedule',
+    menuPlanEmptyMeal: 'Sorry, no dish planned for this time yet.',
 
     // Order confirmation (payment collected separately for now)
     orderConfirmedTitle: 'Order Confirmed!',
@@ -348,6 +349,7 @@ export const t = {
     menuContinueBtn: 'متابعة',
     menuPlanPreviewTitle: 'الأطباق المشمولة في خطتك',
     menuPlanScheduleTitle: 'جدول وجباتك اليومي',
+    menuPlanEmptyMeal: 'عذرًا، لا يوجد طبق مخطط لهذا الوقت بعد.',
 
     orderConfirmedTitle: 'تم تأكيد الطلب!',
     orderConfirmedDesc: 'لقد استلمنا طلبك وسنتواصل معك قريباً. يتم تحصيل الدفع عند التسليم.',
@@ -514,6 +516,7 @@ export const t = {
     menuContinueBtn: 'जारी रखें',
     menuPlanPreviewTitle: 'आपकी योजना में शामिल व्यंजन',
     menuPlanScheduleTitle: 'आपकी दिन-प्रतिदिन भोजन अनुसूची',
+    menuPlanEmptyMeal: 'क्षमा करें, इस समय के लिए अभी तक कोई व्यंजन तय नहीं है।',
 
     orderConfirmedTitle: 'ऑर्डर की पुष्टि हो गई!',
     orderConfirmedDesc: 'हमें आपका ऑर्डर मिल गया है और हम जल्द ही आपसे संपर्क करेंगे। भुगतान डिलीवरी पर लिया जाता है।',
