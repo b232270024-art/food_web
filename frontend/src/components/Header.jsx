@@ -21,20 +21,20 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
               alt="Velofoods"
               style={{
                 width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                objectFit: 'cover', boxShadow: 'var(--shadow-glow)',
+                objectFit: 'cover',
               }}
             />
             <span style={{
-              fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.15rem',
-              color: 'var(--text-white)', lineHeight: 1, letterSpacing: '-0.01em',
+              fontFamily: 'Outfit, sans-serif', fontWeight: 1000, fontSize: '1.15rem',
+              color: 'var(--text-black)', lineHeight: 1, letterSpacing: '-0.01em',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               Velofoods
             </span>
           </div>
           <nav className="nav-links">
-            <span className="nav-link" onClick={onOpenAbout} style={{ cursor: 'pointer' }}>{tr.aboutBtn || 'About Us'}</span>
-            <span className="nav-link" onClick={onOpenMenu} style={{ cursor: 'pointer' }}>{tr.navMenu}</span>
+            <span className="nav-link" onClick={onOpenAbout} style={{ fontWeight: 800, color: 'var(--text-black)' }}>{tr.aboutBtn || 'About Us'}</span>
+            <span className="nav-link" onClick={onOpenMenu} style={{ fontWeight: 800, color: 'var(--text-black)' }}>{tr.navMenu}</span>
           </nav>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
@@ -59,8 +59,8 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
               style={{
-                width: 38, height: 38, borderRadius: 'var(--r-sm)', flexShrink: 0,
-                background: 'var(--bg-white)', border: '1px solid var(--border)',
+                width: 38, height: 38, borderRadius: 'var(--r-lg)', flexShrink: 0,
+                background: 'var(--bg-white)', border: 'var(--border-header)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'var(--text-dark)',
               }}

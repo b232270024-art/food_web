@@ -11,11 +11,12 @@
   --accent-pink: #FBCFE8;
 
   /* Backgrounds */
-  --bg-cream: #f5f3f3;
+  --bg-cream: #f8f0f0;
   --bg-white: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-muted: #F5F0E8;
   --bg-green-dark: #1A3C34;
+  --bg-yellow-light: #fdf2e2;
 
   /* Text */
   --text-dark: #1A1A1A;
@@ -27,6 +28,7 @@
   /* Borders */
   --border: #E5E7EB;
   --border-card: #F0EBE0;
+  --border-header: #000000;
 
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -297,10 +299,9 @@ img {
   position: sticky;
   top: 0;
   z-index: 120;
-  background: var(--brand-green);
+  background: transparent;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-card);
 }
 
 .navbar-inner {

@@ -7,18 +7,21 @@ const STEPS = [
     bg: '#e8f5e9',
     color: '#166534',
     num: 1,
+    image: '/images/step1.png',
   },
   {
     icon: Bike,
     bg: '#fff3e8',
     color: '#c2410c',
     num: 2,
+    image: '/images/step2.png',
   },
   {
     icon: Utensils,
     bg: '#e8f0fe',
     color: '#1d4ed8',
     num: 3,
+    image: '/images/step3.png',
   },
 ];
 
@@ -27,7 +30,7 @@ export function HowItWorks({ tr }) {
     <section style={{ padding: '80px 0', background: 'var(--bg-cream)' }}>
       <div className="container">
         {/* Section Title */}
-        <div className="anim-fade-up" style={{ textAlign: 'center', marginBottom: 56 }}>
+        <div className="anim-fade-up" style={{ textAlign: 'center', marginBottom: 16 }}>
           <h2 className="heading-lg">
             {tr.howTitle}
             <span style={{ color: 'var(--accent-orange)' }}>{tr.howTitleAccent}</span>
@@ -41,7 +44,7 @@ export function HowItWorks({ tr }) {
         <div id="how-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 32,
+          gap: 12,
         }}>
           {STEPS.map((step, i) => {
             const titles = [tr.step1Title, tr.step2Title, tr.step3Title];
@@ -53,19 +56,24 @@ export function HowItWorks({ tr }) {
                 className="anim-fade-up"
                 style={{ animationDelay: `${i * 0.1}s`, textAlign: 'center' }}
               >
-                {/* Icon circle */}
+                {/* Illustration */}
                 <div style={{
-                  width: 100, height: 100, borderRadius: '50%',
-                  background: step.bg,
+                  width: '100%', maxWidth: 450, aspectRatio: '1/1',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto 20px',
-                  boxShadow: 'var(--shadow-sm)',
+                  position: 'relative',
                 }}>
-                  <IconComponent size={44} color={step.color} />
+                  <IconComponent size={64} color={step.color} />
+                  <img
+                    src={step.image}
+                    alt=""
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
                 </div>
 
                 {/* Step title */}
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-dark)', marginBottom: 10 }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-dark)', marginBottom: 10, marginTop: '-40px' }}>
                   {titles[i]}
                 </h3>
 
@@ -75,16 +83,6 @@ export function HowItWorks({ tr }) {
                     {descs[i]}
                   </p>
                 )}
-
-                {/* Step number badge */}
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 32, height: 32, borderRadius: '50%',
-                  background: 'var(--brand-green)',
-                  color: 'white', fontWeight: 800, fontSize: '0.9rem',
-                }}>
-                  {step.num}
-                </div>
               </div>
             );
           })}

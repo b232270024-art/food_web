@@ -3,10 +3,10 @@ import { Utensils, ChefHat, Salad, Coffee } from 'lucide-react';
 
 export function AboutSection({ tr, onAboutClick }) {
   const GRID_ICONS = [
-    { icon: Utensils, bg: '#fff3e8', color: '#c2410c' },
-    { icon: ChefHat, bg: '#e8f5e9', color: '#166534' },
-    { icon: Salad, bg: '#e8f0fe', color: '#1d4ed8' },
-    { icon: Coffee, bg: '#fce4ec', color: '#be185d' },
+    { icon: Utensils, bg: '#fff3e8', color: '#c2410c', image: '/images/about-1.png' },
+    { icon: ChefHat, bg: '#e8f5e9', color: '#166534', image: '/images/about-2.png' },
+    { icon: Salad, bg: '#e8f0fe', color: '#1d4ed8', image: '/images/about-3.png' },
+    { icon: Coffee, bg: '#fce4ec', color: '#be185d', image: '/images/about-4.png' },
   ];
 
   return (
@@ -37,9 +37,17 @@ export function AboutSection({ tr, onAboutClick }) {
                       background: item.bg,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       borderRadius: 20,
+                      position: 'relative',
+                      overflow: 'hidden',
                     }}
                   >
                     <IconComp size={48} color={item.color} />
+                    <img
+                      src={item.image}
+                      alt=""
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
                   </div>
                 );
               })}
