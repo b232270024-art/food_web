@@ -27,10 +27,14 @@ CREATE TYPE meal_time AS ENUM ('morning', 'lunch', 'evening');
 -- Menu/Orders хуудсуудын гол filter нь энэ. Ресторан бүр яг нэг diet_type-д
 -- (Halal/Vegan/...) харьяалагдана (diet_type_id, доор тодорхойлно).
 CREATE TABLE restaurants (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          text NOT NULL UNIQUE,
-  diet_type_id  uuid,
-  created_at    timestamptz NOT NULL DEFAULT now()
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name               text NOT NULL UNIQUE,
+  diet_type_id       uuid,
+  -- Тухайн ресторан өдөрт хэдэн ЗАХИАЛГА (menu item stock биш) авахыг
+  -- хязгаарлана. NULL = хязгааргүй. Лимит хүрэхэд зочин шинэ захиалга өгөх
+  -- үед алдаа буцна (orders.js).
+  daily_order_limit  integer DEFAULT 100,
+  created_at         timestamptz NOT NULL DEFAULT now()
 );
 
 -- Хоолны ангилал (Halal/Vegan/...) — нэг ерөнхий жагсаалт, admin Тохиргоо
