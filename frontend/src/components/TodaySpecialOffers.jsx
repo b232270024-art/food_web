@@ -80,7 +80,7 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
         .special-offers-scroll::-webkit-scrollbar { height: 0px; display: none; }
         .special-offers-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .special-card-wrap { cursor: pointer; }
-        .special-card-img-wrap { overflow: hidden; border-radius: 20px; }
+        .special-card-img-wrap { overflow: hidden; }
         .special-card-img-wrap img { transition: transform 0.4s ease; }
         .special-card-wrap:hover .special-card-img-wrap img { transform: scale(1.05); }
       `}</style>
@@ -108,11 +108,15 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
       style={{
         minWidth: 280, width: 280, flexShrink: 0, scrollSnapAlign: 'start',
         animationDelay: `${index * 0.08}s`,
-        display: 'flex', flexDirection: 'column', gap: 14,
+        display: 'flex', flexDirection: 'column',
         textAlign: 'left',
+        background: 'var(--bg-card)',
+        borderRadius: 20,
+        overflow: 'hidden',
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
-      {/* Dish avatar */}
+      {/* Dish photo */}
       <div className="special-card-img-wrap" style={{ width: '100%', aspectRatio: '1/1', position: 'relative' }}>
         {item.image_url ? (
           <img
@@ -129,21 +133,41 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
             <Utensils size={56} color="var(--text-muted)" />
           </div>
         )}
+
+        <span style={{
+          position: 'absolute', top: 12, left: 12,
+          background: 'var(--accent-orange)', color: '#fff',
+          fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.03em',
+          textTransform: 'uppercase',
+          padding: '5px 12px', borderRadius: 'var(--r-full)',
+          boxShadow: 'var(--shadow-sm)',
+        }}>
+          {tr.specialBadge}
+        </span>
       </div>
 
-      <div>
+      <div style={{ padding: '16px 18px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-dark)', lineHeight: 1.2, marginBottom: 4 }}>
           {item.name}
         </h3>
 
         {item.description && (
           <p style={{
-            fontSize: '0.9rem', color: 'var(--text-body)', lineHeight: 1.4, marginBottom: 8,
+            fontSize: '0.9rem', color: 'var(--text-body)', lineHeight: 1.4, marginBottom: 14,
             overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
           }}>
             {item.description}
           </p>
         )}
+
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={onGetStarted}
+          style={{ marginTop: 'auto', width: '100%', padding: '10px', fontSize: '0.85rem', borderRadius: 'var(--r-sm)' }}
+        >
+          {tr.specialBtn}
+        </button>
       </div>
     </div>
   );
