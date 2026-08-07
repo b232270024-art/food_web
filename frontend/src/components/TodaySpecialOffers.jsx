@@ -113,10 +113,10 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
       onClick={onGetStarted}
       tabIndex={0}
       style={{
-        minWidth: 280, width: 280, flexShrink: 0, scrollSnapAlign: 'start',
+        minWidth: 280, width: 280, height: 300, flexShrink: 0, scrollSnapAlign: 'start',
         animationDelay: `${index * 0.08}s`,
         position: 'relative',
-        aspectRatio: '1/1',
+        aspectRatio: '3 / 4',
         borderRadius: 20,
         overflow: 'hidden',
         boxShadow: 'var(--shadow-sm)',
