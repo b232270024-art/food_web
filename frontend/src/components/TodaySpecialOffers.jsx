@@ -83,6 +83,16 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
         .special-card-img-wrap { overflow: hidden; }
         .special-card-img-wrap img { transition: transform 0.4s ease; }
         .special-card-wrap:hover .special-card-img-wrap img { transform: scale(1.05); }
+        .special-card-overlay {
+          transform: translateY(100%);
+          opacity: 0;
+          transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .special-card-wrap:hover .special-card-overlay,
+        .special-card-wrap:focus-within .special-card-overlay {
+          transform: translateY(0);
+          opacity: 1;
+        }
       `}</style>
     </section>
   );
@@ -90,11 +100,7 @@ export function TodaySpecialOffers({ menuItems, tr, onGetStarted }) {
 
 function SpecialCardSkeleton() {
   return (
-    <div style={{ minWidth: 280, flexShrink: 0, scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: 20, background: 'var(--bg-muted)' }} />
-      <div style={{ width: '70%', height: 24, borderRadius: 6, background: 'var(--bg-muted)' }} />
-      <div style={{ width: '90%', height: 16, borderRadius: 4, background: 'var(--bg-muted)' }} />
-    </div>
+    <div style={{ minWidth: 280, width: 280, flexShrink: 0, scrollSnapAlign: 'start', aspectRatio: '1/1', borderRadius: 20, background: 'var(--bg-muted)' }} />
   );
 }
 
@@ -105,19 +111,19 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
     <div
       className="anim-fade-up special-card-wrap"
       onClick={onGetStarted}
+      tabIndex={0}
       style={{
         minWidth: 280, width: 280, flexShrink: 0, scrollSnapAlign: 'start',
         animationDelay: `${index * 0.08}s`,
-        display: 'flex', flexDirection: 'column',
-        textAlign: 'left',
-        background: 'var(--bg-card)',
+        position: 'relative',
+        aspectRatio: '1/1',
         borderRadius: 20,
         overflow: 'hidden',
         boxShadow: 'var(--shadow-sm)',
       }}
     >
       {/* Dish photo */}
-      <div className="special-card-img-wrap" style={{ width: '100%', aspectRatio: '1/1', position: 'relative' }}>
+      <div className="special-card-img-wrap" style={{ position: 'absolute', inset: 0 }}>
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -133,27 +139,22 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
             <Utensils size={56} color="var(--text-muted)" />
           </div>
         )}
-
-        <span style={{
-          position: 'absolute', top: 12, left: 12,
-          background: 'var(--accent-orange)', color: '#fff',
-          fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.03em',
-          textTransform: 'uppercase',
-          padding: '5px 12px', borderRadius: 'var(--r-full)',
-          boxShadow: 'var(--shadow-sm)',
-        }}>
-          {tr.specialBadge}
-        </span>
       </div>
 
-      <div style={{ padding: '16px 18px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-dark)', lineHeight: 1.2, marginBottom: 4 }}>
+      {/* Hover overlay: name, description, CTA */}
+      <div className="special-card-overlay" style={{
+        position: 'absolute', left: 0, right: 0, bottom: 0,
+        padding: '48px 18px 18px',
+        background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.82) 65%)',
+        textAlign: 'left',
+      }}>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: 4 }}>
           {item.name}
         </h3>
 
         {item.description && (
           <p style={{
-            fontSize: '0.9rem', color: 'var(--text-body)', lineHeight: 1.4, marginBottom: 14,
+            fontSize: '0.82rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4, marginBottom: 12,
             overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
           }}>
             {item.description}
@@ -164,7 +165,7 @@ function SpecialCard({ item, index, tr, onGetStarted }) {
           type="button"
           className="btn-primary"
           onClick={onGetStarted}
-          style={{ marginTop: 'auto', width: '100%', padding: '10px', fontSize: '0.85rem', borderRadius: 'var(--r-sm)' }}
+          style={{ width: '100%', padding: '10px', fontSize: '0.85rem', borderRadius: 'var(--r-sm)' }}
         >
           {tr.specialBtn}
         </button>
