@@ -194,6 +194,18 @@ export const t = {
     paymentFailedTitle: 'Payment Not Completed',
     paymentFailedDesc: "Your payment wasn't completed or was cancelled. No charge was made. Please try again.",
 
+    // Order history (browser-remembered past orders, shown via a Header button)
+    orderHistoryBtn: 'Order History',
+    orderHistoryTitle: 'My Orders',
+    orderHistoryLoading: 'Loading your orders…',
+    orderHistoryEmptyHint: "You don't have any past orders on this device yet.",
+    orderHistorySessionExpiredHint: 'Your session has expired. Please check in again to view your order history.',
+    orderHistoryPaidOn: 'Paid on',
+    statusLabelPending: 'Pending',
+    statusLabelPaid: 'Paid',
+    statusLabelCancelled: 'Cancelled',
+    statusLabelRefunded: 'Refunded',
+
     // Order Review (refund notice + agree to terms + pay)
     reviewTitle: 'Review Your Order',
     refundWarning: 'Refund Policy: Orders can be cancelled free of charge up to 2 hours before delivery. Cancellations made after that may be charged a 50% fee, and delivered orders are non-refundable except for quality issues reported within 30 minutes of delivery.',
@@ -370,6 +382,17 @@ export const t = {
     paymentFailedTitle: 'لم يتم إكمال الدفع',
     paymentFailedDesc: 'لم يتم إكمال دفعتك أو تم إلغاؤها. لم يتم خصم أي مبلغ. يرجى المحاولة مرة أخرى.',
 
+    orderHistoryBtn: 'سجل الطلبات',
+    orderHistoryTitle: 'طلباتي',
+    orderHistoryLoading: 'جارٍ تحميل طلباتك…',
+    orderHistoryEmptyHint: 'ليس لديك أي طلبات سابقة على هذا الجهاز بعد.',
+    orderHistorySessionExpiredHint: 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى لعرض سجل طلباتك.',
+    orderHistoryPaidOn: 'تم الدفع في',
+    statusLabelPending: 'قيد الانتظار',
+    statusLabelPaid: 'مدفوع',
+    statusLabelCancelled: 'ملغى',
+    statusLabelRefunded: 'مسترد',
+
     reviewTitle: 'مراجعة طلبك',
     refundWarning: 'سياسة الاسترداد: يمكن إلغاء الطلبات مجاناً حتى ساعتين قبل موعد التسليم. الإلغاء بعد ذلك قد يخضع لرسوم 50%، والطلبات التي تم تسليمها غير قابلة للاسترداد إلا في حال وجود مشكلة في الجودة يتم الإبلاغ عنها خلال 30 دقيقة من التسليم.',
     reviewItemsTitle: 'عناصر الطلب',
@@ -543,6 +566,17 @@ export const t = {
     paymentPendingDesc: 'हम अभी भी गेटवे के साथ आपके भुगतान की पुष्टि कर रहे हैं। इसमें थोड़ा समय लग सकता है — कृपया नया ऑर्डर न दें।',
     paymentFailedTitle: 'भुगतान पूरा नहीं हुआ',
     paymentFailedDesc: 'आपका भुगतान पूरा नहीं हुआ या रद्द कर दिया गया। कोई शुल्क नहीं लिया गया। कृपया पुनः प्रयास करें।',
+
+    orderHistoryBtn: 'ऑर्डर इतिहास',
+    orderHistoryTitle: 'मेरे ऑर्डर',
+    orderHistoryLoading: 'आपके ऑर्डर लोड हो रहे हैं…',
+    orderHistoryEmptyHint: 'इस डिवाइस पर अभी तक आपका कोई पिछला ऑर्डर नहीं है।',
+    orderHistorySessionExpiredHint: 'आपका सेशन समाप्त हो गया है। अपना ऑर्डर इतिहास देखने के लिए कृपया फिर से चेक-इन करें।',
+    orderHistoryPaidOn: 'भुगतान की तारीख',
+    statusLabelPending: 'लंबित',
+    statusLabelPaid: 'भुगतान हो गया',
+    statusLabelCancelled: 'रद्द',
+    statusLabelRefunded: 'वापस किया गया',
 
     reviewTitle: 'अपना ऑर्डर देखें',
     refundWarning: 'रिफंड नीति: डिलीवरी से 2 घंटे पहले तक ऑर्डर मुफ्त में रद्द किए जा सकते हैं। उसके बाद रद्द करने पर 50% शुल्क लग सकता है, और डिलीवर किए गए ऑर्डर रिफंड योग्य नहीं हैं, सिवाय इसके कि डिलीवरी के 30 मिनट के भीतर गुणवत्ता संबंधी समस्या की सूचना दी जाए।',

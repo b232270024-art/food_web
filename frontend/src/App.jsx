@@ -17,8 +17,10 @@ import { CartDrawer } from './components/CartDrawer';
 import { OrderReview } from './components/OrderReview';
 import { TermsModal } from './components/TermsModal';
 import { AboutPage } from './components/AboutPage';
+import { OrderHistoryPage } from './components/OrderHistoryPage';
 
 import { LANGUAGES, useTranslation } from './i18n/translations';
+import { addOrderToHistory, getOrderHistory } from './lib/orderHistory';
 
 // ── Flow steps ────────────────────────────────────────────────────────────────
 // 'hero'            → landing page (Hero + Special Offers + How it works + About)
@@ -28,8 +30,9 @@ import { LANGUAGES, useTranslation } from './i18n/translations';
 // 'menu'            → (one-time) full menu, cart, "Continue" once cart has items
 // 'delivery_type'   → (one-time) hotel room vs current location
 // 'confirmation'    → order/plan confirmed (payment collected on delivery, no gateway yet)
+// 'order_history'   → browser-remembered list of this guest's past orders (Header button)
 // ─────────────────────────────────────────────────────────────────────────────
-const FLOW_STEPS = ['hero', 'about_us', 'order_type', 'diet_type_select', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation'];
+const FLOW_STEPS = ['hero', 'about_us', 'order_type', 'diet_type_select', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation', 'order_history'];
 const pathForStep = (step) => (step === 'hero' ? '/' : `/${step}`) + window.location.search;
 
 // orderType/deliveryType/selectedDietTypeId live only in memory, so a refresh mid-flow
@@ -52,6 +55,7 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null); // 'paid' | 'new' | 'canceled' | 'expired' | 'invalid' | 'unknown' | 'error' | null
+  const [hasOrderHistory, setHasOrderHistory] = useState(() => getOrderHistory().length > 0);
 
   // ─── UI/Flow state ───────────────────────────────────────────────────────────
   const [language, setLanguage] = useState('en');
@@ -358,6 +362,8 @@ export default function App() {
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || 'Order failed');
       setActiveOrder(orderData);
+      addOrderToHistory(orderData.id);
+      setHasOrderHistory(true);
 
       const paymentRes = await fetch('/api/payments/initiate', {
         method: 'POST',
@@ -403,6 +409,8 @@ export default function App() {
         onOpenAbout={() => { goToStep('about_us'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         onOpenMenu={() => { goToStep('menu'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         onBackToHome={handleBackToHome}
+        hasOrderHistory={hasOrderHistory}
+        onOpenHistory={() => { goToStep('order_history'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
       />
 
       <main style={{ flex: 1 }}>
@@ -539,6 +547,14 @@ export default function App() {
               {tr.backToHomeBtn}
             </button>
           </div>
+        )}
+
+        {/* ── ORDER HISTORY ────────────────────────────────────────────────────── */}
+        {flowStep === 'order_history' && (
+          <OrderHistoryPage
+            tr={tr}
+            onBack={() => { goToStep('hero'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          />
         )}
       </main>
 

@@ -17,6 +17,11 @@ const STATUS_COLOR = {
 };
 
 const ALL_STATUSES = ['pending', 'paid', 'cancelled', 'refunded'];
+// 'paid'-г ажилтан гараар сонгож болохгүй — зөвхөн баталгаажсан Hipay
+// төлбөрөөс (settleHipayCheckout, src/routes/payments.js) л автоматаар
+// тавигддаг байх ёстой, тиймээс статус солих dropdown-д зөвхөн эдгээрийг
+// л зорилтот сонголт болгоно.
+const ADMIN_EDITABLE_STATUSES = ['cancelled', 'refunded'];
 
 function fmtDate(dateStr) {
   if (!dateStr) return '—';
@@ -118,7 +123,12 @@ function OrderRow({ order, onChangeStatus, updating, selectedRestaurant }) {
               opacity: updating ? 0.5 : 1, cursor: 'pointer',
             }}
           >
-            {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+            {/* Одоогийн статус (жишээ нь 'paid') харагдахын тулд жагсаалтад
+                байлгана, гэхдээ зорилтот сонголтоор зөвхөн ADMIN_EDITABLE_STATUSES-г
+                л санал болгоно — 'paid' рүү гараар шилжих боломжгүй. */}
+            {Array.from(new Set([order.status, ...ADMIN_EDITABLE_STATUSES])).map(s => (
+              <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+            ))}
           </select>
         </td>
         {/* Expand icon */}

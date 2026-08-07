@@ -1,9 +1,9 @@
 import React from 'react';
-import { ShoppingBag, Globe, Sun, Moon, User } from 'lucide-react';
+import { ShoppingBag, Globe, Sun, Moon, User, Receipt } from 'lucide-react';
 import { LANGUAGES } from '../i18n/translations';
 import { useTheme } from '../lib/useTheme';
 
-export function Header({ session, cartCount, cartTotal, onOpenCart, language, onSetLanguage, showCart, tr, onOpenAbout, onOpenMenu, onBackToHome }) {
+export function Header({ session, cartCount, cartTotal, onOpenCart, language, onSetLanguage, showCart, tr, onOpenAbout, onOpenMenu, onBackToHome, hasOrderHistory, onOpenHistory }) {
   const [langOpen, setLangOpen] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
@@ -53,6 +53,22 @@ export function Header({ session, cartCount, cartTotal, onOpenCart, language, on
                   </span>
                 )}
               </div>
+            )}
+
+            {hasOrderHistory && (
+              <button
+                id="order-history-btn"
+                onClick={onOpenHistory}
+                title={tr.orderHistoryBtn}
+                style={{
+                  width: 38, height: 38, borderRadius: 'var(--r-lg)', flexShrink: 0,
+                  background: 'var(--bg-white)', border: 'var(--border-header)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--text-dark)',
+                }}
+              >
+                <Receipt size={17} />
+              </button>
             )}
 
             <button

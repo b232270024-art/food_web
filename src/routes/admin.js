@@ -296,7 +296,9 @@ adminRouter.delete('/plan-items/:id', asyncHandler(async (req, res) => {
   res.json({ deleted: true, id: rows[0].id });
 }));
 
-// Ажилтан захиалгын статус солих (жишээ нь "бэлэн боллоо", "буцаагдсан")
+// Ажилтан захиалгын статус солих — зөвхөн cancelled/refunded (updateOrderStatusSchema
+// 'paid'-г зөвшөөрдөггүй). 'paid' статус зөвхөн settleHipayCheckout-оор
+// (src/routes/payments.js), Hipay-аас баталгаажсаны дараа л тавигдана.
 adminRouter.patch('/orders/:id/status', validateBody(updateOrderStatusSchema), asyncHandler(async (req, res) => {
   const { status } = req.body;
   const { rows } = await pool.query(

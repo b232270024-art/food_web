@@ -115,8 +115,11 @@ export const createOrderSchema = z.object({
     .min(1, 'Захиалгад дор хаяж нэг зүйл байх ёстой'),
 });
 
+// 'paid'-г зориудаар хассан — энэ статусыг зөвхөн баталгаажсан Hipay
+// төлбөрийн урсгал (settleHipayCheckout, src/routes/payments.js) л
+// тавьдаг байх ёстой, dashboard-ийн ажилтан гараар тавьж болохгүй.
 export const updateOrderStatusSchema = z.object({
-  status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['pending', 'paid', 'cancelled', 'refunded'])),
+  status: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['cancelled', 'refunded'])),
 });
 
 export const createPlanItemSchema = z.object({
