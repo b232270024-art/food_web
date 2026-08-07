@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
@@ -51,6 +51,7 @@ export default function App() {
   const [menuItems, setMenuItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
+  const [paymentResult, setPaymentResult] = useState(null); // 'paid' | 'new' | 'canceled' | 'expired' | 'invalid' | 'unknown' | 'error' | null
 
   // ─── UI/Flow state ───────────────────────────────────────────────────────────
   const [language, setLanguage] = useState('en');
@@ -102,10 +103,30 @@ export default function App() {
     // Support deep-linking / refresh on a step's URL (e.g. /menu) — the server
     // SPA fallback (src/index.js) already returns index.html for any unknown
     // path, so this just needs to pick up wherever the browser landed.
+    const searchParams = new URLSearchParams(window.location.search);
+    const paymentParam = searchParams.get('payment');
+    const orderIdParam = searchParams.get('order_id');
+
     const pathStep = window.location.pathname.replace(/^\//, '');
-    const initial = FLOW_STEPS.includes(pathStep) ? pathStep : 'hero';
+    // Returning from Hipay's hosted payment page lands back on '/' with
+    // ?order_id=&payment=<status> (set by the backend's /hipay/redirect
+    // handler, which has already independently re-verified the payment with
+    // Hipay — see settleHipayCheckout in src/routes/payments.js). Route
+    // straight to the confirmation screen instead of the normal
+    // path-based restoration below.
+    const initial = paymentParam ? 'confirmation' : (FLOW_STEPS.includes(pathStep) ? pathStep : 'hero');
     window.history.replaceState({ flowStep: initial }, '', pathForStep(initial));
     setFlowStep(initial);
+
+    if (paymentParam) {
+      setPaymentResult(paymentParam);
+      if (orderIdParam) {
+        fetch(`/api/orders/${orderIdParam}`, { credentials: 'include' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => { if (data) setActiveOrder(data); })
+          .catch(() => {});
+      }
+    }
 
     const saved = loadFlowState();
     if (saved.orderType) setOrderType(saved.orderType);
@@ -231,6 +252,7 @@ export default function App() {
     try { sessionStorage.removeItem(FLOW_STATE_KEY); } catch { /* ignore */ }
     setSession(null);
     setActiveOrder(null);
+    setPaymentResult(null);
     setCart([]);
     setAgreeTerms(false);
     setPendingGuestName('');
@@ -336,10 +358,26 @@ export default function App() {
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || 'Order failed');
       setActiveOrder(orderData);
+
+      const paymentRes = await fetch('/api/payments/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ order_id: orderData.id, gateway_provider: 'hipay' }),
+      });
+      const paymentData = await paymentRes.json();
+      if (!paymentRes.ok || !paymentData.payment_form_url) {
+        throw new Error(paymentData.error || 'Payment could not be started');
+      }
+
       setCart([]);
       setAgreeTerms(false);
-      goToStep('confirmation');
-      showToast(tr.orderPlaced);
+      // Full browser navigation to Hipay's hosted payment page — leaves the
+      // SPA entirely. Hipay redirects the browser back to our backend
+      // (HIPAY_REDIRECT_URI), which re-verifies the payment server-to-server
+      // before sending the guest back to '/?order_id=...&payment=...'
+      // (handled by the mount effect above).
+      window.location.href = paymentData.payment_form_url;
     } catch (err) {
       showToast(err.message || 'Order failed');
     } finally {
@@ -473,10 +511,24 @@ export default function App() {
         {flowStep === 'confirmation' && (
           <div className="container" style={{ maxWidth: 560, margin: '0 auto', padding: '60px 24px', textAlign: 'center' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-              <CheckCircle2 size={64} color="var(--brand-green)" />
+              {paymentResult && paymentResult !== 'paid' ? (
+                <AlertTriangle size={64} color="#dc2626" />
+              ) : (
+                <CheckCircle2 size={64} color="var(--brand-green)" />
+              )}
             </div>
-            <h1 className="heading-lg" style={{ marginBottom: 12 }}>{tr.orderConfirmedTitle}</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{tr.orderConfirmedDesc}</p>
+            <h1 className="heading-lg" style={{ marginBottom: 12 }}>
+              {paymentResult === 'paid' ? tr.paymentSuccessTitle
+                : paymentResult === 'new' ? tr.paymentPendingTitle
+                : paymentResult ? tr.paymentFailedTitle
+                : tr.orderConfirmedTitle}
+            </h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
+              {paymentResult === 'paid' ? tr.paymentSuccessDesc
+                : paymentResult === 'new' ? tr.paymentPendingDesc
+                : paymentResult ? tr.paymentFailedDesc
+                : tr.orderConfirmedDesc}
+            </p>
             {activeOrder && (
               <div className="card" style={{ padding: 24, textAlign: 'left', marginBottom: 24 }}>
                 <p style={{ fontWeight: 700 }}>{tr.orderStatus}: <strong style={{ textTransform: 'uppercase' }}>{activeOrder.status}</strong></p>

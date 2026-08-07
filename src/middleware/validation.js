@@ -132,5 +132,5 @@ export const adminLoginSchema = z.object({
 
 export const paymentInitiateSchema = z.object({
   order_id: uuidSchema('order_id зөв UUID байх ёстой'),
-  gateway_provider: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['2c2p', 'airwallex', 'bank', 'qpay'])),
+  gateway_provider: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['2c2p', 'airwallex', 'bank', 'qpay', 'hipay'])),
 });

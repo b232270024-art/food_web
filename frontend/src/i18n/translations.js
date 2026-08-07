@@ -186,6 +186,14 @@ export const t = {
     orderConfirmedDesc: "We've received your order and will contact you shortly. Payment is collected on delivery.",
     backToHomeBtn: '← Back to Home',
 
+    // Hipay payment result (shown after the guest returns from the hosted payment page)
+    paymentSuccessTitle: 'Payment Successful!',
+    paymentSuccessDesc: "We've received your payment and your order is confirmed. We'll contact you shortly.",
+    paymentPendingTitle: 'Confirming Payment…',
+    paymentPendingDesc: "We're still confirming your payment with the gateway. This can take a moment — please don't place a new order.",
+    paymentFailedTitle: 'Payment Not Completed',
+    paymentFailedDesc: "Your payment wasn't completed or was cancelled. No charge was made. Please try again.",
+
     // Order Review (refund notice + agree to terms + pay)
     reviewTitle: 'Review Your Order',
     refundWarning: 'Refund Policy: Orders can be cancelled free of charge up to 2 hours before delivery. Cancellations made after that may be charged a 50% fee, and delivered orders are non-refundable except for quality issues reported within 30 minutes of delivery.',
@@ -355,6 +363,13 @@ export const t = {
     orderConfirmedDesc: 'لقد استلمنا طلبك وسنتواصل معك قريباً. يتم تحصيل الدفع عند التسليم.',
     backToHomeBtn: '← العودة إلى الرئيسية',
 
+    paymentSuccessTitle: 'تم الدفع بنجاح!',
+    paymentSuccessDesc: 'لقد استلمنا دفعتك وتم تأكيد طلبك. سنتواصل معك قريباً.',
+    paymentPendingTitle: 'جارٍ تأكيد الدفع…',
+    paymentPendingDesc: 'لا نزال نؤكد دفعتك مع بوابة الدفع. قد يستغرق ذلك بعض الوقت — يرجى عدم تقديم طلب جديد.',
+    paymentFailedTitle: 'لم يتم إكمال الدفع',
+    paymentFailedDesc: 'لم يتم إكمال دفعتك أو تم إلغاؤها. لم يتم خصم أي مبلغ. يرجى المحاولة مرة أخرى.',
+
     reviewTitle: 'مراجعة طلبك',
     refundWarning: 'سياسة الاسترداد: يمكن إلغاء الطلبات مجاناً حتى ساعتين قبل موعد التسليم. الإلغاء بعد ذلك قد يخضع لرسوم 50%، والطلبات التي تم تسليمها غير قابلة للاسترداد إلا في حال وجود مشكلة في الجودة يتم الإبلاغ عنها خلال 30 دقيقة من التسليم.',
     reviewItemsTitle: 'عناصر الطلب',
@@ -521,6 +536,13 @@ export const t = {
     orderConfirmedTitle: 'ऑर्डर की पुष्टि हो गई!',
     orderConfirmedDesc: 'हमें आपका ऑर्डर मिल गया है और हम जल्द ही आपसे संपर्क करेंगे। भुगतान डिलीवरी पर लिया जाता है।',
     backToHomeBtn: '← होम पर वापस जाएं',
+
+    paymentSuccessTitle: 'भुगतान सफल!',
+    paymentSuccessDesc: 'हमें आपका भुगतान मिल गया है और आपका ऑर्डर पुष्टि हो गया है। हम जल्द ही आपसे संपर्क करेंगे।',
+    paymentPendingTitle: 'भुगतान की पुष्टि हो रही है…',
+    paymentPendingDesc: 'हम अभी भी गेटवे के साथ आपके भुगतान की पुष्टि कर रहे हैं। इसमें थोड़ा समय लग सकता है — कृपया नया ऑर्डर न दें।',
+    paymentFailedTitle: 'भुगतान पूरा नहीं हुआ',
+    paymentFailedDesc: 'आपका भुगतान पूरा नहीं हुआ या रद्द कर दिया गया। कोई शुल्क नहीं लिया गया। कृपया पुनः प्रयास करें।',
 
     reviewTitle: 'अपना ऑर्डर देखें',
     refundWarning: 'रिफंड नीति: डिलीवरी से 2 घंटे पहले तक ऑर्डर मुफ्त में रद्द किए जा सकते हैं। उसके बाद रद्द करने पर 50% शुल्क लग सकता है, और डिलीवर किए गए ऑर्डर रिफंड योग्य नहीं हैं, सिवाय इसके कि डिलीवरी के 30 मिनट के भीतर गुणवत्ता संबंधी समस्या की सूचना दी जाए।',

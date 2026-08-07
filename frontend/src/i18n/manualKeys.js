@@ -16,6 +16,12 @@ export const MANUAL_KEYS = [
   'agreeTermsLink',    // "Terms of Service & Refund Policy"
   'termsModalTitle',   // "Terms of Service & Policies"
   'orderConfirmedDesc',// "Payment is collected on delivery" — payment policy
+  'paymentSuccessTitle', // payment result wording — trust-sensitive
+  'paymentSuccessDesc',
+  'paymentPendingTitle',
+  'paymentPendingDesc',
+  'paymentFailedTitle',
+  'paymentFailedDesc',
   'dietTypeSelectTitle', // dietary-identity selection (Halal/Vegan/...) copy
   'dietTypeSelectDesc',
   'dietTypeSelectBtn',
