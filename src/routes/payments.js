@@ -21,17 +21,32 @@ paymentsRouter.post('/initiate', validateBody(paymentInitiateSchema), asyncHandl
   if (order.rows.length === 0) return res.status(404).json({ error: 'Захиалга олдсонгүй.' });
 
   if (gateway_provider === 'hipay') {
+    const logger = req.app.get('logger');
     const { amount, currency, fxRate } = convertUsdForHipay(order.rows[0].total_usd);
 
-    const checkout = await createHipayCheckout({
-      amount,
-      redirectUri: process.env.HIPAY_REDIRECT_URI,
-      webhookUrl: process.env.HIPAY_WEBHOOK_URL,
-    });
+    logger.info('Hipay checkout эхлүүлж байна', { order_id, amount, currency });
+
+    let checkout;
+    try {
+      checkout = await createHipayCheckout({
+        amount,
+        redirectUri: process.env.HIPAY_REDIRECT_URI,
+        webhookUrl: process.env.HIPAY_WEBHOOK_URL,
+      });
+    } catch (err) {
+      // hipay.js-ийн rejection-ийг энд тодорхой лог хийж байж дараа нь
+      // errorHandler руу дамжуулна (throw) — ингэснээр "юу ч логдоогүй" гэсэн
+      // нөхцөл дахин давтагдахгүй.
+      logger.error('Hipay checkout API дуудлага амжилтгүй боллоо', { order_id, error: err.message });
+      throw err;
+    }
 
     if (!checkout.checkoutId) {
+      logger.error('Hipay checkout хариунд checkoutId алга', { order_id, checkout });
       return res.status(502).json({ error: 'Hipay checkout үүсгэж чадсангүй.', details: checkout.message || checkout.description });
     }
+
+    logger.info('Hipay checkout амжилттай үүслээ', { order_id, checkoutId: checkout.checkoutId });
 
     const { rows } = await pool.query(
       `INSERT INTO payments (order_id, gateway_provider, currency, amount_usd, fx_rate_applied, transaction_id, status)
