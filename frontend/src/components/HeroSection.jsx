@@ -307,11 +307,23 @@ export function HeroSection({ tr, onGetStarted }) {
 
   return (
     <section style={{
+      position: 'relative',
       background: 'var(--bg-cream)',
       padding: '50px 0 70px',
       overflow: 'hidden',
     }}>
-      <div className="container">
+      <div id="hero-bg-layer" aria-hidden="true" style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: 'url(/images/hero-bg.webp)',
+        backgroundSize: '420px',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'repeat',
+        opacity: 0.15,
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
         <div id="hero-grid" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',

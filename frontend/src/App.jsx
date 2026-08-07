@@ -32,6 +32,19 @@ import { LANGUAGES, useTranslation } from './i18n/translations';
 const FLOW_STEPS = ['hero', 'about_us', 'order_type', 'diet_type_select', 'plan_preview', 'menu', 'delivery_type', 'order_review', 'confirmation'];
 const pathForStep = (step) => (step === 'hero' ? '/' : `/${step}`) + window.location.search;
 
+// orderType/deliveryType/selectedDietTypeId live only in memory, so a refresh mid-flow
+// (e.g. a guest reloading the page on a hotel wifi) used to reach the guest-details step
+// with orderType still null, which the backend rejects. Persist them alongside the
+// URL-based flowStep restoration above so a reload doesn't leave that state stale.
+const FLOW_STATE_KEY = 'guest_flow_state';
+const loadFlowState = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(FLOW_STATE_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+
 export default function App() {
   // ─── Core state ─────────────────────────────────────────────────────────────
   const [session, setSession] = useState(null);
@@ -94,6 +107,11 @@ export default function App() {
     window.history.replaceState({ flowStep: initial }, '', pathForStep(initial));
     setFlowStep(initial);
 
+    const saved = loadFlowState();
+    if (saved.orderType) setOrderType(saved.orderType);
+    if (saved.deliveryType) setDeliveryType(saved.deliveryType);
+    if (saved.selectedDietTypeId != null) setSelectedDietTypeId(saved.selectedDietTypeId);
+
     const handlePopState = (e) => {
       setFlowStep(e.state?.flowStep || 'hero');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -101,6 +119,12 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(FLOW_STATE_KEY, JSON.stringify({ orderType, deliveryType, selectedDietTypeId }));
+    } catch { /* ignore */ }
+  }, [orderType, deliveryType, selectedDietTypeId]);
 
   // ─── Initial load: menu items + restore language ──────────────────────────────
   useEffect(() => {
@@ -204,6 +228,7 @@ export default function App() {
     setOrderType(null);
     setDeliveryType(null);
     setSelectedDietTypeId(null);
+    try { sessionStorage.removeItem(FLOW_STATE_KEY); } catch { /* ignore */ }
     setSession(null);
     setActiveOrder(null);
     setCart([]);
